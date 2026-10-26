@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('node:assert');
-const { PRICING, ADAPTER_CONFIG, META_MODEL_CONFIG, calculateFare, extractBooking, extractBookingWithMemory, appendTurn, matchDriver, retrieveFact, HARVEY_TAXI_FACTS } = require('../app.js');
+const { PRICING, ADAPTER_CONFIG, META_MODEL_CONFIG, computeIdempotencyKey, evaluateFleet, verifyCurbsideClearance, buildAgentAuditTrace, calculateFare, extractBooking, extractBookingWithMemory, appendTurn, matchDriver, retrieveFact, HARVEY_TAXI_FACTS } = require('../app.js');
 let n = 0;
 const test = (name, fn) => { fn(); n++; console.log(`ok ${n} - ${name}`); };
 
@@ -74,5 +74,47 @@ test('Meta Hackathon model config uses meta-models/muse-spark-open-1026 & muse-v
   assert.equal(META_MODEL_CONFIG.transcriptionModel, 'muse-voice-transcribe');
 });
 
-console.log(`\n${n}/28 checks passed`);
+
+// Senior Architecture: Fleet Elimination Telemetry, SAM 3.1 Curbside Vision & Idempotency (7)
+test('Telemetry: evaluateFleet logs exact rejection reasons per driver', () => {
+  const res = evaluateFleet(DRIVERS, { needsWheelchair: true, hasServiceAnimal: true });
+  const close = res.auditMatrix.find(d => d.id === 'close-ineligible');
+  assert.equal(close.eligible, false);
+  assert.equal(close.status.includes('REJECTED_NO_WHEELCHAIR_RAMP'), true);
+});
+test('SAM 3.1 Curbside Tool: approves >= 8.0ft unobstructed ramp zone', () => {
+  const c = verifyCurbsideClearance({ clearanceFeet: 9.5, obstacles: [], needsWheelchair: true });
+  assert.equal(c.safeForRamp, true);
+  assert.equal(c.status, 'ADA_RAMP_VERIFIED');
+});
+test('SAM 3.1 Curbside Tool: rejects < 8.0ft clearance for wheelchair ramp', () => {
+  const c = verifyCurbsideClearance({ clearanceFeet: 5.5, obstacles: [], needsWheelchair: true });
+  assert.equal(c.safeForRamp, false);
+  assert.equal(c.status, 'CURB_BLOCKED_RELOCATE_PICKUP');
+});
+test('SAM 3.1 Curbside Tool: rejects zone blocked by fire hydrant even with 10ft width', () => {
+  const c = verifyCurbsideClearance({ clearanceFeet: 10.0, obstacles: ['fire hydrant'], needsWheelchair: true });
+  assert.equal(c.safeForRamp, false);
+});
+test('Idempotency: identical booking parameters produce identical deterministic key', () => {
+  const k1 = computeIdempotencyKey({ pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, day: 'wednesday' });
+  const k2 = computeIdempotencyKey({ pickup: ' home ', dropoff: 'CLINIC', needsWheelchair: true, day: 'Wednesday' });
+  assert.equal(k1, k2);
+});
+test('Idempotency: changing day or accessibility produces distinct key', () => {
+  const k1 = computeIdempotencyKey({ pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, day: 'wednesday' });
+  const k2 = computeIdempotencyKey({ pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, day: 'thursday' });
+  assert.notEqual(k1, k2);
+});
+test('Audit Trace: buildAgentAuditTrace bundles tools, idempotency key, and guardrails', () => {
+  const booking = { pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, hasServiceAnimal: false };
+  const fare = calculateFare({ distanceMiles: 10, durationMinutes: 20 });
+  const fleetEval = evaluateFleet(DRIVERS, booking);
+  const trace = buildAgentAuditTrace({ booking, fare, fleetEval });
+  assert.equal(trace.state, 'VERIFIED_SHADOW_READY');
+  assert.equal(trace.steps.length, 4);
+  assert.equal(trace.idempotencyKey.startsWith('idem_ht_'), true);
+});
+
+console.log(`\n${n}/35 checks passed`);
 console.log('PRICING constants:', PRICING);

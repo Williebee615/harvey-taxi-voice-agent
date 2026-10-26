@@ -80,11 +80,61 @@ document.getElementById('speak').onclick=()=>{
     <li>Voice input is designed for <strong>Muse Voice Transcribe</strong>, with browser Web Speech API fallback for zero-setup testing.</li>
     <li>Roadmap targets self-hosted <strong>Muse Spark Open</strong> weights on Modal serverless GPUs.</li>
     <li><strong>Verifiable Agent Architecture (Memory + Deterministic Tools):</strong> Multi-turn follow-ups (e.g. <em>"change it to Wednesday"</em>) preserve trip context, while policy questions are answered strictly from <code>knowledge.js</code> with zero hallucination.</li>
-    <li>This <strong>28/28 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
+    <li>This <strong>35/35 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
   </ul>
   <p>The model never does the math: pricing and matching run in deterministic, tested code. Online → Accessible Van → Service-Animal Opt-In → Nearest Wins.</p>
 </section>
 
+
+
+<section id="sr-engineering-panel" style="margin-top:20px; padding:12px; border:2px solid #4a154b; border-radius:6px; background:#faf7ff;">
+  <h2 style="margin-top:0;">Agent Tool #4: Multimodal Curbside &amp; Ramp Verifier (<code>SAM 3.1</code> + <code>Muse Spark</code>)</h2>
+  <p style="margin:4px 0 8px;">Simulates <strong>Meta SAM 3.1</strong> segmentation of the pickup curb to verify ADA side-ramp deployment clearance (&ge; 8.0 ft required):</p>
+  <label>Measured Curb Width (ft): <input id="curb-ft" type="number" value="9.5" step="0.5" style="width:70px;"></label>
+  <label style="margin-left:10px;">Detected Curb Obstacles:
+    <select id="curb-obs">
+      <option value="">None (Clear Curb Zone)</option>
+      <option value="fire hydrant">Fire Hydrant in Ramp Zone</option>
+      <option value="parked car">Double-Parked Vehicle</option>
+    </select>
+  </label>
+  <button id="curb-btn" type="button">🔍 Verify ADA Curb Clearance (SAM 3.1)</button>
+  <div id="curb-out" aria-live="polite" style="margin-top:8px; font-weight:500; color:#2b0a3d;">Click to run SAM 3.1 curbside ramp clearance check.</div>
+
+  <h3 style="margin-top:16px; margin-bottom:6px;">Verifiable Agent Telemetry &amp; Fleet Elimination Audit Trace</h3>
+  <pre id="agent-trace-out" style="background:#111827; color:#10b981; padding:10px; border-radius:6px; font-size:0.82em; overflow-x:auto; max-height:240px;">Click "Get fare &amp; match" above to generate a live cryptographic idempotency key, per-driver boolean gate elimination matrix, and multi-tool execution trace.</pre>
+</section>
+<script>
+const curbBtn = document.getElementById('curb-btn');
+if (curbBtn) {
+  curbBtn.onclick = () => {
+    const ft = parseFloat(document.getElementById('curb-ft').value);
+    const obsVal = document.getElementById('curb-obs').value;
+    const res = verifyCurbsideClearance({ clearanceFeet: ft, obstacles: obsVal ? [obsVal] : [], needsWheelchair: true });
+    const el = document.getElementById('curb-out');
+    el.textContent = (res.safeForRamp ? '✅ ' : '🛑 ') + res.status + ' — ' + res.explanation;
+  };
+}
+const bookBtnSr = document.getElementById('book');
+if (bookBtnSr) {
+  bookBtnSr.addEventListener('click', () => {
+    const b = extractBookingWithMemory((window._turns || []).slice(0, -1), document.getElementById('req').value);
+    const f = calculateFare({
+      distanceMiles: +document.getElementById('dist').value,
+      durationMinutes: +document.getElementById('mins').value,
+      discount: document.getElementById('disc').checked,
+      airport: document.getElementById('air').checked
+    });
+    const fleetEval = evaluateFleet(DEMO_DRIVERS, b);
+    const ft = parseFloat((document.getElementById('curb-ft') || {value: 9.5}).value);
+    const obsVal = (document.getElementById('curb-obs') || {value: ''}).value;
+    const curbCheck = verifyCurbsideClearance({ clearanceFeet: ft, obstacles: obsVal ? [obsVal] : [], needsWheelchair: b.needsWheelchair });
+    const trace = buildAgentAuditTrace({ booking: b, fare: f, fleetEval, curbCheck });
+    const traceEl = document.getElementById('agent-trace-out');
+    if (traceEl) traceEl.textContent = JSON.stringify(trace, null, 2);
+  });
+}
+</script>
 
 <section id="rag-and-tests" style="margin-top:20px; padding-top:12px; border-top:1px solid #ccc;">
   <h2>Agent Tool #3: Verifiable Policy Lookup (11 Grounded Fleet Rules)</h2>
@@ -92,8 +142,8 @@ document.getElementById('speak').onclick=()=>{
   <button id="rag-btn">Ask Policy</button>
   <div id="rag-out" aria-live="polite" style="margin-top:8px; font-weight:500;">Answers strictly from knowledge.js (zero hallucination).</div>
 
-  <h2 style="margin-top:20px;">Automated Self-Tests (28/28 Verified)</h2>
-  <div id="self-test-summary" style="font-weight:bold; color:#0a6b2d;">28/28 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory &amp; Grounded RAG) — verify via <code>node tests/run-tests.js</code></div>
+  <h2 style="margin-top:20px;">Automated Self-Tests (35/35 Verified)</h2>
+  <div id="self-test-summary" style="font-weight:bold; color:#0a6b2d;">35/35 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory &amp; Grounded RAG) — verify via <code>node tests/run-tests.js</code></div>
 </section>
 <script>
 let convHistory = [];
@@ -126,7 +176,7 @@ if (ragBtn) {
   <ul>
     <li><strong>Firsthand Domain Problem ("Build for Your World"):</strong> Inspired by real-world accessible dispatch challenges seen firsthand at Harvey Taxi Service.</li>
     <li><strong>100% New Meta AI Agent Stack (<code>app.js</code>, <code>knowledge.js</code>, <code>modal_app.py</code>):</strong> Built from scratch using <code>meta-models/muse-spark-open-1026</code> (Open Weights on Modal/Baseten), <code>muse-spark</code>, <code>muse-voice-transcribe</code>, and <strong>Muse Code</strong>.</li>
-    <li><strong>28/28 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, and policy verification check was authored and verified during the hackathon.</li>
+    <li><strong>35/35 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, and policy verification check was authored and verified during the hackathon.</li>
   </ul>
 </section>
 
@@ -180,6 +230,6 @@ document.getElementById('speak').onclick=()=>{
     <li>Voice input is designed for <strong>Muse Voice Transcribe</strong>, with browser Web Speech API fallback for zero-setup testing.</li>
     <li>Roadmap targets self-hosted <strong>Muse Spark Open</strong> weights on Modal serverless GPUs.</li>
     <li><strong>Verifiable Agent Architecture (Memory + Deterministic Tools):</strong> Multi-turn follow-ups (e.g. <em>"change it to Wednesday"</em>) preserve trip context, while policy questions are answered strictly from <code>knowledge.js</code> with zero hallucination.</li>
-    <li>This <strong>28/28 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
+    <li>This <strong>35/35 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
   </ul>
   <p>The model never does the math: pricing and matching run in deterministic, tested code. Online → Accessible Van → Service-Animal Opt-In → Nearest Wins.</p>

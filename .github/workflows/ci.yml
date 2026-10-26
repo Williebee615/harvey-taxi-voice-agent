@@ -1,4 +1,4 @@
-name: Hackathon Verification (28/28 Checks)
+name: Hackathon Verification (35/35 Checks)
 on:
   push:
     branches: [ main ]
@@ -14,5 +14,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run 28/28 Verifiable Agent Tests
+      - name: Run 35/35 Verifiable Agent Tests
         run: node tests/run-tests.js
