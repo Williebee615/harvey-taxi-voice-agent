@@ -1,3 +1,5 @@
+> **⚡ Live Modal Serverless Endpoint (`meta-models/muse-spark-open-1026`):** **`https://williebee615--norel-ai-harvey-taxi-assistant-extract-acc-b09ac3.us-east.modal.run`**
+
 # Harvey Taxi — Verifiable Voice Booking Agent (powered by Norel AI)
 
 **Track:** Startup | **Problem Statement:** Build for Your World  

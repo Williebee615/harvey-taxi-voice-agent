@@ -66,6 +66,7 @@ const META_MODEL_CONFIG = {
   reasoningModel: 'muse-spark',
   transcriptionModel: 'muse-voice-transcribe',
   openWeightsModel: 'meta-models/muse-spark-open-1026',
+  modalEndpoint: 'https://williebee615--norel-ai-harvey-taxi-assistant-extract-acc-b09ac3.us-east.modal.run',
   codingAgent: 'muse-code',
   maxContextTurns: 6
 };
