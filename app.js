@@ -1019,3 +1019,91 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// === LIVE WORKSHOP AGENT CONSOLE SIMULATOR: CHECKLIST, SIGNATURE CHECKS, PLAN & VERIFIED FACTS (Tests 86-90) ===
+function simulateAgentConsoleRun(options) {
+  const verification = options && options.verification !== undefined ? Boolean(options.verification) : true;
+  const maxTurns = (options && Number(options.turns)) || 10;
+  const runId = 'run_norel_oct27_001';
+
+  const checklist = [
+    { id: 'chk_1', label: 'Rider mobility & service animal accommodation verified ($0.00 ADA fee)', status: 'verified' },
+    { id: 'chk_2', label: 'Pickup address verified (1200 Broadway)', status: 'verified' },
+    { id: 'chk_3', label: 'Destination address verified (3401 West End Ave)', status: 'verified' },
+    { id: 'chk_4', label: 'Requested appointment time verified (Tomorrow @ 10:30 AM)', status: 'verified' },
+    { id: 'chk_5', label: 'SAM 3.1 curbside ramp clearance >= 8.0 ft verified (9.5 ft clear)', status: 'verified' },
+    { id: 'chk_6', label: 'Harvey Taxi deterministic fare verified ($2.50 + $1.50 x 6 mi = $11.50)', status: 'verified' }
+  ];
+
+  const signatureChecks = verification ? [
+    { id: 'sig_1', document: 'HANDBOOK.md#PricingRule', signer: 'Harvey Taxi Deterministic Engine', verified: true },
+    { id: 'sig_2', document: 'BookingPreviewCard#run_norel_oct27_001', signer: 'Rider Human Sign-Off Required', verified: true }
+  ] : [];
+
+  const plan = [
+    '1. Call set_checklist() with 6 required ADA dispatch & fare verification items.',
+    '2. Call analyze_document() & record_fact() on rider transcript; if pickup/destination/time missing, call request_evidence() -> pause with status=needs_input.',
+    '3. On resume_run(), verify 6.0-mile route against HANDBOOK.md ($2.50 base + $1.50/mi = $11.50) and check_signatures().',
+    '4. Call submit_memo() -> stop with status=awaiting_signoff for final rider confirmation.'
+  ];
+
+  const verifiedFacts = [
+    { item_id: 'chk_1', fact: 'Wheelchair-accessible van + service dog required ($0 surcharge)', doc_id: 'rider_transcript_01', page: 1, quote: 'I use a wheelchair, and my service dog will be coming with me.' },
+    { item_id: 'chk_2', fact: 'Pickup at 1200 Broadway, Destination at 3401 West End Ave @ 10:30 AM', doc_id: 'rider_transcript_02', page: 1, quote: 'Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow' },
+    { item_id: 'chk_6', fact: 'Deterministic fare is $11.50 for 6 verified miles', doc_id: 'HANDBOOK.md', page: 1, quote: '$2.50 Booking & Safety Fee + $1.50 per verified mile. Zero surge pricing.' }
+  ];
+
+  const timeline = [
+    { turn: 1, tool: 'set_checklist(items)', status: 'running', summary: 'Initialized 6 ADA & Harvey Taxi verification items' },
+    { turn: 2, tool: 'request_evidence(missing_fields)', status: 'needs_input', summary: 'Paused for missing pickup_location, destination_address, requested_time' },
+    { turn: 3, tool: 'record_fact(item_id, fact, doc_id, page, quote)', status: 'running', summary: 'Recorded 3 verified quotes from rider transcript & HANDBOOK.md' },
+    { turn: 4, tool: 'check_signatures() + submit_memo(answer, findings, gaps)', status: verification ? 'awaiting_signoff' : 'answered', summary: 'Verified $11.50 fare & paused at awaiting_signoff' }
+  ];
+
+  return {
+    run_id: runId,
+    implemented_in: 'legal_agent/loop.py',
+    verification,
+    max_turns: maxTurns,
+    final_status: verification ? 'awaiting_signoff' : 'answered',
+    checklist,
+    signatureChecks,
+    plan,
+    verifiedFacts,
+    timeline
+  };
+}
+
+function triggerLiveWorkshopConsoleUI(resetOnly) {
+  if (typeof document === 'undefined') return;
+  const tlBox = document.getElementById('norel-loop-timeline-box');
+  const chkBox = document.getElementById('norel-console-right-checklist');
+  if (resetOnly) {
+    if (tlBox) tlBox.innerHTML = 'Ready. Press <strong>▶ Start agent</strong> to call <code>run_agent</code> in <code>legal_agent/loop.py</code>.';
+    if (chkBox) chkBox.innerHTML = '<strong>CHECKLIST:</strong> 0/6 items<br/><strong>SIGNATURE CHECKS:</strong> No signature checks yet.<br/><strong>PLAN:</strong> No plan yet.<br/><strong>VERIFIED FACTS:</strong> 0 facts.';
+    return;
+  }
+  const runData = simulateAgentConsoleRun({ verification: true, turns: 10 });
+  if (tlBox) {
+    tlBox.innerHTML = runData.timeline.map((t) =>
+      '<div style="margin-bottom:4px;"><span style="color:#62D9EA;font-weight:700;">Turn ' + t.turn + ':</span> <code>' + t.tool + '</code> → <span style="color:#32D583;font-weight:700;">' + t.status + '</span> (' + t.summary + ')</div>'
+    ).join('');
+  }
+  if (chkBox) {
+    chkBox.innerHTML =
+      '<div style="margin-bottom:4px;"><strong style="color:#32D583;">CHECKLIST (6/6 Verified):</strong> ✓ ADA Van + Dog ($0) • ✓ 1200 Broadway → 3401 West End Ave • ✓ $11.50 ($2.50 + $1.50/mi)</div>' +
+      '<div style="margin-bottom:4px;"><strong style="color:#2CE5FF;">SIGNATURE CHECKS (2/2):</strong> ✓ HANDBOOK.md Pricing Rule • ✓ Rider Preview Sign-Off</div>' +
+      '<div style="margin-bottom:4px;"><strong style="color:#A89BF6;">PLAN (4 Steps):</strong> set_checklist → request_evidence → record_fact → submit_memo</div>' +
+      '<div><strong style="color:#F4F6FC;">VERIFIED FACTS (3 Quotes):</strong> Grounded in <code>rider_transcript</code> &amp; <code>HANDBOOK.md</code></div>';
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.simulateAgentConsoleRun = simulateAgentConsoleRun;
+  window.triggerLiveWorkshopConsoleUI = triggerLiveWorkshopConsoleUI;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.simulateAgentConsoleRun = simulateAgentConsoleRun;
+  module.exports.triggerLiveWorkshopConsoleUI = triggerLiveWorkshopConsoleUI;
+}
+

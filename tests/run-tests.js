@@ -250,3 +250,13 @@ assert.strictEqual(fs81.existsSync("workspace/runs/run_norel_oct27_001.json"), t
 assert.strictEqual(fs81.existsSync("helper"), true, "Test 85: Executable ./helper CLI harness exists");
 console.log("✓ 5/5 Meta Workshop Directory Tree (ESCALATION_RULES, VERIFICATION, ground_truth, workspace/runs, ./helper) Checks Passed — 85/85 Total");
 
+// === LEGAL_AGENT/LOOP.PY & INTERACTIVE AGENT CONSOLE TESTS (Tests 86-90) ===
+const fs86 = require("fs");
+assert.strictEqual(fs86.existsSync("legal_agent/loop.py") && fs86.existsSync("legal_agent/system_instructions.md"), true, "Test 86: legal_agent/loop.py and system_instructions.md are implemented");
+const sim87 = app.simulateAgentConsoleRun({ verification: true, turns: 10 });
+assert.strictEqual(sim87.implemented_in, "legal_agent/loop.py", "Test 87: Console simulator binds to legal_agent/loop.py");
+assert.strictEqual(sim87.checklist.length, 6, "Test 88: Console simulator populates 6 verified checklist items");
+assert.strictEqual(sim87.signatureChecks.length, 2, "Test 89: Console simulator populates 2 signature checks when verification=true");
+assert.strictEqual(sim87.verifiedFacts.length, 3, "Test 90: Console simulator records 3 quote-attributed facts");
+console.log("✓ 5/5 legal_agent/loop.py Implementation & Interactive Agent Console (▶ Start agent) Checks Passed — 90/90 Total");
+

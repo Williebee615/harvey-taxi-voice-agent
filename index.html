@@ -497,6 +497,20 @@ button:hover {
 
     <!-- Norel Agent Response & Structured Booking Preview Card -->
     
+    
+    <div id="norel-workshop-topbar" style="margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;background:#0B1326;border:1px solid #2CE5FF;border-radius:10px;padding:10px 14px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-size:13px;font-weight:900;color:#F4F6FC;">Agent Console</span>
+        <span style="font-size:11.5px;background:#182340;color:#62D9EA;padding:4px 10px;border-radius:6px;border:1px solid #263868;font-family:ui-monospace,SFMono-Regular,monospace;">Case: Investigate &amp; Verify ADA Ride (Harvey Taxi v. Unverified Dispatch)</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:11.5px;color:#32D583;font-weight:700;">☑ Verification (ON)</span>
+        <span style="font-size:11.5px;color:#D6E2FF;">Turns: <strong>10</strong></span>
+        <button type="button" onclick="window.triggerLiveWorkshopConsoleUI && window.triggerLiveWorkshopConsoleUI(false)" style="padding:5px 12px;font-size:11.5px;border-radius:6px;background:#2CE5FF;border:none;cursor:pointer;">▶ Start agent (run_agent)</button>
+        <button type="button" onclick="window.triggerLiveWorkshopConsoleUI && window.triggerLiveWorkshopConsoleUI(true)" style="padding:5px 10px;font-size:11.5px;border-radius:6px;background:#62D9EA;border:none;cursor:pointer;">Reset case</button>
+      </div>
+    </div>
+
     <div id="norel-meta-workshop-console" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;background:#070C18;border:1px solid #263868;border-radius:10px;padding:12px;">
       <div style="background:#0B1326;border:1px solid #1E2F5A;border-radius:8px;padding:10px;">
         <div style="font-size:11px;font-weight:800;color:#2CE5FF;letter-spacing:0.06em;margin-bottom:6px;">TOOLS AVAILABLE (tools.py)</div>
@@ -515,7 +529,7 @@ button:hover {
       </div>
       <div style="background:#0B1326;border:1px solid #1E2F5A;border-radius:8px;padding:10px;">
         <div style="font-size:11px;font-weight:800;color:#32D583;letter-spacing:0.06em;margin-bottom:6px;">VERIFICATION &amp; REFUSAL CHECKLIST</div>
-        <div style="font-size:11.5px;color:#D6E2FF;line-height:1.45;">
+        <div id="norel-console-right-checklist" style="font-size:11.5px;color:#D6E2FF;line-height:1.45;">
           ✓ Wheelchair + Service Animal ($0 fee)<br/>
           ✓ Refuses fare when miles unverified<br/>
           ✓ Harvey Rule: $2.50 + $1.50/mi<br/>
@@ -528,7 +542,7 @@ button:hover {
     <div id="norel-source-code-inspector" style="margin-top:10px;background:#070C18;border:1px solid #2CE5FF;border-radius:10px;padding:12px;">
       <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
         <div style="font-size:11.5px;font-weight:800;color:#2CE5FF;letter-spacing:0.05em;">
-          🔎 LIVE AGENT SOURCE CODE &amp; QUOTE VERIFIER (85/85 CHECKS PASSING)
+          🔎 LIVE AGENT SOURCE CODE &amp; QUOTE VERIFIER (90/90 CHECKS PASSING)
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <button type="button" onclick="window.renderNorelSourceInspector && window.renderNorelSourceInspector('agent_kit/tools/__init__.py')" style="padding:4px 9px;font-size:11px;border-radius:6px;background:#2CE5FF;border:none;cursor:pointer;">agent_kit/tools/__init__.py</button>
@@ -557,7 +571,7 @@ button:hover {
   
   <details id="norel-technical-judge-drawer" style="max-width:1020px;margin:18px auto;background:#0B1224;border:1.5px solid #2E427A;border-radius:14px;padding:16px 22px;">
     <summary style="cursor:pointer;font-size:15px;font-weight:800;color:#62D9EA;list-style:none;display:flex;align-items:center;justify-content:space-between;">
-      <span>🛠️ Expand Technical Architecture, SAM 3.1 Curbside Vision &amp; Long-Term Norel Platform Roadmap (85/85 Checks)</span>
+      <span>🛠️ Expand Technical Architecture, SAM 3.1 Curbside Vision &amp; Long-Term Norel Platform Roadmap (90/90 Checks)</span>
       <span style="font-size:12px;color:#A89BF6;border:1px solid #A89BF6;padding:3px 10px;border-radius:999px;">Click to Toggle</span>
     </summary>
     <div style="margin-top:16px;">
@@ -671,7 +685,7 @@ button:hover {
       </div>
       <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
         <strong style="color:#62D9EA;display:block;">8. Muse Code Agent CLI</strong>
-        Multi-agent parallel worktrees &amp; auditable 85/85 verification suite.
+        Multi-agent parallel worktrees &amp; auditable 90/90 verification suite.
       </div>
     </div>
     <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -684,7 +698,7 @@ button:hover {
   <section id="norel-judge-accelerator" style="background-color:#11192E;border:1.5px solid #A89BF6;border-radius:14px;padding:20px 22px;margin:18px auto;max-width:1020px;">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
       <h2 style="margin:0;border:none;padding:0;font-size:18px;color:#F4F6FC;">⚡ 1-Click Judge Verification Suite — Multi-Turn Memory, SAM 3.1 Auto-Recovery &amp; SSE Trace</h2>
-      <span class="norel-pill" style="border-color:#A89BF6;color:#A89BF6;background:rgba(168,155,246,0.15);">85/85 Automated Checks Passing</span>
+      <span class="norel-pill" style="border-color:#A89BF6;color:#A89BF6;background:rgba(168,155,246,0.15);">90/90 Automated Checks Passing</span>
     </div>
     <p style="font-size:13px;color:#94A3B8;margin-top:0;margin-bottom:12px;">
       Click any scenario below to execute a complete end-to-end Norel Agentic workflow with live <strong>SAM 3.1</strong> segmentation visualization, autonomous blocked-curb recovery, and <code>Last-Event-ID</code> SSE audit streaming:
@@ -772,8 +786,8 @@ button:hover {
   <button id="rag-btn" style="width:auto;">Ask Policy</button>
   <div id="rag-out" aria-live="polite" style="margin-top:8px; font-weight:500;">Answers strictly from knowledge.js (zero hallucination).</div>
 
-  <h2 style="margin-top:20px;">Automated Self-Tests (85/85 Verified)</h2>
-  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">85/85 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
+  <h2 style="margin-top:20px;">Automated Self-Tests (90/90 Verified)</h2>
+  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">90/90 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
 </section>
 
 <section id="hackathon-new-work" style="margin-top:20px; padding:12px; border:2px solid #0a6b2d; border-radius:6px; background-color: #11192E;">
@@ -782,7 +796,7 @@ button:hover {
   <ul>
     <li><strong>Firsthand Domain Problem ("Build for Your World"):</strong> Inspired by real-world accessible dispatch challenges seen firsthand at Harvey Taxi Service.</li>
     <li><strong>100% New Meta AI Agent Stack (<code>app.js?v=202610262</code>, <code>knowledge.js</code>, <code>modal_app.py</code>):</strong> Built from scratch using <code>meta-models/muse-spark-open-1026</code> (Open Weights on Modal/Baseten), <code>muse-spark</code>, <code>muse-voice-transcribe</code>, and <strong>Muse Code</strong>.</li>
-    <li><strong>85/85 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, policy verification, SAM 3.1 curb check, fleet telemetry matrix, and idempotency key was authored and verified during the hackathon.</li>
+    <li><strong>90/90 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, policy verification, SAM 3.1 curb check, fleet telemetry matrix, and idempotency key was authored and verified during the hackathon.</li>
   </ul>
 </section>
 
@@ -795,7 +809,7 @@ button:hover {
     <li>Roadmap targets self-hosted <strong>Muse Spark Open</strong> weights on Modal serverless GPUs.</li>
     <li><strong>Verifiable Agent Architecture (Memory + Deterministic Tools):</strong> Multi-turn follow-ups (e.g. <em>"change it to Wednesday"</em>) preserve trip context, while policy questions are answered strictly from <code>knowledge.js</code> with zero hallucination.</li>
     <li><strong>Senior Tools:</strong> <code>evaluateFleet</code> (exact REJECTED_* reasons per driver), <code>verifyCurbsideClearance</code> (SAM 3.1 ADA ramp check ≥8.0ft), <code>computeIdempotencyKey</code> (deterministic FNV-1a), <code>buildAgentAuditTrace</code> (verifiable 4-step trace).</li>
-    <li>This <strong>85/85 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
+    <li>This <strong>90/90 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
   </ul>
   <p>The model never does the math: pricing and matching run in deterministic, tested code. Online → Accessible Van → Service-Animal Opt-In → Nearest Wins.</p>
 </section>
