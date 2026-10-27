@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/norel-ai-logo.svg" alt="Norel AI Logo" width="120" /></p>
+
 # Norel AI (`v1.0.0`) — Verifiable Multi-Agent OS & Accessible Mobility Dispatch (Meta Global AI Hackathon)
 
 > **Norel AI is the dominant multi-agent platform.** Built from a 15-PR enterprise architecture foundation (9 specialized Norel Agents, durable `Last-Event-ID` SSE streaming, transactional micro-USD quota reservations, one-use action confirmations, and 10 RLS security migrations), **Norel AI** powers its flagship physical-world domain module: **Norel Mobility (Harvey Taxi Service Accessible Voice & SAM 3.1 Curbside ADA Ramp Verification)**.
