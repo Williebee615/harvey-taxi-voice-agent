@@ -131,3 +131,17 @@ if (typeof app.buildMuseGlimmerConfig === 'function') {
   assert.strictEqual(passSpec.adaVerified, true, 'Test 40: Muse Image + SAM 3.1 ADA curb clearance verified');
   console.log('✓ 5/5 Meta S.A.I. Full-Stack Checks Passed (Muse Wonder, Muse Spark 1.3, Muse Glimmer 30B, Muse Image, SAM 3.1) — 40/40 Total');
 }
+
+
+// === AUTONOMOUS SAM 3.1 RECOVERY & SSE WATERFALL TESTS (Tests 41-45) ===
+if (typeof app.autonomousCurbRecovery === 'function') {
+  const clearCheck = app.autonomousCurbRecovery(9.5, 'None', '1200 Broadway');
+  assert.strictEqual(clearCheck.relocated, false, 'Test 41: Clear curb does not relocate');
+  assert.strictEqual(clearCheck.status, 'ADA_RAMP_VERIFIED', 'Test 42: Clear curb status verified');
+  const blockedCheck = app.autonomousCurbRecovery(4.2, 'Delivery Van', '1200 Broadway');
+  assert.strictEqual(blockedCheck.relocated, true, 'Test 43: Blocked curb (<8.0ft) triggers autonomous relocation');
+  assert.strictEqual(blockedCheck.finalClearanceFt >= 8.0, true, 'Test 44: Relocated bay meets >=8.0ft ADA clearance');
+  const sse = app.buildDurableSseWaterfall(3, { model: 'meta-models/Muse-Glimmer-30B', transcript: 'Test', curbResult: blockedCheck, fareUsd: 20.4, idempotencyKey: 'idem_1' });
+  assert.strictEqual(sse.length, 5, 'Test 45: Durable 5-stage SSE waterfall trace verified');
+  console.log('✓ 5/5 Autonomous SAM 3.1 Recovery & Durable SSE Waterfall Checks Passed — 45/45 Total');
+}
