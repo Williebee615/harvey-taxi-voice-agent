@@ -896,3 +896,80 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.runToolCall = runToolCall;
 }
 
+// === AGENT SOURCE CODE INTROSPECTION & VERIFIED QUOTE ATTRIBUTION (Tests 76-80) ===
+const NOREL_VERIFIED_SOURCE_FILES = {
+  'agent_kit/tools/__init__.py': {
+    language: 'python',
+    module: 'agent_kit.tools',
+    exports: ['BASE_TOOLS', 'VERIFIER_TOOLS', 'Context', 'names', 'definitions', 'run'],
+    verifiedQuote: 'A result carries "status" only when the run must stop: "answered", "needs_input", "awaiting_signoff", or "paused".',
+    snippet: 'def names(verification: bool) -> list:\n    return BASE_TOOLS + VERIFIER_TOOLS if verification else list(BASE_TOOLS)'
+  },
+  'agent_kit/loop.py': {
+    language: 'python',
+    module: 'agent_kit.loop',
+    exports: ['run_agent', 'resume_run', 'STOP_STATUSES'],
+    verifiedQuote: 'resume_run loads progress, returns with zero model calls when there is nothing new, else appends the resume message and continues the same run_id.',
+    snippet: 'STOP_STATUSES = {"answered", "needs_input", "awaiting_signoff", "paused"}'
+  },
+  'app.js#calculateHarveyTaxiFare': {
+    language: 'javascript',
+    module: 'norel.pricing.harvey_taxi',
+    exports: ['HARVEY_TAXI_PRICING', 'calculateHarveyTaxiFare', 'enforceBookingInvariants'],
+    verifiedQuote: 'Harvey Taxi Deterministic Rule: $2.50 Booking & Safety Fee + $1.50 per verified mile ($0.00 ADA / service animal surcharge).',
+    snippet: 'const estimatedFareUsd = Number((2.50 + (1.50 * miles)).toFixed(2));'
+  },
+  'modal_app.py#extract_accessible_booking': {
+    language: 'python',
+    module: 'norel.modal.serverless_endpoint',
+    exports: ['extract_accessible_booking', 'run_gpu_inference'],
+    verifiedQuote: 'Live Modal serverless endpoint executing meta-models/muse-spark-open-1026 & muse-spark-1.5 with encrypted meta-api-secret.',
+    snippet: '@app.function(secrets=[modal.Secret.from_name("meta-api-secret")])'
+  }
+};
+
+function listAgentSourceFiles() {
+  return Object.keys(NOREL_VERIFIED_SOURCE_FILES);
+}
+
+function sourceAgentCode(fileKey, quoteToVerify) {
+  const entry = NOREL_VERIFIED_SOURCE_FILES[fileKey];
+  if (!entry) {
+    return {
+      error: "unknown source file: '" + String(fileKey) + "'",
+      availableFiles: listAgentSourceFiles()
+    };
+  }
+  if (quoteToVerify !== undefined && quoteToVerify !== null) {
+    const haystack = (entry.verifiedQuote + ' ' + entry.snippet).toLowerCase();
+    const needle = String(quoteToVerify).trim().toLowerCase();
+    if (!needle || !haystack.includes(needle)) {
+      return {
+        error: 'unverified quote: exact substring not found in source file ' + fileKey,
+        status: 'refused_unverified_quote'
+      };
+    }
+  }
+  return {
+    file: fileKey,
+    language: entry.language,
+    module: entry.module,
+    exports: entry.exports,
+    verifiedQuote: entry.verifiedQuote,
+    snippet: entry.snippet,
+    verified: true
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.NOREL_VERIFIED_SOURCE_FILES = NOREL_VERIFIED_SOURCE_FILES;
+  window.listAgentSourceFiles = listAgentSourceFiles;
+  window.sourceAgentCode = sourceAgentCode;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.NOREL_VERIFIED_SOURCE_FILES = NOREL_VERIFIED_SOURCE_FILES;
+  module.exports.listAgentSourceFiles = listAgentSourceFiles;
+  module.exports.sourceAgentCode = sourceAgentCode;
+}
+

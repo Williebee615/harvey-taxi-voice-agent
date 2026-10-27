@@ -227,3 +227,15 @@ assert.strictEqual(app.runToolCall({ name: "request_evidence", arguments: "{}" }
 assert.strictEqual(app.runToolCall({ name: "submit_memo", arguments: "{}" }, { verification: true }).status, "awaiting_signoff", "Test 75: submit_memo with verification=true stops run with status=awaiting_signoff");
 console.log("✓ 5/5 Meta Workshop tools/__init__.py (6 BASE_TOOLS + 3 VERIFIER_TOOLS & Error Recovery) Checks Passed — 75/75 Total");
 
+// === AGENT SOURCE CODE INTROSPECTION & QUOTE VERIFICATION TESTS (Tests 76-80) ===
+assert.strictEqual(app.listAgentSourceFiles().length, 4, "Test 76: Agent lists 4 verified source code modules");
+const srcTools = app.sourceAgentCode("agent_kit/tools/__init__.py", "BASE_TOOLS + VERIFIER_TOOLS");
+assert.strictEqual(srcTools.verified, true, "Test 77: Agent sources agent_kit/tools/__init__.py and verifies exact code substring");
+const srcLoop = app.sourceAgentCode("agent_kit/loop.py", "zero model calls");
+assert.strictEqual(srcLoop.verified, true, "Test 78: Agent sources agent_kit/loop.py and verifies resume_run quote");
+const badQuote = app.sourceAgentCode("agent_kit/tools/__init__.py", "invented_hallucinated_function()");
+assert.strictEqual(badQuote.status, "refused_unverified_quote", "Test 79: Agent refuses unverified code quote that does not exist in source");
+const unknownFile = app.sourceAgentCode("non_existent_file.py");
+assert.strictEqual(Boolean(unknownFile.error), true, "Test 80: Agent safely reports error on unknown source file");
+console.log("✓ 5/5 Agent Source Code Introspection & Exact Quote Verification Checks Passed — 80/80 Total");
+
