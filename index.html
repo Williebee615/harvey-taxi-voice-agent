@@ -436,4 +436,29 @@ if (testMetaBtn) {
   };
 }
 </script>
+
+<script id="norel-interactive-router">
+(function() {
+  const cards = document.querySelectorAll('.norel-agent-card');
+  const statusBanner = document.createElement('div');
+  statusBanner.id = 'norel-live-route-status';
+  statusBanner.style.cssText = 'margin-top:12px;padding:12px;border-radius:10px;background:#070A14;border:1px solid #62D9EA;color:#62D9EA;font-family:monospace;font-size:12px;';
+  statusBanner.textContent = 'Active Norel Route -> slug: "norel-mobility" | model: "meta-models/muse-spark-open-1026" | tools: ["voice.transcribe","sam3.curb_verify","fare.deterministic","action.confirm"] | quotaStatus: "RESERVED_OK"';
+  const hero = document.getElementById('norel-command-center');
+  if (hero && !document.getElementById('norel-live-route-status')) {
+    hero.appendChild(statusBanner);
+  }
+  cards.forEach((card, idx) => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      cards.forEach(c => c.classList.remove('primary'));
+      card.classList.add('primary');
+      const title = (card.querySelector('strong') || {}).textContent || 'Norel Agent';
+      const agentObj = (typeof NOREL_PLATFORM_AGENTS !== 'undefined' && NOREL_PLATFORM_AGENTS[idx]) ? NOREL_PLATFORM_AGENTS[idx] : { slug: 'norel', model: 'muse-wonder-1.0', tools: ['memory.read'] };
+      statusBanner.textContent = 'Active Norel Route -> Agent: ' + title + ' | slug: "' + agentObj.slug + '" | model: "' + agentObj.model + '" | allowedTools: ' + JSON.stringify(agentObj.tools) + ' | SSE: Last-Event-ID Ready';
+    });
+  });
+})();
+</script>
+
 </body></html>
