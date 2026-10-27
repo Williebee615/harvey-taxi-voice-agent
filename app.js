@@ -701,6 +701,17 @@ const NOREL_AGENT_TOOLS_MANIFEST = [
   { name: 'submit_booking_preview', type: 'terminal', description: 'Transition from awaiting_signoff to answered/confirmed after explicit human rider sign-off.' }
 ];
 
+
+function buildNorelClarifyingPrompt(intake) {
+  if (intake && typeof intake.clarifying_question === 'string' && intake.clarifying_question) {
+    return intake.clarifying_question;
+  }
+  const missing = (intake && Array.isArray(intake.missing_information)) ? intake.missing_information : ['pickup_location', 'destination_address', 'requested_time'];
+  return 'Your request requires a vehicle that meets your wheelchair-accessibility needs and a driver who accommodates your service animal. I have not confirmed a matching vehicle yet. I can prepare your request once you provide your ' + missing.join(', ') + '.';
+}
+if (typeof window !== 'undefined') window.buildNorelClarifyingPrompt = buildNorelClarifyingPrompt;
+if (typeof module !== 'undefined' && module.exports) module.exports.buildNorelClarifyingPrompt = buildNorelClarifyingPrompt;
+
 function executeNorelAgentLoopTurn(params) {
   const runId = (params && params.runId) || 'run_norel_oct27_001';
   const utterance = (params && params.utterance) || '';
