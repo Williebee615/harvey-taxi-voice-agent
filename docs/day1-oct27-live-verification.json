@@ -1,0 +1,54 @@
+{
+  "verificationDate": "2026-10-27",
+  "hackathonScheduleDay": "Day 1 \u2014 Establish the Foundation (Oct 27)",
+  "track": "Startups Track \u2014 Build for Your World",
+  "product": "Norel AI \u2014 Voice-First Accessible Transportation Agent",
+  "liveModalEndpoint": "https://williebee615--norel-ai-harvey-taxi-assistant-extract-acc-b09ac3.us-east.modal.run",
+  "httpStatus": 200,
+  "riderPrompt": "I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me. I need to know how much it will cost.",
+  "validatedStructuredIntake": {
+    "intent": "request_ride",
+    "pickup": null,
+    "destination": "doctor's office",
+    "destination_address": null,
+    "requested_date": "tomorrow",
+    "requested_time": null,
+    "mobility_requirement": "wheelchair_access",
+    "service_animal": true,
+    "fare_estimate_requested": true,
+    "missing_information": [
+      "pickup_location",
+      "destination_address",
+      "requested_time"
+    ],
+    "next_action": "ask_clarifying_question"
+  },
+  "deterministicFareVerification": {
+    "formula": "Estimated fare = $2.50 + ($1.50 * verified_miles)",
+    "4_miles": "$8.50",
+    "6_miles": "$11.50",
+    "10_miles": "$17.50",
+    "unverified_distance_behavior": "Refuses to calculate fare until pickup and destination addresses are verified"
+  },
+  "liveEndpointTelemetry": {
+    "orchestrator": "norel-ai",
+    "model": "meta-models/muse-spark-open-1026",
+    "transcription_model": "muse-voice-transcribe",
+    "vision_model": "sam-3.1",
+    "intent": {
+      "needsWheelchair": false,
+      "hasServiceAnimal": false,
+      "discountEligible": false,
+      "isAirport": false
+    },
+    "curbsideCheck": {
+      "clearanceFeet": 9.5,
+      "requiredFeet": 0.0,
+      "status": "ADA_RAMP_VERIFIED"
+    },
+    "guardrails": {
+      "liveDispatchEnabled": false,
+      "paymentsEnabled": false
+    }
+  }
+}

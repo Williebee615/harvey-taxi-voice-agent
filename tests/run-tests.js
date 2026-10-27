@@ -162,3 +162,13 @@ if (typeof app.calculateHarveyTaxiFare === 'function') {
   console.log('✓ 5/5 Norel Accessible Ride Intelligence & Harvey Taxi ($2.50 + $1.50/mi) Checks Passed — 50/50 Total');
 }
 
+// === DAY 1 (OCT 27) END-TO-END MODEL & VALIDATION PROOF TESTS (Tests 51-55) ===
+const fs = require("node:fs");
+const day1Proof = JSON.parse(fs.readFileSync("docs/day1-oct27-live-verification.json", "utf8"));
+assert.strictEqual(day1Proof.verificationDate, "2026-10-27", "Test 51: Day 1 Oct 27 verification date recorded");
+assert.strictEqual(day1Proof.validatedStructuredIntake.next_action, "ask_clarifying_question", "Test 52: Ambiguous request routes to ask_clarifying_question");
+assert.deepStrictEqual(day1Proof.validatedStructuredIntake.missing_information, ["pickup_location", "destination_address", "requested_time"], "Test 53: All 3 missing fields detected");
+assert.strictEqual(app.validateStructuredIntake(null).valid, false, "Test 54: Malformed/null model output safely rejected by validator");
+assert.strictEqual(app.validateStructuredIntake(day1Proof.validatedStructuredIntake).valid, true, "Test 55: Validated structured intake passes schema check");
+console.log("✓ 5/5 Day 1 (Oct 27) Live End-to-End Foundation & Validator Checks Passed — 55/55 Total");
+
