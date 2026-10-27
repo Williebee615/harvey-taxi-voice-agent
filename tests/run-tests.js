@@ -299,3 +299,15 @@ assert.strictEqual(r0.model_calls, 0, 'Test 109');
 const r1 = JSON.parse(cp106.execFileSync('python3', ['-c', 'import pathlib,json;from legal_agent.loop import resume_run;print(json.dumps(resume_run(pathlib.Path("."),"run_97dda515","1200 Broadway to 3401 West End Ave")))'], { encoding: 'utf8' }).trim());
 assert.strictEqual(r1.status, 'awaiting_signoff', 'Test 110');
 console.log('✓ 5/5 Real Python Turn Loop (progress.py, case_record.py, ./helper run --turns 3, resume_run) Checks Passed — 110/110 Total');
+
+const cp111 = require('child_process'), fs111 = require('fs');
+assert.strictEqual(fs111.existsSync('verification/checks.py'), true, 'Test 111');
+const vChk = JSON.parse(cp111.execFileSync('python3', ['-c', 'import json;from verification import verify_checklist;print(json.dumps(verify_checklist([{"requires_signature":True},{"points_other_way":True},{},{}])))'], {encoding:'utf8'}).trim());
+assert.strictEqual(vChk.ok, true, 'Test 112');
+const vQt = JSON.parse(cp111.execFileSync('python3', ['-c', 'import json;from verification import verify_fact_quote;print(json.dumps(verify_fact_quote("Wheelchair van and service dog ($0 fee)","service dog ($0 fee)")))'], {encoding:'utf8'}).trim());
+assert.strictEqual(vQt.ok, true, 'Test 113');
+const vBad = JSON.parse(cp111.execFileSync('python3', ['-c', 'import json;from verification import verify_fact_quote;print(json.dumps(verify_fact_quote("Wheelchair van","hallucinated quote")))'], {encoding:'utf8'}).trim());
+assert.strictEqual(vBad.ok, false, 'Test 114');
+const vMemo = JSON.parse(cp111.execFileSync('python3', ['-c', 'import json;from verification import verify_memo_submission;print(json.dumps(verify_memo_submission(True,True,11.50,6)))'], {encoding:'utf8'}).trim());
+assert.strictEqual(vMemo.ok && vMemo.status === 'awaiting_signoff', true, 'Test 115');
+console.log('✓ 5/5 Session 2 Fixed-Point Verification (verification/checks.py) Checks Passed — 115/115 Total');

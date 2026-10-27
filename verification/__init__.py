@@ -1,1 +1,1 @@
-"""Fixed-point verification checks for Norel AI (VERIFICATION=on)."""
+from .checks import verify_checklist, verify_fact_quote, verify_memo_submission
