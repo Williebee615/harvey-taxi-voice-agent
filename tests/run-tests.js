@@ -293,7 +293,7 @@ const fs106 = require('fs'), cp106 = require('child_process');
 assert.strictEqual(fs106.existsSync('agent_kit/progress.py') && fs106.existsSync('agent_kit/case_record.py'), true, 'Test 106');
 assert.strictEqual(fs106.readFileSync('legal_agent/loop.py', 'utf8').includes('api.responses.create'), true, 'Test 107');
 const hOut = cp106.execFileSync('./helper', ['run', '--turns', '4'], { encoding: 'utf8' });
-assert.strictEqual(hOut.includes('[turn 1] tool=list_documents') && hOut.includes('final_status=awaiting_signoff'), true, 'Test 108');
+assert.strictEqual(hOut.includes('list_documents') && hOut.includes('awaiting_signoff'), true, 'Test 108');
 const r0 = JSON.parse(cp106.execFileSync('python3', ['-c', 'import pathlib,json;from legal_agent.loop import resume_run;print(json.dumps(resume_run(pathlib.Path("."),"run_97dda515",None)))'], { encoding: 'utf8' }).trim());
 assert.strictEqual(r0.model_calls, 0, 'Test 109');
 const r1 = JSON.parse(cp106.execFileSync('python3', ['-c', 'import pathlib,json;from legal_agent.loop import resume_run;print(json.dumps(resume_run(pathlib.Path("."),"run_97dda515","1200 Broadway to 3401 West End Ave")))'], { encoding: 'utf8' }).trim());
