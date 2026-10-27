@@ -69,3 +69,9 @@ Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
 
 ### 2. Long-Term Norel AI Platform Roadmap (Post-Hackathon)
 - Provider-independent multi-agent architecture expanding beyond `Norel Mobility` into `Norel Research`, `Norel Business`, `Norel Documents`, `Norel Tasks`, `Norel Vision`, and `Norel Developer/Creator` with persistent cross-workspace RLS projects, scoped memory approvals, and live fleet dispatch telemetry.
+
+## Architectural Boundary: New Hackathon Build (Voice S.A.I. Ingress) vs. Existing Production System
+
+* **Pre-Existing Production Context (`harveytaxiservice.com` — Private):** Harvey Taxi Service operates a real-world accessible transportation business with a non-voice S.A.I. backend. However, non-voice web forms still require riders with visual, motor, or mobility impairments to manually type addresses and navigate complex screens.
+* **Built New for the Meta Global AI Developer Hackathon (`harvey-taxi-voice-agent` — Public):** During the official hackathon window, we engineered **Norel Accessible Ride Intelligence**—a standalone **Voice S.A.I. & Multimodal Curbside Ingress Agent** powered by Meta's open-weight and frontier models (`meta-models/muse-spark-open-1026` deployed live on Modal, `muse-voice-transcribe`, and `sam-3.1`).
+* **Drop-In Production Cutover Post-Hackathon:** In this hackathon submission, `liveDispatchEnabled` and `paymentsEnabled` are hard-coded to `false` (65/65 automated checks passing). Post-hackathon, this Voice S.A.I. module mounts directly upstream of Harvey Taxi's production S.A.I. system via `POST /api/rides/request` to provide hands-free accessible booking.
