@@ -495,12 +495,8 @@ button:hover {
       <div style="background:#0B1326;border:1px solid #1E2F5A;border-radius:8px;padding:10px;">
         <div style="font-size:11px;font-weight:800;color:#2CE5FF;letter-spacing:0.06em;margin-bottom:6px;">TOOLS AVAILABLE (tools.py)</div>
         <div style="font-size:11.5px;color:#D6E2FF;line-height:1.45;font-family:ui-monospace,SFMono-Regular,monospace;">
-          • get_booking_checklist<br/>
-          • record_rider_fact<br/>
-          • request_rider_clarification<br/>
-          • verify_curb_clearance_sam3<br/>
-          • calculate_deterministic_fare<br/>
-          • submit_booking_preview
+          <span style="color:#2CE5FF;font-weight:700;">BASE_TOOLS (6):</span> set_checklist, update_plan, list_documents, analyze_document, record_fact, submit_memo<br/>
+          <span style="color:#A89BF6;font-weight:700;">VERIFIER_TOOLS (3, VERIFICATION=on):</span> flag_privileged, request_evidence, check_signatures
         </div>
       </div>
       <div style="background:#0B1326;border:1px solid #1E2F5A;border-radius:8px;padding:10px;">
@@ -539,7 +535,7 @@ button:hover {
   
   <details id="norel-technical-judge-drawer" style="max-width:1020px;margin:18px auto;background:#0B1224;border:1.5px solid #2E427A;border-radius:14px;padding:16px 22px;">
     <summary style="cursor:pointer;font-size:15px;font-weight:800;color:#62D9EA;list-style:none;display:flex;align-items:center;justify-content:space-between;">
-      <span>🛠️ Expand Technical Architecture, SAM 3.1 Curbside Vision &amp; Long-Term Norel Platform Roadmap (70/70 Checks)</span>
+      <span>🛠️ Expand Technical Architecture, SAM 3.1 Curbside Vision &amp; Long-Term Norel Platform Roadmap (75/75 Checks)</span>
       <span style="font-size:12px;color:#A89BF6;border:1px solid #A89BF6;padding:3px 10px;border-radius:999px;">Click to Toggle</span>
     </summary>
     <div style="margin-top:16px;">
@@ -653,7 +649,7 @@ button:hover {
       </div>
       <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
         <strong style="color:#62D9EA;display:block;">8. Muse Code Agent CLI</strong>
-        Multi-agent parallel worktrees &amp; auditable 70/70 verification suite.
+        Multi-agent parallel worktrees &amp; auditable 75/75 verification suite.
       </div>
     </div>
     <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -666,7 +662,7 @@ button:hover {
   <section id="norel-judge-accelerator" style="background-color:#11192E;border:1.5px solid #A89BF6;border-radius:14px;padding:20px 22px;margin:18px auto;max-width:1020px;">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
       <h2 style="margin:0;border:none;padding:0;font-size:18px;color:#F4F6FC;">⚡ 1-Click Judge Verification Suite — Multi-Turn Memory, SAM 3.1 Auto-Recovery &amp; SSE Trace</h2>
-      <span class="norel-pill" style="border-color:#A89BF6;color:#A89BF6;background:rgba(168,155,246,0.15);">70/70 Automated Checks Passing</span>
+      <span class="norel-pill" style="border-color:#A89BF6;color:#A89BF6;background:rgba(168,155,246,0.15);">75/75 Automated Checks Passing</span>
     </div>
     <p style="font-size:13px;color:#94A3B8;margin-top:0;margin-bottom:12px;">
       Click any scenario below to execute a complete end-to-end Norel Agentic workflow with live <strong>SAM 3.1</strong> segmentation visualization, autonomous blocked-curb recovery, and <code>Last-Event-ID</code> SSE audit streaming:
@@ -754,8 +750,8 @@ button:hover {
   <button id="rag-btn" style="width:auto;">Ask Policy</button>
   <div id="rag-out" aria-live="polite" style="margin-top:8px; font-weight:500;">Answers strictly from knowledge.js (zero hallucination).</div>
 
-  <h2 style="margin-top:20px;">Automated Self-Tests (70/70 Verified)</h2>
-  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">70/70 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
+  <h2 style="margin-top:20px;">Automated Self-Tests (75/75 Verified)</h2>
+  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">75/75 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
 </section>
 
 <section id="hackathon-new-work" style="margin-top:20px; padding:12px; border:2px solid #0a6b2d; border-radius:6px; background-color: #11192E;">
@@ -764,7 +760,7 @@ button:hover {
   <ul>
     <li><strong>Firsthand Domain Problem ("Build for Your World"):</strong> Inspired by real-world accessible dispatch challenges seen firsthand at Harvey Taxi Service.</li>
     <li><strong>100% New Meta AI Agent Stack (<code>app.js?v=202610262</code>, <code>knowledge.js</code>, <code>modal_app.py</code>):</strong> Built from scratch using <code>meta-models/muse-spark-open-1026</code> (Open Weights on Modal/Baseten), <code>muse-spark</code>, <code>muse-voice-transcribe</code>, and <strong>Muse Code</strong>.</li>
-    <li><strong>70/70 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, policy verification, SAM 3.1 curb check, fleet telemetry matrix, and idempotency key was authored and verified during the hackathon.</li>
+    <li><strong>75/75 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, policy verification, SAM 3.1 curb check, fleet telemetry matrix, and idempotency key was authored and verified during the hackathon.</li>
   </ul>
 </section>
 
@@ -777,7 +773,7 @@ button:hover {
     <li>Roadmap targets self-hosted <strong>Muse Spark Open</strong> weights on Modal serverless GPUs.</li>
     <li><strong>Verifiable Agent Architecture (Memory + Deterministic Tools):</strong> Multi-turn follow-ups (e.g. <em>"change it to Wednesday"</em>) preserve trip context, while policy questions are answered strictly from <code>knowledge.js</code> with zero hallucination.</li>
     <li><strong>Senior Tools:</strong> <code>evaluateFleet</code> (exact REJECTED_* reasons per driver), <code>verifyCurbsideClearance</code> (SAM 3.1 ADA ramp check ≥8.0ft), <code>computeIdempotencyKey</code> (deterministic FNV-1a), <code>buildAgentAuditTrace</code> (verifiable 4-step trace).</li>
-    <li>This <strong>70/70 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
+    <li>This <strong>75/75 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
   </ul>
   <p>The model never does the math: pricing and matching run in deterministic, tested code. Online → Accessible Van → Service-Animal Opt-In → Nearest Wins.</p>
 </section>

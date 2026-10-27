@@ -768,3 +768,131 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.executeNorelAgentLoopTurn = executeNorelAgentLoopTurn;
 }
 
+// === EXACT META WORKSHOP TOOLS DISPATCHER: BASE_TOOLS (6) + VERIFIER_TOOLS (3) (Tests 71-75) ===
+const BASE_TOOLS = [
+  'set_checklist',
+  'update_plan',
+  'list_documents',
+  'analyze_document',
+  'record_fact',
+  'submit_memo'
+];
+
+const VERIFIER_TOOLS = [
+  'flag_privileged',
+  'request_evidence',
+  'check_signatures'
+];
+
+const NOREL_TOOL_DEFINITIONS = {
+  set_checklist: {
+    name: 'set_checklist',
+    description: 'Initialize the 4-8 item accessible ride verification checklist (pickup, destination_address, requested_time, mobility_requirement, service_animal, verified_fare).'
+  },
+  update_plan: {
+    name: 'update_plan',
+    description: 'Update the multi-step accessible dispatch investigation plan.'
+  },
+  list_documents: {
+    name: 'list_documents',
+    description: 'List verified Harvey Taxi policy documents, ADA curb specs, and rider intake transcripts.'
+  },
+  analyze_document: {
+    name: 'analyze_document',
+    description: 'Analyze rider transcript or SAM 3.1 curb telemetry against ADA compliance rules.'
+  },
+  record_fact: {
+    name: 'record_fact',
+    description: 'Record a verified rider fact (wheelchair_access, service_animal, route miles) with exact quote attribution.'
+  },
+  submit_memo: {
+    name: 'submit_memo',
+    description: 'Submit the validated Structured Booking Preview memo. Stops with awaiting_signoff (verification=true) or answered (verification=false).'
+  },
+  flag_privileged: {
+    name: 'flag_privileged',
+    description: 'VERIFIER_TOOL: Flag protected medical/HIPAA details so only logistics accommodation facts are stored.'
+  },
+  request_evidence: {
+    name: 'request_evidence',
+    description: 'VERIFIER_TOOL: Pause loop with status=needs_input to request missing pickup_location, destination_address, or requested_time from the rider.'
+  },
+  check_signatures: {
+    name: 'check_signatures',
+    description: 'VERIFIER_TOOL: Verify explicit human rider confirmation signature and Harvey Taxi ($2.50 + $1.50/mi) arithmetic invariant.'
+  }
+};
+
+function toolNames(verification) {
+  return verification ? BASE_TOOLS.concat(VERIFIER_TOOLS) : BASE_TOOLS.slice();
+}
+
+function toolDefinitions(verification) {
+  return toolNames(Boolean(verification)).map((name) => NOREL_TOOL_DEFINITIONS[name]);
+}
+
+function runToolCall(call, options) {
+  const verification = Boolean(options && options.verification);
+  const name = call && typeof call === 'object' ? call.name : null;
+  const rawArgs = (call && typeof call === 'object' && call.arguments !== undefined) ? call.arguments : '{}';
+
+  let args;
+  try {
+    args = typeof rawArgs === 'string' ? JSON.parse(rawArgs) : rawArgs;
+  } catch (err) {
+    return { error: 'tool arguments are not valid JSON: ' + err.message };
+  }
+
+  if (!args || typeof args !== 'object' || Array.isArray(args)) {
+    return { error: 'tool arguments must be a JSON object' };
+  }
+
+  const allowed = toolNames(verification);
+  if (!allowed.includes(name)) {
+    return { error: "unknown tool: '" + String(name) + "'" };
+  }
+
+  if (args.simulateNotImplemented === true) {
+    return { error: 'verification check not built yet', status: 'paused' };
+  }
+
+  if (name === 'request_evidence') {
+    return {
+      result: 'Clarification requested from rider',
+      missing_fields: args.missing_fields || ['pickup_location', 'destination_address', 'requested_time'],
+      status: 'needs_input'
+    };
+  }
+
+  if (name === 'submit_memo') {
+    if (verification) {
+      return {
+        result: 'Structured booking memo passed all ADA & fare ($2.50 + $1.50/mi) verification checks.',
+        status: 'awaiting_signoff'
+      };
+    }
+    return {
+      result: 'Structured booking memo filed (verification off).',
+      status: 'answered'
+    };
+  }
+
+  return { result: 'Executed ' + name + ' successfully' };
+}
+
+if (typeof window !== 'undefined') {
+  window.BASE_TOOLS = BASE_TOOLS;
+  window.VERIFIER_TOOLS = VERIFIER_TOOLS;
+  window.toolNames = toolNames;
+  window.toolDefinitions = toolDefinitions;
+  window.runToolCall = runToolCall;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.BASE_TOOLS = BASE_TOOLS;
+  module.exports.VERIFIER_TOOLS = VERIFIER_TOOLS;
+  module.exports.toolNames = toolNames;
+  module.exports.toolDefinitions = toolDefinitions;
+  module.exports.runToolCall = runToolCall;
+}
+

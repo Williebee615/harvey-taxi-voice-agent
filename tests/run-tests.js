@@ -219,3 +219,11 @@ const turn2 = app.executeNorelAgentLoopTurn({
 assert.strictEqual(turn2.status, "awaiting_signoff", "Test 70: Complete intake + verified fare pauses at awaiting_signoff until human confirmation");
 console.log("✓ 5/5 Meta Workshop Agent Loop (needs_input / awaiting_signoff / resume_run) Checks Passed — 70/70 Total");
 
+// === EXACT META WORKSHOP TOOLS/__INIT__.PY CONTRACT TESTS (Tests 71-75) ===
+assert.strictEqual(app.toolNames(false).length, 6, "Test 71: BASE_TOOLS has 6 tools when verification=false");
+assert.strictEqual(app.toolNames(true).length, 9, "Test 72: BASE_TOOLS + VERIFIER_TOOLS has 9 tools when verification=true");
+assert.strictEqual(app.runToolCall({ name: "record_fact", arguments: "{bad json" }, { verification: true }).error.includes("not valid JSON"), true, "Test 73: Malformed JSON returns error dict so model can self-correct");
+assert.strictEqual(app.runToolCall({ name: "request_evidence", arguments: "{}" }, { verification: false }).error.includes("unknown tool"), true, "Test 74: Calling VERIFIER_TOOL with verification=false returns unknown tool error");
+assert.strictEqual(app.runToolCall({ name: "submit_memo", arguments: "{}" }, { verification: true }).status, "awaiting_signoff", "Test 75: submit_memo with verification=true stops run with status=awaiting_signoff");
+console.log("✓ 5/5 Meta Workshop tools/__init__.py (6 BASE_TOOLS + 3 VERIFIER_TOOLS & Error Recovery) Checks Passed — 75/75 Total");
+
