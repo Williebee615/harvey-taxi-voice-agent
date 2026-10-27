@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Norel AI OS v1.0.0 — Unified Multi-Agent Platform & Harvey Accessible Mobility</title>
-<style>body{font-family:system-ui,sans-serif;font-size:20px;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.5}button,input,select{font-size:20px;padding:.6rem;margin:.3rem 0}input[type="text"],input[type="number"],input[type="password"]{width:100%;box-sizing:border-box}button{width:100%;cursor:pointer}#out{background:#f4f4f4;padding:1rem;white-space:pre-wrap;border-radius:6px;margin-top:8px}</style>
+<style>body{font-family:system-ui,sans-serif;font-size:20px;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.5}button,input,select{font-size:20px;padding:.6rem;margin:.3rem 0}input[type="text"],input[type="number"],input[type="password"]{width:100%;box-sizing:border-box}button{width:100%;cursor:pointer}#out{background-color: #11192E;padding:1rem;white-space:pre-wrap;border-radius:6px;margin-top:8px}</style>
 <style id="norel-production-css">
 /* === NOREL AI v1.0.0 PRODUCTION DESIGN SYSTEM OVERRIDE === */
 :root {
@@ -153,7 +153,7 @@ label {
 /* Production Action Buttons */
 button {
   background: linear-gradient(135deg, #62D9EA 0%, #A89BF6 100%) !important;
-  color: #070B16 !important;
+  color: #F4F6FC !important;
   font-weight: 700 !important;
   font-size: 14px !important;
   border: none !important;
@@ -317,7 +317,7 @@ button:hover {
     }
     button {
       background: linear-gradient(135deg, #62D9EA 0%, #A89BF6 100%) !important;
-      color: #0B1020 !important;
+      color: #F4F6FC !important;
       font-weight: 700 !important;
       border: none !important;
       border-radius: 8px !important;
@@ -400,7 +400,7 @@ button:hover {
 
 <h1>Norel Mobility Module — Accessible Voice & SAM 3.1 Curbside Dispatch</h1>
 
-<section id="meta-live-setup" style="margin-bottom:18px; padding:12px; border:2px solid #1877f2; border-radius:6px; background:#f0f6ff;">
+<section id="meta-live-setup" style="margin-bottom:18px; padding:12px; border:2px solid #1877f2; border-radius:6px; background-color: #11192E;">
   <h2 style="margin-top:0;">Meta AI Agent Setup (Live Model API &amp; Open Weights)</h2>
   <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
     <label><strong>Active Model:</strong>
@@ -417,10 +417,10 @@ button:hover {
     <button id="test-meta-btn" type="button" style="width:auto;">⚡ Test Live Meta Connection</button>
     <button id="clear-mem-btn" type="button" style="width:auto;">🔄 Reset 6-Turn Memory</button>
   </div>
-  <div id="meta-conn-status" aria-live="polite" style="margin-top:6px; font-size:0.95em; color:#0b3d91;">
+  <div id="meta-conn-status" aria-live="polite" style="margin-top:6px; font-size:0.95em; color: #F4F6FC;">
     Mode: <strong>Zero-Setup Verifiable Agent</strong> (<code>meta-models/muse-spark-open-1026</code> schema + deterministic tools active).
   </div>
-  <div id="memory-status" style="margin-top:4px; font-size:0.9em; color:#333;">
+  <div id="memory-status" style="margin-top:4px; font-size:0.9em; color: #F4F6FC;">
     <strong>Active Context Window:</strong> 0 / 6 turns
   </div>
 </section>
@@ -436,7 +436,7 @@ button:hover {
   <div id="out" aria-live="polite">Fare is only quoted with a valid route. Dispatch and payments are OFF in this demo.</div>
 </section>
 
-<section id="sr-engineering-panel" style="margin-top:20px; padding:12px; border:2px solid #4a154b; border-radius:6px; background:#faf7ff;">
+<section id="sr-engineering-panel" style="margin-top:20px; padding:12px; border:2px solid #4a154b; border-radius:6px; background-color: #11192E;">
   <h2 style="margin-top:0;">Agent Tool #4: Multimodal Curbside &amp; Ramp Verifier (<code>SAM 3.1</code> + <code>Muse Spark</code>)</h2>
   <p style="margin:4px 0 8px;">Simulates <strong>Meta SAM 3.1</strong> segmentation of the pickup curb to verify ADA side-ramp deployment clearance (≥ 8.0 ft required):</p>
   <label>Measured Curb Width (ft): <input id="curb-ft" type="number" value="9.5" step="0.5" style="width:90px;"></label>
@@ -449,10 +449,10 @@ button:hover {
     </select>
   </label>
   <button id="curb-btn" type="button">🔍 Verify ADA Curb Clearance (SAM 3.1)</button>
-  <div id="curb-out" aria-live="polite" style="margin-top:8px; font-weight:500; color:#2b0a3d;">Click to run SAM 3.1 curbside ramp clearance check.</div>
+  <div id="curb-out" aria-live="polite" style="margin-top:8px; font-weight:500; color: #F4F6FC;">Click to run SAM 3.1 curbside ramp clearance check.</div>
 
   <h3 style="margin-top:16px; margin-bottom:6px;">Verifiable Agent Telemetry &amp; Fleet Elimination Audit Trace</h3>
-  <pre id="agent-trace-out" style="background:#111827; color:#10b981; padding:10px; border-radius:6px; font-size:0.82em; overflow-x:auto; max-height:320px;">Click "Get fare &amp; match" above to generate a live cryptographic idempotency key, per-driver boolean gate elimination matrix, and multi-tool execution trace.</pre>
+  <pre id="agent-trace-out" style="background:#111827; color: #F4F6FC; padding:10px; border-radius:6px; font-size:0.82em; overflow-x:auto; max-height:320px;">Click "Get fare &amp; match" above to generate a live cryptographic idempotency key, per-driver boolean gate elimination matrix, and multi-tool execution trace.</pre>
 </section>
 
 <section id="rag-and-tests" style="margin-top:20px; padding-top:12px; border-top:1px solid #ccc;">
@@ -462,10 +462,10 @@ button:hover {
   <div id="rag-out" aria-live="polite" style="margin-top:8px; font-weight:500;">Answers strictly from knowledge.js (zero hallucination).</div>
 
   <h2 style="margin-top:20px;">Automated Self-Tests (35/35 Verified)</h2>
-  <div id="self-test-summary" style="font-weight:bold; color:#0a6b2d;">35/35 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
+  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">35/35 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
 </section>
 
-<section id="hackathon-new-work" style="margin-top:20px; padding:12px; border:2px solid #0a6b2d; border-radius:6px; background:#f4fbf7;">
+<section id="hackathon-new-work" style="margin-top:20px; padding:12px; border:2px solid #0a6b2d; border-radius:6px; background-color: #11192E;">
   <h2 style="margin-top:0;">100% Net-New Hackathon Build (Created Oct 26, 2026 — Open Source MIT)</h2>
   <p><strong>Section 4 Declaration:</strong> 100% of the code, UI, tests, and serverless GPU scripts in this repository were written from scratch during the Meta Global AI Developer Hackathon (starting Oct 26, 2026). Zero pre-existing code was imported.</p>
   <ul>
@@ -664,6 +664,43 @@ if (testMetaBtn) {
       statusBanner.textContent = 'Active Norel Route -> Agent: ' + title + ' | slug: "' + agentObj.slug + '" | model: "' + agentObj.model + '" | allowedTools: ' + JSON.stringify(agentObj.tools) + ' | SSE: Last-Event-ID Ready';
     });
   });
+})();
+</script>
+
+
+<script id="norel-dark-surface-enforcer">
+(function enforceDarkSurfaces() {
+  function scrub() {
+    document.querySelectorAll('div, section, aside, fieldset, article, main, form, p, pre, ul, ol').forEach(el => {
+      if (el.tagName === 'BUTTON' || el.classList.contains('norel-pill') || el.classList.contains('norel-ring-indicator')) return;
+      const bg = window.getComputedStyle(el).backgroundColor;
+      const m = bg && bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (m) {
+        const r = Number(m[1]), g = Number(m[2]), b = Number(m[3]);
+        if (r > 170 && g > 170 && b > 170) {
+          el.style.setProperty('background', '#11192E', 'important');
+          el.style.setProperty('background-color', '#11192E', 'important');
+          el.style.setProperty('color', '#F4F6FC', 'important');
+          el.style.setProperty('border-color', '#283A6B', 'important');
+        }
+      }
+    });
+    document.querySelectorAll('h1, h2, h3, h4, label, p, li, span, div, strong, small').forEach(el => {
+      if (el.tagName === 'BUTTON' || el.closest('button')) return;
+      const c = window.getComputedStyle(el).color;
+      const m = c && c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (m) {
+        const r = Number(m[1]), g = Number(m[2]), b = Number(m[3]);
+        if (r < 90 && g < 90 && b < 90) {
+          el.style.setProperty('color', '#F4F6FC', 'important');
+        }
+      }
+    });
+  }
+  scrub();
+  window.addEventListener('DOMContentLoaded', scrub);
+  window.addEventListener('load', scrub);
+  setInterval(scrub, 400);
 })();
 </script>
 
