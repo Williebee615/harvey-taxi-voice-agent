@@ -270,3 +270,12 @@ const revPlan95 = app.reviseAgentPlanOnLearning(["Step 1"], "Rider missing picku
 assert.strictEqual(revPlan95.revised && revPlan95.steps.length === 2, true, "Test 95: Agent revises plan via update_plan when learning new information");
 console.log("✓ 5/5 Meta Workshop system_instructions.md Capabilities (4-8 Questions, Signature Flag, Counter-Evidence, Plan Revision) Passed — 95/95 Total");
 
+// === MUSE CODE 1.4.15 CLI, 64 SKILLS, VOICE HOTKEY (^ + v) & /MODEL COMMAND TESTS (Tests 96-100) ===
+assert.strictEqual(app.MUSE_CODE_CLI_CONFIG.version, "Muse Code 1.4.15", "Test 96: Matches workshop Muse Code 1.4.15 CLI version");
+assert.strictEqual(app.MUSE_CODE_CLI_CONFIG.skillsLoaded, 64, "Test 97: Loads 64 agent skills matching workshop HUD");
+assert.strictEqual(app.MUSE_CODE_CLI_CONFIG.voiceInputShortcut, "^ + v to start", "Test 98: Exposes Voice input (^ + v to start) hotkey");
+const modelCmd99 = app.executeMuseCodeSlashCommand("/model muse-spark-1.5");
+assert.strictEqual(modelCmd99.activeModel, "muse-spark-1.5", "Test 99: /model [model-id] slash command selects muse-spark-1.5 in max mode");
+assert.strictEqual(modelCmd99.statusLine.includes("muse-spark-1.5 · max") && modelCmd99.statusLine.includes("Auto-review"), true, "Test 100: Status bar renders muse-spark-1.5 · max · Auto-review");
+console.log("✓ 5/5 Muse Code 1.4.15 CLI HUD (64 Skills, ^ + v Voice Input, /model Selector, Auto-review) Checks Passed — 100/100 Total");
+
