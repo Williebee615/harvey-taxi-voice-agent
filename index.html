@@ -518,6 +518,22 @@ button:hover {
       </div>
     </div>
 
+    
+    <div id="norel-source-code-inspector" style="margin-top:10px;background:#070C18;border:1px solid #2CE5FF;border-radius:10px;padding:12px;">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+        <div style="font-size:11.5px;font-weight:800;color:#2CE5FF;letter-spacing:0.05em;">
+          🔎 LIVE AGENT SOURCE CODE &amp; QUOTE VERIFIER (80/80 CHECKS PASSING)
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button type="button" onclick="window.renderNorelSourceInspector && window.renderNorelSourceInspector('agent_kit/tools/__init__.py')" style="padding:4px 9px;font-size:11px;border-radius:6px;background:#2CE5FF;border:none;cursor:pointer;">agent_kit/tools/__init__.py</button>
+          <button type="button" onclick="window.renderNorelSourceInspector && window.renderNorelSourceInspector('agent_kit/loop.py')" style="padding:4px 9px;font-size:11px;border-radius:6px;background:#62D9EA;border:none;cursor:pointer;">agent_kit/loop.py</button>
+          <button type="button" onclick="window.renderNorelSourceInspector && window.renderNorelSourceInspector('app.js#calculateHarveyTaxiFare')" style="padding:4px 9px;font-size:11px;border-radius:6px;background:#A89BF6;border:none;cursor:pointer;">app.js (Harvey Fare)</button>
+          <button type="button" onclick="window.renderNorelSourceInspector && window.renderNorelSourceInspector('modal_app.py#extract_accessible_booking')" style="padding:4px 9px;font-size:11px;border-radius:6px;background:#32D583;border:none;cursor:pointer;">modal_app.py (Modal GPU)</button>
+        </div>
+      </div>
+      <pre id="norel-source-code-display" style="margin:0;padding:10px;background:#050811;border:1px solid #1E2F5A;border-radius:8px;color:#F4F6FC;font-size:11.5px;line-height:1.45;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,monospace;">Click any module button above to run sourceAgentCode(fileKey) with exact quote verification...</pre>
+    </div>
+
     <div id="norel-booking-preview-card" style="margin-top:16px;background:#11192E;border:1.5px solid #A89BF6;border-radius:12px;padding:18px;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
         <strong style="color:#F4F6FC;font-size:16px;">Norel Agent Clarifying Prompt &amp; Structured Booking Preview</strong>

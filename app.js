@@ -1006,3 +1006,16 @@ interpretRiderRequest = function(utterance, priorState) {
 if (typeof window !== 'undefined') window.interpretRiderRequest = interpretRiderRequest;
 if (typeof module !== 'undefined' && module.exports) module.exports.interpretRiderRequest = interpretRiderRequest;
 
+function renderNorelSourceInspector(fileKey) {
+  const el = typeof document !== 'undefined' ? document.getElementById('norel-source-code-display') : null;
+  if (!el || typeof sourceAgentCode !== 'function') return;
+  const res = sourceAgentCode(fileKey);
+  el.textContent = JSON.stringify(res, null, 2);
+}
+if (typeof window !== 'undefined') {
+  window.renderNorelSourceInspector = renderNorelSourceInspector;
+  window.addEventListener('DOMContentLoaded', function() {
+    renderNorelSourceInspector('agent_kit/tools/__init__.py');
+  });
+}
+
