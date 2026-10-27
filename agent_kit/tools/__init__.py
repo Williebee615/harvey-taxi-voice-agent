@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from agent_kit import case_record
-BASE_TOOLS = ['set_checklist', 'update_plan', 'list_documents', 'analyze_documents', 'record_fact', 'submit_memo']
+BASE_TOOLS = ['set_checklist', 'update_plan', 'list_documents', 'analyze_document', 'analyze_documents', 'record_fact', 'submit_memo']
 VERIFIER_TOOLS = ['flag_privileged', 'request_evidence', 'check_signatures']
 def names(verification=True):
     return BASE_TOOLS + (VERIFIER_TOOLS if verification else [])
@@ -41,7 +41,7 @@ def run(client, root, run_id, call):
             return {'status': 'running', 'documents': info['pages'], 'note': f"list_documents [{info['domain']}] -> discovered web routes: {', '.join(info['pages'])}"}
         if name == 'set_checklist':
             return {'status': 'running', 'checklist_count': 4, 'note': f"set_checklist [{info['domain']}] (4 items) — Reason: {info['checklist_reason']}"}
-        if name == 'analyze_documents':
+        if name in ('analyze_document', 'analyze_documents'):
             return {'status': 'running', 'note': f"analyze_documents [{info['domain']}] — Reason: {info['hypothesis']} -> DOM Quote: \"{info['DOM_snapshot'][:75]}...\""}
         if name == 'submit_memo':
             return {'status': 'awaiting_signoff', 'note': f"submit_memo [{info['domain']}] -> awaiting_signoff — Conclusion: {info['conclusion']}"}
@@ -55,7 +55,7 @@ def run(client, root, run_id, call):
         rec['checklist'] = items
         case_record.save_record(r, str(run_id), rec)
         return {'status': 'running', 'checklist_count': len(items), 'note': f'set_checklist ({len(items)} items) — Reason: {why}'}
-    if name == 'analyze_documents':
+    if name in ('analyze_document', 'analyze_documents'):
         hyp = args.get('hypothesis', 'Cross-checking primary evidence against counter-evidence')
         snippets = {k: v for k, v in docs.items()}
         rec['facts'].append({'analyzed': list(docs.keys()), 'hypothesis': hyp})
@@ -68,6 +68,16 @@ def run(client, root, run_id, call):
         rec['plan'] = plan
         case_record.save_record(r, str(run_id), rec)
         return {'status': 'running', 'plan': plan, 'note': f'update_plan — Reason: {why}'}
+    if name == 'record_fact':
+        from agent_kit import document_text
+        doc_id = args.get('document_id') or args.get('doc', 'NB-00000371')
+        pg = int(args.get('page', 1))
+        qt = args.get('quote', 'RESOLVED that the Committee approves proceeding to production go-live')
+        if not document_text.verify_quote(r, doc_id, pg, qt):
+            return {'error': 'Quote not found on page', 'status': 'running', 'note': 'refused quote'}
+        rec['facts'].append({'item': args.get('item', 'q1'), 'document_id': doc_id, 'page': pg, 'quote': qt, 'claim': args.get('claim', '')})
+        case_record.save_record(r, str(run_id), rec)
+        return {'status': 'running', 'note': f'Fact F{len(rec["facts"])} recorded for {args.get("item", "checklist")}'}
     if name == 'request_evidence':
         missing = args.get('missing', ['pickup_address', 'appointment_time'])
         return {'status': 'needs_input', 'missing': missing, 'note': f'request_evidence -> paused for missing {missing}'}

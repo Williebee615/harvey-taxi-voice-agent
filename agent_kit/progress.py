@@ -14,3 +14,9 @@ def load_progress(r, rid):
 def resume(root, run_id):
     f = Path(root) / 'world' / 'follow_up' / f'{run_id}.txt'
     return f.read_text().strip() if f.exists() else None
+
+def branch(root, run_id):
+    saved = load_progress(root, run_id)
+    new_id = rid = f'{run_id}_ver'
+    save_progress(root, new_id, saved.get('turn', 0), 'running', 'branched with verification on', saved.get('messages', []))
+    return new_id

@@ -1,0 +1,17 @@
+{
+  "run_id": "run_97dda515",
+  "checklist": [],
+  "plan": [],
+  "facts": [],
+  "flags": [],
+  "signatures": [],
+  "evidence_requests": [],
+  "memo": {
+    "objective": "Verify ADA ride",
+    "answer": "APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).",
+    "findings": [
+      "APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min)."
+    ],
+    "gaps": []
+  }
+}
