@@ -1,9 +1,197 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voice Booking Assistant — Standalone Demo (35/35 Verified)</title>
+<title>Norel AI OS v1.0.0 — Unified Multi-Agent Platform & Harvey Accessible Mobility</title>
 <style>body{font-family:system-ui,sans-serif;font-size:20px;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.5}button,input,select{font-size:20px;padding:.6rem;margin:.3rem 0}input[type="text"],input[type="number"],input[type="password"]{width:100%;box-sizing:border-box}button{width:100%;cursor:pointer}#out{background:#f4f4f4;padding:1rem;white-space:pre-wrap;border-radius:6px;margin-top:8px}</style>
 </head><body>
+
+  <style id="norel-dominant-theme">
+    :root {
+      --norel-ink: #0B1020;
+      --norel-surface: #131B33;
+      --norel-pearl: #F4F6FC;
+      --norel-cyan: #62D9EA;
+      --norel-violet: #A89BF6;
+      --norel-muted: #9BA6C4;
+    }
+    body {
+      background-color: var(--norel-ink) !important;
+      color: var(--norel-pearl) !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .norel-hero {
+      background: linear-gradient(145deg, #131B33 0%, #0B1020 100%);
+      border: 1px solid var(--norel-cyan);
+      border-radius: 16px;
+      padding: 22px;
+      margin: 18px auto;
+      max-width: 980px;
+      box-shadow: 0 0 32px rgba(98, 217, 234, 0.15);
+    }
+    .norel-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 1px solid rgba(98, 217, 234, 0.25);
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+    .norel-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .norel-ring-indicator {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 3px solid var(--norel-cyan);
+      box-shadow: 0 0 20px rgba(98, 217, 234, 0.6), inset 0 0 14px rgba(168, 155, 246, 0.5);
+      flex-shrink: 0;
+    }
+    .norel-pill {
+      display: inline-block;
+      background: rgba(98, 217, 234, 0.15);
+      color: var(--norel-cyan);
+      border: 1px solid var(--norel-cyan);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+    .norel-agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .norel-agent-card {
+      background: rgba(11, 16, 32, 0.85);
+      border: 1px solid #283663;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .norel-agent-card.primary {
+      border-color: var(--norel-cyan);
+      background: rgba(98, 217, 234, 0.08);
+    }
+    .norel-agent-card strong {
+      color: var(--norel-cyan);
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .norel-arch-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--norel-violet);
+    }
+    .norel-arch-chip {
+      background: rgba(168, 155, 246, 0.12);
+      border: 1px solid rgba(168, 155, 246, 0.4);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    section, .card, fieldset, div {
+      color: var(--norel-pearl);
+    }
+    input, select, textarea {
+      background-color: #0B1020 !important;
+      color: #F4F6FC !important;
+      border: 1px solid #3B4E87 !important;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    button {
+      background: linear-gradient(135deg, #62D9EA 0%, #A89BF6 100%) !important;
+      color: #0B1020 !important;
+      font-weight: 700 !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 9px 14px !important;
+      cursor: pointer;
+    }
+    pre, code {
+      background-color: #070A14 !important;
+      color: #62D9EA !important;
+      border-radius: 8px;
+    }
+  </style>
+
+  <header class="norel-hero" id="norel-command-center">
+    <div class="norel-top-row">
+      <div class="norel-brand">
+        <div class="norel-ring-indicator" title="Norel Ring State: Active"></div>
+        <div>
+          <span class="norel-pill">NOREL AI OS v1.0.0 — DOMINANT MULTI-AGENT PLATFORM</span>
+          <h1 style="margin:6px 0 4px 0;font-size:24px;color:#F4F6FC;">Norel AI — Verifiable Multi-Agent Operating System</h1>
+          <div style="font-size:13px;color:#9BA6C4;">
+            Featuring Flagship Domain Module: <strong>Norel Mobility (Harvey Taxi Accessible Voice &amp; SAM 3.1 Curbside Verification)</strong>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:#9BA6C4;">
+        <div><strong>Meta API Telemetry:</strong> 765.6k+ Tokens (<code>muse-wonder-1.0</code>)</div>
+        <div><strong>Open Weights Live:</strong> <code>meta-models/muse-spark-open-1026</code> on Modal</div>
+        <div><strong>Vision &amp; Voice:</strong> <code>sam-3.1</code> + <code>muse-voice-transcribe</code></div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;color:#F4F6FC;margin-bottom:8px;">
+      <strong>Unified Norel 9-Agent Router &amp; Server Entitlement Engine:</strong> Every agent below runs under Norel's transactional micro-USD quota engine, durable SSE streaming (<code>Last-Event-ID</code>), one-use action confirmations, and strict RLS isolation.
+    </div>
+
+    <div class="norel-agent-grid">
+      <div class="norel-agent-card primary">
+        <strong>1. Norel Mobility (Active Demo)</strong>
+        Harvey Accessible Voice Dispatch, SAM 3.1 8.0ft ADA Ramp Check &amp; Deterministic Fare Engine
+      </div>
+      <div class="norel-agent-card">
+        <strong>2. Norel Core (<code>norel</code>)</strong>
+        General grounded assistant with personal &amp; project scoped approved memory
+      </div>
+      <div class="norel-agent-card">
+        <strong>3. Norel Research</strong>
+        SSRF-guarded HTTPS research with verified source citations
+      </div>
+      <div class="norel-agent-card">
+        <strong>4. Norel Business</strong>
+        Executive operations, planning &amp; tier-governed workflows
+      </div>
+      <div class="norel-agent-card">
+        <strong>5. Norel Vision</strong>
+        Multimodal photo/screenshot analysis &amp; SAM 3.1 physical segmentation
+      </div>
+      <div class="norel-agent-card">
+        <strong>6. Norel Tasks</strong>
+        DST-aware durable scheduler with mandatory preview confirmation
+      </div>
+      <div class="norel-agent-card">
+        <strong>7. Norel Documents</strong>
+        Quarantine-scanned PDF/DOCX/CSV grounded section extraction
+      </div>
+      <div class="norel-agent-card">
+        <strong>8. Norel Developer &amp; Creator</strong>
+        Verifiable code guidance &amp; original multimodal creative briefs
+      </div>
+    </div>
+
+    <div class="norel-arch-strip">
+      <span class="norel-arch-chip">✓ 15-PR Norel Monorepo Architecture</span>
+      <span class="norel-arch-chip">✓ 10 Supabase RLS Migrations</span>
+      <span class="norel-arch-chip">✓ Durable SSE Replay (Last-Event-ID)</span>
+      <span class="norel-arch-chip">✓ One-Use Action Confirmations</span>
+      <span class="norel-arch-chip">✓ Logistics-Only Guardrail (No Medical Advice)</span>
+    </div>
+  </header>
+
 <h1>Book a Ride — Voice Booking Assistant</h1>
 
 <section id="meta-live-setup" style="margin-bottom:18px; padding:12px; border:2px solid #1877f2; border-radius:6px; background:#f0f6ff;">

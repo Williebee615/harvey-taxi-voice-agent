@@ -1,3 +1,17 @@
+
+// === NOREL AI DOMINANT MULTI-AGENT PLATFORM REGISTRY (v1.0.0) ===
+const NOREL_PLATFORM_AGENTS = [
+  { slug: 'norel-mobility', name: 'Norel Mobility (Harvey Accessible Dispatch)', model: 'meta-models/muse-spark-open-1026', tools: ['voice.transcribe', 'sam3.curb_verify', 'fare.deterministic', 'action.confirm'], badge: 'Flagship Physical World Agent' },
+  { slug: 'norel', name: 'Norel Core', model: 'muse-wonder-1.0', tools: ['memory.read', 'attachment.read'], badge: 'General Assistant' },
+  { slug: 'norel-research', name: 'Norel Research', model: 'muse-wonder-1.0', tools: ['research.web', 'attachment.read'], badge: 'SSRF-Guarded Citations' },
+  { slug: 'norel-business', name: 'Norel Business', model: 'muse-wonder-1.0', tools: ['attachment.read', 'research.web'], badge: 'Executive & Ops' },
+  { slug: 'norel-creator', name: 'Norel Creator', model: 'muse-wonder-1.0', tools: ['attachment.read', 'vision.analyze'], badge: 'Creative Briefs' },
+  { slug: 'norel-developer', name: 'Norel Developer', model: 'muse-wonder-1.0', tools: ['attachment.read', 'research.docs'], badge: 'Verifiable Code' },
+  { slug: 'norel-documents', name: 'Norel Documents', model: 'muse-wonder-1.0', tools: ['document.extract', 'attachment.read'], badge: 'Grounded PDF/DOCX' },
+  { slug: 'norel-tasks', name: 'Norel Tasks', model: 'meta-models/muse-spark-open-1026', tools: ['task.propose', 'action.confirm'], badge: 'DST Durable Scheduler' },
+  { slug: 'norel-vision', name: 'Norel Vision', model: 'sam-3.1', tools: ['vision.analyze', 'sam3.curb_verify'], badge: 'Multimodal & SAM 3.1' }
+];
+
 // Standalone demo logic — production backend untouched.
 // Guardrails: live dispatch and payments are hard-coded OFF.
 'use strict';
