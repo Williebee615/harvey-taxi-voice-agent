@@ -476,6 +476,7 @@ function calculateHarveyTaxiFare(verifiedMiles) {
 }
 
 function interpretRiderRequest(rawText, currentSession = {}) {
+  currentSession = currentSession || {};
   const text = String(rawText || '').trim();
   const lower = text.toLowerCase();
 
@@ -703,7 +704,7 @@ const NOREL_AGENT_TOOLS_MANIFEST = [
 function executeNorelAgentLoopTurn(params) {
   const runId = (params && params.runId) || 'run_norel_oct27_001';
   const utterance = (params && params.utterance) || '';
-  const priorState = (params && params.priorState) || null;
+  const priorState = (params && params.priorState) || undefined;
   const verifiedMiles = (params && typeof params.verifiedMiles === 'number') ? params.verifiedMiles : null;
   const humanSignoff = Boolean(params && params.humanSignoff);
 
@@ -976,7 +977,7 @@ if (typeof module !== 'undefined' && module.exports) {
 // Ensure interpretRiderRequest recognizes "destination is <address>" or "dropoff is <address>"
 const _origInterpretRiderRequest = interpretRiderRequest;
 interpretRiderRequest = function(utterance, priorState) {
-  const res = _origInterpretRiderRequest(utterance, priorState);
+  const res = _origInterpretRiderRequest(utterance, priorState || undefined);
   const raw = String(utterance || '');
   if (!res.destination_address) {
     const mDest = raw.match(/(?:destination(?:\s+address)?\s+is|dropoff\s+is|doctor'?s?\s+office\s+is)\s+([0-9]+\s+[A-Za-z0-9\s\.]+?)(?:\s+at\s+|\s+tomorrow|\.|,|$)/i);
