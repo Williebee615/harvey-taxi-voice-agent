@@ -183,3 +183,19 @@ const fallbackMerged = app.mergeLiveModalWithValidatedIntake(baseIntake, null);
 assert.strictEqual(fallbackMerged.modalHttpVerified, false, "Test 60: Null network payload safely falls back without crashing");
 console.log("✓ 5/5 Live Modal Endpoint Bridge & Fallback Resilience Checks Passed — 60/60 Total");
 
+// === SENIOR ENGINEERING INVARIANT, XSS SANITIZATION & ARITHMETIC DRIFT TESTS (Tests 61-65) ===
+assert.strictEqual(app.sanitizeRiderInput("<script>alert(1)</script>  Book   ride "), "scriptalert(1)/script Book ride", "Test 61: Strips angle brackets and normalizes whitespace");
+const incompleteIntake = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow.");
+const noFare = app.calculateHarveyTaxiFare(null);
+const inv1 = app.enforceBookingInvariants(incompleteIntake, noFare);
+assert.strictEqual(inv1.readyForConfirmation, false, "Test 62: Blocks confirmation when missing fields or unverified fare exist");
+const completeIntake = app.interpretRiderRequest("Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow");
+const validFare = app.calculateHarveyTaxiFare(6);
+const inv2 = app.enforceBookingInvariants(completeIntake, validFare);
+assert.strictEqual(inv2.readyForConfirmation, true, "Test 63: Approves confirmation only when all fields and deterministic fare are verified");
+const tamperedFare = { ...validFare, estimatedFareUsd: 99.99 };
+const inv3 = app.enforceBookingInvariants(completeIntake, tamperedFare);
+assert.strictEqual(inv3.readyForConfirmation, false, "Test 64: Detects and rejects fare arithmetic drift ($99.99 != $11.50)");
+assert.strictEqual(inv2.liveDispatchAllowed, false, "Test 65: Enforces non-dispatch sandbox safety invariant");
+console.log("✓ 5/5 Senior Engineering Invariant, Sanitization & Arithmetic Drift Checks Passed — 65/65 Total");
+

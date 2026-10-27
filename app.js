@@ -643,3 +643,50 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.mergeLiveModalWithValidatedIntake = mergeLiveModalWithValidatedIntake;
 }
 
+// === SENIOR ENGINEERING HARDENING: STRICT SCHEMA & SANITIZATION LAYER (Tests 61-65) ===
+
+function sanitizeRiderInput(rawInput) {
+  if (typeof rawInput !== 'string') return '';
+  return rawInput
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 600);
+}
+
+function enforceBookingInvariants(intake, fareResult) {
+  const violations = [];
+  if (!intake || typeof intake !== 'object') {
+    violations.push('MISSING_INTAKE_OBJECT');
+    return { readyForConfirmation: false, violations };
+  }
+  if (intake.missing_information && intake.missing_information.length > 0) {
+    violations.push('UNRESOLVED_MISSING_FIELDS:' + intake.missing_information.join(','));
+  }
+  if (!fareResult || fareResult.canCalculate !== true || typeof fareResult.estimatedFareUsd !== 'number') {
+    violations.push('UNVERIFIED_DISTANCE_OR_FARE');
+  }
+  if (fareResult && fareResult.canCalculate) {
+    const expected = Number((2.50 + (1.50 * Number(fareResult.verifiedMiles))).toFixed(2));
+    if (Math.abs(fareResult.estimatedFareUsd - expected) > 0.001) {
+      violations.push('FARE_ARITHMETIC_DRIFT');
+    }
+  }
+  return {
+    readyForConfirmation: violations.length === 0,
+    violations,
+    pricingModel: 'HARVEY_TAXI_DETERMINISTIC_V1 ($2.50 + $1.50/mi)',
+    liveDispatchAllowed: false
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.sanitizeRiderInput = sanitizeRiderInput;
+  window.enforceBookingInvariants = enforceBookingInvariants;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.sanitizeRiderInput = sanitizeRiderInput;
+  module.exports.enforceBookingInvariants = enforceBookingInvariants;
+}
+
