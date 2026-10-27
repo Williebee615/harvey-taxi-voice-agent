@@ -228,16 +228,16 @@ button:hover {
     margin: 2px !important;
     font-size: 13px !important;
   }
-  .norel-state-btn-row button {
+  #norel-accessible-ride-intelligence .norel-state-btn-row button {
     background: #182340 !important;
-    color: #62D9EA !important;
+    color: #F4F6FC !important;
     border: 1px solid #33467A !important;
     padding: 5px 10px !important;
     font-size: 11.5px !important;
     box-shadow: none !important;
   }
   .norel-state-btn-row button:hover {
-    border-color: #62D9EA !important;
+    border-color: #F4F6FC !important;
     background: rgba(98, 217, 234, 0.15) !important;
   }
 </style>
@@ -360,7 +360,7 @@ button:hover {
     }
     pre, code {
       background-color: #070A14 !important;
-      color: #62D9EA !important;
+      color: #F4F6FC !important;
       border-radius: 8px;
     }
   </style>
@@ -369,7 +369,24 @@ button:hover {
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:1px solid #26355D;padding-bottom:18px;margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:18px;">
         <div id="norel-concentric-ring" style="position:relative;width:60px;height:60px;border-radius:50%;border:3px solid #62D9EA;box-shadow:0 0 22px rgba(98,217,234,0.5),inset 0 0 14px rgba(168,155,246,0.45);display:flex;align-items:center;justify-content:center;">
-          <img src="assets/norel-ai-logo.svg" alt="Norel AI 3D Ribbon Logo" style="width:44px;height:44px;border-radius:50%;object-fit:cover;display:block;" />
+          <svg viewBox="0 0 240 240" style="width:46px;height:46px;border-radius:50%;display:block;">
+  <defs>
+    <linearGradient id="nrL" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E64D8"/><stop offset="55%" stop-color="#0C4DA2"/><stop offset="100%" stop-color="#1EC8FF"/>
+    </linearGradient>
+    <linearGradient id="nrD" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4AE8FF"/><stop offset="50%" stop-color="#1598FF"/><stop offset="100%" stop-color="#2CE0FF"/>
+    </linearGradient>
+    <linearGradient id="nrR" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3AE2FF"/><stop offset="75%" stop-color="#0B5ED7"/><stop offset="100%" stop-color="#082B7A"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="120" fill="#050811"/>
+  <path d="M56 64 C56 44, 78 40, 90 52 L90 166 L56 190 Z" fill="url(#nrL)"/>
+  <path d="M150 64 C150 50, 172 40, 184 34 L184 162 C184 180, 164 190, 150 180 Z" fill="url(#nrR)"/>
+  <path d="M58 58 C70 36, 98 40, 116 64 L176 156 C184 170, 174 188, 152 182 C134 176, 118 156, 102 132 L66 72 Z" fill="url(#nrD)"/>
+  <path d="M64 52 C82 44, 102 56, 124 86 L172 162" stroke="#BDF8FF" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
           <div id="norel-offset-spark" style="position:absolute;top:4px;right:6px;width:10px;height:10px;border-radius:50%;background:#62D9EA;box-shadow:0 0 10px #62D9EA;"></div>
         </div>
         <div>
