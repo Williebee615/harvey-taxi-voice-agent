@@ -1311,3 +1311,51 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.renderMuseCodeCommandOutput = renderMuseCodeCommandOutput;
 }
 
+// === META WORKSHOP 09:17 SPEC: API.META.AI/V1, WORLD/FOLLOW_UP, RELEASE.PY & COMPLETION REPORT (Tests 101-105) ===
+const META_WORKSHOP_API_CLIENT = {
+  provider: 'meta',
+  baseUrl: 'https://api.meta.ai/v1',
+  model: 'muse-spark-1.5',
+  cliLaunchCommand: 'muse --provider meta --base-url https://api.meta.ai/v1 --model muse-spark-1.5',
+  envKeyExtractionRule: "export META_API_KEY=$(grep '^MODEL_API_KEY=' .env | cut -d= -f2-)",
+  zeroEnvLogging: true
+};
+
+const WORKSHOP_GROUND_RULES_PROMPT = {
+  pastedBufferLabel: '[Pasted Content 1068 chars]',
+  expandHint: 'Paste again to expand for editing',
+  initialReply: 'Ready',
+  rules: [
+    'When I ask for something, build only that, then stop and report. Write the smallest readable code that does what I asked.',
+    'Change only files in legal_agent/ and verification/, and only the ones I ask about.',
+    'agent_kit/ is a pre-built library: use it, do not edit it.',
+    'The model chooses every tool call: do not hard-code which tool runs when, and keep anything specific to one case out of the code.',
+    'Never open .env, and never print or log API keys or populated environment values.',
+    'Every completion report lists the files changed, what you ran, and any limitation.'
+  ]
+};
+
+function buildWorkshopCompletionReport(params) {
+  const filesChanged = (params && Array.isArray(params.filesChanged)) ? params.filesChanged : ['legal_agent/loop.py'];
+  const commandRan = (params && params.ran) || './helper run --turns 3';
+  const limitation = (params && params.limitation) || 'Sandbox mode: live dispatch disabled until post-hackathon sign-off.';
+  return {
+    files_changed: filesChanged,
+    ran: commandRan,
+    limitation: limitation,
+    formattedText: 'Files changed: ' + filesChanged.join(', ') + '\nRan: ' + commandRan + '\nLimitation: ' + limitation
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.META_WORKSHOP_API_CLIENT = META_WORKSHOP_API_CLIENT;
+  window.WORKSHOP_GROUND_RULES_PROMPT = WORKSHOP_GROUND_RULES_PROMPT;
+  window.buildWorkshopCompletionReport = buildWorkshopCompletionReport;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.META_WORKSHOP_API_CLIENT = META_WORKSHOP_API_CLIENT;
+  module.exports.WORKSHOP_GROUND_RULES_PROMPT = WORKSHOP_GROUND_RULES_PROMPT;
+  module.exports.buildWorkshopCompletionReport = buildWorkshopCompletionReport;
+}
+

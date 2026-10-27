@@ -279,3 +279,13 @@ assert.strictEqual(modelCmd99.activeModel, "muse-spark-1.5", "Test 99: /model [m
 assert.strictEqual(modelCmd99.statusLine.includes("muse-spark-1.5 · max") && modelCmd99.statusLine.includes("Auto-review"), true, "Test 100: Status bar renders muse-spark-1.5 · max · Auto-review");
 console.log("✓ 5/5 Muse Code 1.4.15 CLI HUD (64 Skills, ^ + v Voice Input, /model Selector, Auto-review) Checks Passed — 100/100 Total");
 
+// === META WORKSHOP 09:17 API.META.AI/V1, WORLD/FOLLOW_UP & COMPLETION REPORT TESTS (Tests 101-105) ===
+const fs101 = require("fs");
+assert.strictEqual(app.META_WORKSHOP_API_CLIENT.baseUrl, "https://api.meta.ai/v1", "Test 101: Client points to https://api.meta.ai/v1 with muse-spark-1.5");
+assert.strictEqual(fs101.existsSync("agent_kit/client.py") && fs101.existsSync("agent_kit/settings.py"), true, "Test 102: agent_kit/client.py and settings.py exist");
+assert.strictEqual(fs101.existsSync("world/release.py") && fs101.existsSync("world/follow_up/rider_clarification_response.json"), true, "Test 103: Simulated world/follow_up and world/release.py exist");
+assert.strictEqual(app.WORKSHOP_GROUND_RULES_PROMPT.pastedBufferLabel, "[Pasted Content 1068 chars]", "Test 104: Matches workshop [Pasted Content 1068 chars] ground rules buffer");
+const rep105 = app.buildWorkshopCompletionReport({ filesChanged: ["legal_agent/loop.py"], ran: "./helper run --turns 3", limitation: "No live dispatch in sandbox" });
+assert.strictEqual(rep105.formattedText.includes("Files changed:") && rep105.formattedText.includes("Limitation:"), true, "Test 105: Completion report lists files changed, what ran, and any limitation");
+console.log("✓ 5/5 Meta API v1 (https://api.meta.ai/v1), world/follow_up & Completion Report Checks Passed — 105/105 Total");
+
