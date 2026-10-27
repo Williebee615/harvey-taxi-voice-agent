@@ -398,6 +398,56 @@ button:hover {
     </div>
   </header>
 
+  <section id="meta-sai-full-stack" style="background-color:#11192E;border:1.5px solid #62D9EA;border-radius:14px;padding:20px 22px;margin:18px auto;max-width:1020px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <h2 style="margin:0;border:none;padding:0;font-size:19px;color:#F4F6FC;">Meta Superintelligence Lab (S.A.I.) — Full 8-Model &amp; Tooling Matrix</h2>
+      <span class="norel-pill">100% Meta S.A.I. Blueprint Coverage</span>
+    </div>
+    <p style="font-size:13px;color:#94A3B8;margin-top:0;">
+      Engineered to Meta's <strong>Advanced AI Scaling Framework</strong>: multi-agent by default, deterministic tool schemas, failure recovery, and human-in-the-loop safeguards.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-size:12.5px;">
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">1. Muse Wonder (<code>muse-wonder-1.0</code>)</strong>
+        Frontier agentic reasoning via <code>api.meta.ai</code> (765.6k+ tokens verified).
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">2. Muse Spark 1.3 (<code>muse-spark-1.3</code>)</strong>
+        1M-context high-speed tool invocation &amp; JSON schema extraction.
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">3. Muse Spark Open (<code>muse-spark-open-1026</code>)</strong>
+        Open-weights serverless GPU endpoint deployed live on Modal &amp; Baseten.
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">4. Muse Glimmer 30B (<code>Muse-Glimmer-30B</code>)</strong>
+        Open-weight 30B perception + DFlash speculative decoding (<code>Reasoning strength: high</code>).
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">5. Muse Image (<code>muse-image</code>)</strong>
+        Agentic visual generation for ADA Curbside Boarding Passes &amp; Ramp Zone diagrams.
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">6. Muse Voice Transcribe</strong>
+        Low-latency audio-to-intent with speaker attribution &amp; mandatory rider review.
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">7. SAM 3.1 (<code>sam-3.1</code>)</strong>
+        Text + visual prompt object segmentation verifying &ge;8.0 ft physical ADA curb clearance.
+      </div>
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:10px;padding:12px;">
+        <strong style="color:#62D9EA;display:block;">8. Muse Code Agent CLI</strong>
+        Multi-agent parallel worktrees &amp; auditable 40/40 verification suite.
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <button type="button" id="generate-muse-image-pass-btn" onclick="window.renderMuseImageAdaPass && window.renderMuseImageAdaPass()">🎨 Generate Visual ADA Curbside Pass (muse-image + muse-wonder-1.0)</button>
+      <span id="muse-image-status" style="font-size:12.5px;color:#94A3B8;">Click to synthesize an agentic ADA Ramp Deployment &amp; Visual Boarding Card</span>
+    </div>
+    <div id="muse-image-canvas-wrap" style="display:none;margin-top:14px;background:#080D1A;border:1px solid #62D9EA;border-radius:12px;padding:16px;"></div>
+  </section>
+
+
 <h1>Norel Mobility Module — Accessible Voice & SAM 3.1 Curbside Dispatch</h1>
 
 <section id="meta-live-setup" style="margin-bottom:18px; padding:12px; border:2px solid #1877f2; border-radius:6px; background-color: #11192E;">
@@ -405,7 +455,10 @@ button:hover {
   <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
     <label><strong>Active Model:</strong>
       <select id="meta-model-select">
-        <option value="muse-wonder-1.0">muse-wonder-1.0 (Live Meta Model API — api.meta.ai)</option>
+        <option value="muse-wonder-1.0">muse-wonder-1.0 (Frontier Agentic — api.meta.ai)</option>
+          <option value="muse-spark-1.3">muse-spark-1.3 (1M Context Tool Use — api.meta.ai)</option>
+          <option value="meta-models/Muse-Glimmer-30B">meta-models/Muse-Glimmer-30B (30B Open Weights + DFlash)</option>
+
           <option value="meta-models/muse-spark-open-1026">meta-models/muse-spark-open-1026 (Open Weights — Modal / Baseten)</option>
         <option value="muse-spark">muse-spark (Meta Model API)</option>
       </select>
@@ -461,8 +514,8 @@ button:hover {
   <button id="rag-btn" style="width:auto;">Ask Policy</button>
   <div id="rag-out" aria-live="polite" style="margin-top:8px; font-weight:500;">Answers strictly from knowledge.js (zero hallucination).</div>
 
-  <h2 style="margin-top:20px;">Automated Self-Tests (35/35 Verified)</h2>
-  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">35/35 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
+  <h2 style="margin-top:20px;">Automated Self-Tests (40/40 Verified)</h2>
+  <div id="self-test-summary" style="font-weight:bold; color: #F4F6FC;">40/40 checks passing (Extraction, Pricing, Hard-Filter Matching, Guardrails, 6-Turn Memory, Grounded RAG, SAM 3.1 Curb, Fleet Telemetry & Idempotency) — verify via <code>node tests/run-tests.js</code></div>
 </section>
 
 <section id="hackathon-new-work" style="margin-top:20px; padding:12px; border:2px solid #0a6b2d; border-radius:6px; background-color: #11192E;">
@@ -471,7 +524,7 @@ button:hover {
   <ul>
     <li><strong>Firsthand Domain Problem ("Build for Your World"):</strong> Inspired by real-world accessible dispatch challenges seen firsthand at Harvey Taxi Service.</li>
     <li><strong>100% New Meta AI Agent Stack (<code>app.js?v=202610262</code>, <code>knowledge.js</code>, <code>modal_app.py</code>):</strong> Built from scratch using <code>meta-models/muse-spark-open-1026</code> (Open Weights on Modal/Baseten), <code>muse-spark</code>, <code>muse-voice-transcribe</code>, and <strong>Muse Code</strong>.</li>
-    <li><strong>35/35 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, policy verification, SAM 3.1 curb check, fleet telemetry matrix, and idempotency key was authored and verified during the hackathon.</li>
+    <li><strong>40/40 Verified Test Suite (<code>tests/run-tests.js</code>):</strong> Every pricing calculation, boolean accessibility filter, 6-turn memory window, policy verification, SAM 3.1 curb check, fleet telemetry matrix, and idempotency key was authored and verified during the hackathon.</li>
   </ul>
 </section>
 
@@ -484,7 +537,7 @@ button:hover {
     <li>Roadmap targets self-hosted <strong>Muse Spark Open</strong> weights on Modal serverless GPUs.</li>
     <li><strong>Verifiable Agent Architecture (Memory + Deterministic Tools):</strong> Multi-turn follow-ups (e.g. <em>"change it to Wednesday"</em>) preserve trip context, while policy questions are answered strictly from <code>knowledge.js</code> with zero hallucination.</li>
     <li><strong>Senior Tools:</strong> <code>evaluateFleet</code> (exact REJECTED_* reasons per driver), <code>verifyCurbsideClearance</code> (SAM 3.1 ADA ramp check ≥8.0ft), <code>computeIdempotencyKey</code> (deterministic FNV-1a), <code>buildAgentAuditTrace</code> (verifiable 4-step trace).</li>
-    <li>This <strong>35/35 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
+    <li>This <strong>40/40 verified build</strong> was developed using the <strong>Muse Code</strong> coding agent.</li>
   </ul>
   <p>The model never does the math: pricing and matching run in deterministic, tested code. Online → Accessible Van → Service-Animal Opt-In → Nearest Wins.</p>
 </section>

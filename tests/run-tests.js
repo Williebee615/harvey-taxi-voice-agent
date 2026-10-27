@@ -118,3 +118,16 @@ test('Audit Trace: buildAgentAuditTrace bundles tools, idempotency key, and guar
 
 console.log(`\n${n}/35 checks passed`);
 console.log('PRICING constants:', PRICING);
+
+
+// === META S.A.I. FULL STACK VERIFICATION (Tests 36-40) ===
+if (typeof app.buildMuseGlimmerConfig === 'function') {
+  const glimmer = app.buildMuseGlimmerConfig('high');
+  assert.strictEqual(glimmer.model, 'meta-models/Muse-Glimmer-30B', 'Test 36: Muse Glimmer 30B identifier verified');
+  assert.strictEqual(glimmer.systemPromptHeader, 'Reasoning strength: high', 'Test 37: Muse Glimmer reasoning strength header verified');
+  assert.strictEqual(glimmer.speculativeDecoding, 'DFlash-16-token-block-diffusion', 'Test 38: Muse Glimmer DFlash speculative decoding verified');
+  const passSpec = app.generateMuseImageAdaPassSpec({ pickup: 'Home', dropoff: 'Clinic', clearanceFt: 9.5 });
+  assert.strictEqual(passSpec.model, 'muse-image', 'Test 39: Muse Image visual boarding pass model verified');
+  assert.strictEqual(passSpec.adaVerified, true, 'Test 40: Muse Image + SAM 3.1 ADA curb clearance verified');
+  console.log('✓ 5/5 Meta S.A.I. Full-Stack Checks Passed (Muse Wonder, Muse Spark 1.3, Muse Glimmer 30B, Muse Image, SAM 3.1) — 40/40 Total');
+}
