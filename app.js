@@ -435,3 +435,150 @@ if (typeof module !== 'undefined' && module.exports) {
   if (typeof autonomousCurbRecovery === 'function') module.exports.autonomousCurbRecovery = autonomousCurbRecovery;
   if (typeof buildDurableSseWaterfall === 'function') module.exports.buildDurableSseWaterfall = buildDurableSseWaterfall;
 }
+
+// === NOREL ACCESSIBLE RIDE INTELLIGENCE — DETERMINISTIC & VALIDATED WORKFLOW ===
+
+const HARVEY_TAXI_PRICING = Object.freeze({
+  bookingAndSafetyFeeUsd: 2.50,
+  perMileRateUsd: 1.50,
+  surgeMultiplier: 1.0,
+  wheelchairSurchargeUsd: 0.00,
+  serviceAnimalSurchargeUsd: 0.00
+});
+
+const NOREL_RING_STATES = Object.freeze({
+  idle: { state: 'idle', label: 'Idle — Waiting for rider' },
+  listening: { state: 'listening', label: 'Listening — Recording in progress' },
+  thinking: { state: 'thinking', label: 'Thinking — Muse Spark processing request' },
+  responding: { state: 'responding', label: 'Responding — Preparing validated response' }
+});
+
+function calculateHarveyTaxiFare(verifiedMiles) {
+  if (verifiedMiles === null || verifiedMiles === undefined || verifiedMiles === '' || Number.isNaN(Number(verifiedMiles)) || Number(verifiedMiles) <= 0) {
+    return {
+      canCalculate: false,
+      estimatedFareUsd: null,
+      formulaUsed: null,
+      reason: 'Distance-based estimate unavailable until pickup and destination addresses are verified.'
+    };
+  }
+  const miles = Number(verifiedMiles);
+  const total = Number((HARVEY_TAXI_PRICING.bookingAndSafetyFeeUsd + (HARVEY_TAXI_PRICING.perMileRateUsd * miles)).toFixed(2));
+  return {
+    canCalculate: true,
+    verifiedMiles: miles,
+    bookingAndSafetyFeeUsd: HARVEY_TAXI_PRICING.bookingAndSafetyFeeUsd,
+    perMileRateUsd: HARVEY_TAXI_PRICING.perMileRateUsd,
+    estimatedFareUsd: total,
+    formattedFare: `$${total.toFixed(2)}`,
+    formulaUsed: `$2.50 + ($1.50 x ${miles} miles) = $${total.toFixed(2)}`
+  };
+}
+
+function interpretRiderRequest(rawText, currentSession = {}) {
+  const text = String(rawText || '').trim();
+  const lower = text.toLowerCase();
+
+  const hasWheelchair = Boolean(currentSession.mobility_requirement === 'wheelchair_access' || /wheelchair|accessible van|ramp/i.test(text));
+  const hasServiceAnimal = Boolean(currentSession.service_animal || /service dog|service animal|guide dog/i.test(text));
+  const wantsFare = Boolean(currentSession.fare_estimate_requested || /how much|cost|price|fare|estimate/i.test(text));
+
+  let requestedDate = currentSession.requested_date || null;
+  if (/tomorrow/i.test(text)) requestedDate = 'tomorrow';
+  else if (/today/i.test(text)) requestedDate = 'today';
+  else if (/monday|tuesday|wednesday|thursday|friday|saturday|sunday/i.test(text)) {
+    const m = text.match(/(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i);
+    if (m) requestedDate = m[1];
+  }
+
+  let requestedTime = currentSession.requested_time || null;
+  const timeMatch = text.match(/\b(\d{1,2}(?::\d{2})?\s*(?:am|pm))\b/i);
+  if (timeMatch) requestedTime = timeMatch[1].toUpperCase();
+
+  let pickup = currentSession.pickup || null;
+  let destination = currentSession.destination || null;
+  let destinationAddress = currentSession.destination_address || null;
+
+  if (/doctor'?s office/i.test(text) && !destination) {
+    destination = "doctor's office";
+  }
+
+  const fromToMatch = text.match(/from\s+([^,.]+?)\s+to\s+([^,.]+)/i);
+  if (fromToMatch) {
+    pickup = fromToMatch[1].trim();
+    destinationAddress = fromToMatch[2].trim();
+    destination = destination || destinationAddress;
+  }
+
+  const pickupExplicit = text.match(/pickup(?:\s+is|\s+at|\s+address)?\s*[:=-]?\s*(\d+\s+[^,.]+)/i);
+  if (pickupExplicit) pickup = pickupExplicit[1].trim();
+
+  const destExplicit = text.match(/(?:destination|doctor'?s office(?:\s+is|\s+at)?|drop\s*off)\s*[:=-]?\s*(\d+\s+[^,.]+)/i);
+  if (destExplicit) {
+    destinationAddress = destExplicit[1].trim();
+    destination = destination || destinationAddress;
+  }
+
+  const missing = [];
+  if (!pickup) missing.push('pickup_location');
+  if (!destinationAddress) missing.push('destination_address');
+  if (!requestedTime) missing.push('requested_time');
+
+  const nextAction = missing.length > 0 ? 'ask_clarifying_question' : 'prepare_booking_preview';
+
+  return {
+    intent: 'request_ride',
+    pickup,
+    destination,
+    destination_address: destinationAddress,
+    requested_date: requestedDate,
+    requested_time: requestedTime,
+    mobility_requirement: hasWheelchair ? 'wheelchair_access' : null,
+    service_animal: hasServiceAnimal,
+    fare_estimate_requested: wantsFare,
+    missing_information: missing,
+    next_action: nextAction
+  };
+}
+
+function validateStructuredIntake(intake) {
+  const errors = [];
+  if (!intake || typeof intake !== 'object') {
+    return { valid: false, errors: ['Intake payload must be a structured object.'] };
+  }
+  if (intake.intent !== 'request_ride') {
+    errors.push('Unsupported intent.');
+  }
+  if (!Array.isArray(intake.missing_information)) {
+    errors.push('missing_information must be an array.');
+  }
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+function buildExplainableMatchingStatement(intake) {
+  const needs = [];
+  if (intake.mobility_requirement === 'wheelchair_access') {
+    needs.push('a vehicle that meets your wheelchair-accessibility needs');
+  }
+  if (intake.service_animal) {
+    needs.push('a driver who accommodates your service animal');
+  }
+  const reqText = needs.length > 0 ? needs.join(' and ') : 'a standard vehicle';
+
+  if (intake.missing_information && intake.missing_information.length > 0) {
+    return `Your request requires ${reqText}. I have not confirmed a matching vehicle yet. I can prepare your request once you provide your ${intake.missing_information.join(', ').replace(/_/g, ' ')}.`;
+  }
+  return `Your request requires ${reqText}. Vehicle and driver availability is in preview mode (unverified against live dispatch). Review your structured booking card below to confirm your sandbox request.`;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.HARVEY_TAXI_PRICING = HARVEY_TAXI_PRICING;
+  module.exports.NOREL_RING_STATES = NOREL_RING_STATES;
+  module.exports.calculateHarveyTaxiFare = calculateHarveyTaxiFare;
+  module.exports.interpretRiderRequest = interpretRiderRequest;
+  module.exports.validateStructuredIntake = validateStructuredIntake;
+  module.exports.buildExplainableMatchingStatement = buildExplainableMatchingStatement;
+}

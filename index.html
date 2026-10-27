@@ -398,6 +398,90 @@ button:hover {
     </div>
   </header>
 
+  <section id="norel-accessible-ride-intelligence" style="background-color:#0F172A;border:2px solid #62D9EA;border-radius:18px;padding:26px;margin:20px auto;max-width:1020px;box-shadow:0 18px 45px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:1px solid #26355D;padding-bottom:18px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:18px;">
+        <div id="norel-concentric-ring" style="position:relative;width:60px;height:60px;border-radius:50%;border:3px solid #62D9EA;box-shadow:0 0 22px rgba(98,217,234,0.5),inset 0 0 14px rgba(168,155,246,0.45);display:flex;align-items:center;justify-content:center;">
+          <div style="width:36px;height:36px;border-radius:50%;border:1.5px dashed #A89BF6;"></div>
+          <div id="norel-offset-spark" style="position:absolute;top:4px;right:6px;width:10px;height:10px;border-radius:50%;background:#62D9EA;box-shadow:0 0 10px #62D9EA;"></div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="norel-pill">STARTUP TRACK • BUILD FOR YOUR WORLD</span>
+            <span id="norel-ring-state-label" role="status" aria-live="polite" style="background:#182340;color:#62D9EA;border:1px solid #62D9EA;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;">
+              State: Idle — Waiting for rider
+            </span>
+          </div>
+          <h2 style="margin:8px 0 2px 0;border:none;padding:0;font-size:24px;color:#F4F6FC;">Where do you need to go?</h2>
+          <div style="font-size:13.5px;color:#94A3B8;">
+            <strong>Norel Accessible Ride Intelligence</strong> — Powered by Meta <code>Muse Spark</code> • Real-World Application: <strong>Harvey Taxi Service</strong>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" onclick="window.setNorelRingState('idle')" style="font-size:12px;padding:7px 11px !important;">Idle</button>
+        <button type="button" onclick="window.setNorelRingState('listening')" style="font-size:12px;padding:7px 11px !important;">Listening</button>
+        <button type="button" onclick="window.setNorelRingState('thinking')" style="font-size:12px;padding:7px 11px !important;">Thinking</button>
+        <button type="button" onclick="window.setNorelRingState('responding')" style="font-size:12px;padding:7px 11px !important;">Responding</button>
+      </div>
+    </div>
+
+    <!-- 3-Minute Demo Guided Step Buttons -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12.5px;font-weight:700;color:#A89BF6;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">
+        Interactive 6-Step Agentic Workflow (Click in order for your 3-minute live demo):
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <button type="button" onclick="window.runDemoStep1Interpret()">1. Step 1 &amp; 2: Rider Initial Request &rarr; Muse Spark Identifies Missing Info</button>
+        <button type="button" onclick="window.runDemoStep2Clarify()">2. Step 3, 4 &amp; 5: Rider Supplies Address &amp; Time &rarr; Calculate ($2.50 + $1.50/mi) &amp; Preview</button>
+        <button type="button" onclick="window.runDemoStep3Confirm()">3. Step 6: Rider Confirms Sandbox Booking Request</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:12px;padding:16px;">
+        <label for="norel-rider-utterance" style="display:block;margin-bottom:6px;color:#F4F6FC;font-weight:700;">Rider Voice / Text Request (Editable before sending):</label>
+        <textarea id="norel-rider-utterance" rows="3" style="width:100%;font-size:14px;">I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me. I need to know how much it will cost.</textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+          <div>
+            <label for="norel-verified-miles" style="font-size:12.5px;color:#94A3B8;">Verified Route Distance (miles):</label>
+            <input id="norel-verified-miles" type="number" step="0.5" placeholder="Leave blank if unknown" value="" />
+          </div>
+          <div>
+            <label style="font-size:12.5px;color:#94A3B8;">Harvey Taxi Pricing Rule:</label>
+            <div style="margin-top:10px;font-size:13px;color:#62D9EA;font-family:monospace;">$2.50 Base + $1.50/mi (No Surge)</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+          <button type="button" onclick="window.processNorelIntakeFromUi()">Interpret &amp; Validate with Muse Spark</button>
+          <button type="button" onclick="window.resetNorelIntakeSession()">Reset Session</button>
+        </div>
+      </div>
+
+      <div style="background:#080D1A;border:1px solid #283A6B;border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;color:#62D9EA;margin-bottom:6px;">
+          Muse Spark Structured Interpretation (Validated Output):
+        </div>
+        <pre id="norel-structured-json-out" style="margin:0;max-height:210px;overflow-y:auto;">Click Step 1 above or "Interpret &amp; Validate" to inspect structured output...</pre>
+      </div>
+    </div>
+
+    <!-- Norel Agent Response & Structured Booking Preview Card -->
+    <div id="norel-booking-preview-card" style="margin-top:16px;background:#11192E;border:1.5px solid #A89BF6;border-radius:12px;padding:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <strong style="color:#F4F6FC;font-size:16px;">Norel Agent Clarifying Prompt &amp; Structured Booking Preview</strong>
+        <span id="norel-booking-status-badge" style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid #F59E0B;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;">
+          AWAITING_CLARIFICATION
+        </span>
+      </div>
+      <p id="norel-agent-spoken-response" style="font-size:14.5px;color:#F4F6FC;margin:0 0 12px 0;">
+        Submit a request above to begin the 6-step accessible booking workflow.
+      </p>
+      <div id="norel-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:13px;"></div>
+    </div>
+  </section>
+
+
   <section id="meta-sai-full-stack" style="background-color:#11192E;border:1.5px solid #62D9EA;border-radius:14px;padding:20px 22px;margin:18px auto;max-width:1020px;">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
       <h2 style="margin:0;border:none;padding:0;font-size:19px;color:#F4F6FC;">Meta Superintelligence Lab (S.A.I.) — Full 8-Model &amp; Tooling Matrix</h2>
@@ -778,6 +862,169 @@ if (testMetaBtn) {
   window.addEventListener('DOMContentLoaded', scrub);
   window.addEventListener('load', scrub);
   setInterval(scrub, 400);
+})();
+</script>
+
+
+<script id="norel-6step-workflow-controller">
+(function() {
+  window.norelSessionState = {};
+
+  window.setNorelRingState = function(stateKey) {
+    const labels = {
+      idle: 'State: Idle — Waiting for rider',
+      listening: 'State: Listening — Microphone recording active',
+      thinking: 'State: Thinking — Muse Spark interpreting request',
+      responding: 'State: Responding — Validating & preparing booking preview'
+    };
+    const badge = document.getElementById('norel-ring-state-label');
+    const ring = document.getElementById('norel-concentric-ring');
+    const spark = document.getElementById('norel-offset-spark');
+    if (badge) badge.textContent = labels[stateKey] || labels.idle;
+    if (ring && spark) {
+      if (stateKey === 'listening') {
+        ring.style.borderColor = '#34D399';
+        spark.style.background = '#34D399';
+      } else if (stateKey === 'thinking') {
+        ring.style.borderColor = '#A89BF6';
+        spark.style.background = '#A89BF6';
+      } else {
+        ring.style.borderColor = '#62D9EA';
+        spark.style.background = '#62D9EA';
+      }
+    }
+  };
+
+  window.renderNorelWorkflowState = function(intake, fareObj, bookingStatus) {
+    const jsonPre = document.getElementById('norel-structured-json-out');
+    const spoken = document.getElementById('norel-agent-spoken-response');
+    const statusBadge = document.getElementById('norel-booking-status-badge');
+    const grid = document.getElementById('norel-preview-grid');
+
+    if (jsonPre) {
+      jsonPre.textContent = JSON.stringify(intake, null, 2);
+    }
+
+    const matchingExplanation = window.buildExplainableMatchingStatement
+      ? window.buildExplainableMatchingStatement(intake)
+      : '';
+
+    if (intake.missing_information && intake.missing_information.length > 0) {
+      if (statusBadge) {
+        statusBadge.textContent = 'CLARIFICATION_REQUIRED (MISSING INFO)';
+        statusBadge.style.color = '#F59E0B';
+        statusBadge.style.borderColor = '#F59E0B';
+      }
+      if (spoken) {
+        spoken.innerHTML = '<strong>Norel Clarifying Question:</strong> "' + matchingExplanation + ' What is your pickup address, the doctor\'s office address, and your appointment time?"';
+      }
+    } else {
+      if (statusBadge) {
+        statusBadge.textContent = bookingStatus || 'PREVIEW_READY_FOR_CONFIRMATION';
+        statusBadge.style.color = bookingStatus === 'SANDBOX_BOOKING_CONFIRMED' ? '#34D399' : '#62D9EA';
+        statusBadge.style.borderColor = bookingStatus === 'SANDBOX_BOOKING_CONFIRMED' ? '#34D399' : '#62D9EA';
+      }
+      if (spoken) {
+        spoken.innerHTML = '<strong>Norel Validated Summary:</strong> "' + matchingExplanation + '"';
+      }
+    }
+
+    if (grid) {
+      const fareDisplay = (fareObj && fareObj.canCalculate)
+        ? `${fareObj.formattedFare} (${fareObj.formulaUsed})`
+        : 'Pending verified route distance (Refuses to invent fare)';
+      grid.innerHTML = `
+        <div style="background:#080D1A;border:1px solid #26355D;border-radius:8px;padding:10px;">
+          <strong style="color:#62D9EA;display:block;">Pickup Location</strong>
+          <span>${intake.pickup || 'Missing (Unverified)'}</span>
+        </div>
+        <div style="background:#080D1A;border:1px solid #26355D;border-radius:8px;padding:10px;">
+          <strong style="color:#62D9EA;display:block;">Destination Address</strong>
+          <span>${intake.destination_address || intake.destination || 'Missing (Unverified)'}</span>
+        </div>
+        <div style="background:#080D1A;border:1px solid #26355D;border-radius:8px;padding:10px;">
+          <strong style="color:#62D9EA;display:block;">Requested Date &amp; Time</strong>
+          <span>${intake.requested_date || 'Unspecified'} @ ${intake.requested_time || 'Missing Time'}</span>
+        </div>
+        <div style="background:#080D1A;border:1px solid #26355D;border-radius:8px;padding:10px;">
+          <strong style="color:#62D9EA;display:block;">Stated Accessibility Needs</strong>
+          <span>Wheelchair: ${intake.mobility_requirement === 'wheelchair_access' ? 'Yes ($0 fee)' : 'No'} | Service Animal: ${intake.service_animal ? 'Yes ($0 fee)' : 'No'}</span>
+        </div>
+        <div style="background:#080D1A;border:1px solid #26355D;border-radius:8px;padding:10px;">
+          <strong style="color:#62D9EA;display:block;">Deterministic Fare Estimate</strong>
+          <span>${fareDisplay}</span>
+        </div>
+        <div style="background:#080D1A;border:1px solid #26355D;border-radius:8px;padding:10px;">
+          <strong style="color:#62D9EA;display:block;">Vehicle Availability Status</strong>
+          <span>Preview Mode Only (Unverified — No live dispatch)</span>
+        </div>
+      `;
+    }
+  };
+
+  window.processNorelIntakeFromUi = function() {
+    window.setNorelRingState('thinking');
+    const textEl = document.getElementById('norel-rider-utterance');
+    const milesEl = document.getElementById('norel-verified-miles');
+    const raw = textEl ? textEl.value : '';
+    const milesVal = milesEl && milesEl.value !== '' ? Number(milesEl.value) : null;
+
+    const intake = window.interpretRiderRequest(raw, window.norelSessionState);
+    window.norelSessionState = intake;
+    const fareObj = (intake.missing_information.length === 0 && milesVal)
+      ? window.calculateHarveyTaxiFare(milesVal)
+      : window.calculateHarveyTaxiFare(null);
+
+    setTimeout(() => {
+      window.setNorelRingState('responding');
+      window.renderNorelWorkflowState(intake, fareObj, 'PREVIEW_READY_FOR_CONFIRMATION');
+    }, 180);
+  };
+
+  window.runDemoStep1Interpret = function() {
+    window.norelSessionState = {};
+    const textEl = document.getElementById('norel-rider-utterance');
+    const milesEl = document.getElementById('norel-verified-miles');
+    if (textEl) {
+      textEl.value = "I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me. I need to know how much it will cost.";
+    }
+    if (milesEl) milesEl.value = '';
+    window.processNorelIntakeFromUi();
+  };
+
+  window.runDemoStep2Clarify = function() {
+    const textEl = document.getElementById('norel-rider-utterance');
+    const milesEl = document.getElementById('norel-verified-miles');
+    if (textEl) {
+      textEl.value = "Pickup is 1200 Broadway and the doctor's office is 3401 West End Ave at 10:30 AM tomorrow.";
+    }
+    if (milesEl) milesEl.value = '6';
+    window.processNorelIntakeFromUi();
+  };
+
+  window.runDemoStep3Confirm = function() {
+    if (!window.norelSessionState || !window.norelSessionState.pickup) {
+      window.runDemoStep2Clarify();
+    }
+    setTimeout(() => {
+      const milesEl = document.getElementById('norel-verified-miles');
+      const milesVal = milesEl && milesEl.value !== '' ? Number(milesEl.value) : 6;
+      const fareObj = window.calculateHarveyTaxiFare(milesVal);
+      window.setNorelRingState('idle');
+      window.renderNorelWorkflowState(window.norelSessionState, fareObj, 'SANDBOX_BOOKING_CONFIRMED');
+    }, 220);
+  };
+
+  window.resetNorelIntakeSession = function() {
+    window.norelSessionState = {};
+    window.runDemoStep1Interpret();
+  };
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.interpretRiderRequest === 'function') {
+      window.runDemoStep1Interpret();
+    }
+  });
 })();
 </script>
 

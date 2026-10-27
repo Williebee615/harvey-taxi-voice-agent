@@ -146,3 +146,19 @@ if (typeof app.autonomousCurbRecovery === 'function') {
   assert.strictEqual(sse.length, 5, 'Test 45: Durable 5-stage SSE waterfall trace verified');
   console.log('✓ 5/5 Autonomous SAM 3.1 Recovery & Durable SSE Waterfall Checks Passed — 45/45 Total');
 }
+
+// === NOREL ACCESSIBLE RIDE INTELLIGENCE & HARVEY TAXI FORMULA TESTS (Tests 46-50) ===
+if (typeof app.calculateHarveyTaxiFare === 'function') {
+  assert.strictEqual(app.calculateHarveyTaxiFare(4).estimatedFareUsd, 8.50, 'Test 46: 4 miles = $8.50 ($2.50 + 4 * $1.50)');
+  assert.strictEqual(app.calculateHarveyTaxiFare(6).estimatedFareUsd, 11.50, 'Test 47: 6 miles = $11.50 ($2.50 + 6 * $1.50)');
+  assert.strictEqual(app.calculateHarveyTaxiFare(10).estimatedFareUsd, 17.50, 'Test 48: 10 miles = $17.50 ($2.50 + 10 * $1.50)');
+  assert.strictEqual(app.calculateHarveyTaxiFare(null).canCalculate, false, 'Test 49: Refuses to invent fare when distance is unverified');
+
+  const step1 = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me. I need to know how much it will cost.");
+  assert.strictEqual(step1.intent, 'request_ride', 'Test 50a: Intent is request_ride');
+  assert.strictEqual(step1.mobility_requirement, 'wheelchair_access', 'Test 50b: Wheelchair access identified');
+  assert.strictEqual(step1.service_animal, true, 'Test 50c: Service animal identified');
+  assert.strictEqual(step1.next_action, 'ask_clarifying_question', 'Test 50d: Missing pickup/address/time triggers clarifying question');
+  console.log('✓ 5/5 Norel Accessible Ride Intelligence & Harvey Taxi ($2.50 + $1.50/mi) Checks Passed — 50/50 Total');
+}
+
