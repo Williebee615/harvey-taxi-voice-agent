@@ -209,6 +209,39 @@ button:hover {
   box-shadow: 0 0 18px rgba(98, 217, 234, 0.2) !important;
 }
 </style>
+
+<style id="norel-compact-above-fold">
+  #norel-accessible-ride-intelligence {
+    padding: 18px 22px !important;
+    margin: 10px auto !important;
+  }
+  #norel-accessible-ride-intelligence button {
+    width: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #050811 !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em !important;
+    text-shadow: none !important;
+    padding: 8px 14px !important;
+    margin: 2px !important;
+    font-size: 13px !important;
+  }
+  .norel-state-btn-row button {
+    background: #182340 !important;
+    color: #62D9EA !important;
+    border: 1px solid #33467A !important;
+    padding: 5px 10px !important;
+    font-size: 11.5px !important;
+    box-shadow: none !important;
+  }
+  .norel-state-btn-row button:hover {
+    border-color: #62D9EA !important;
+    background: rgba(98, 217, 234, 0.15) !important;
+  }
+</style>
+
 </head><body>
 
   <style id="norel-dominant-theme">
@@ -351,7 +384,7 @@ button:hover {
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div class="norel-state-btn-row" style="display:flex;gap:6px;flex-wrap:wrap;">
         <button type="button" onclick="window.setNorelRingState('idle')" style="font-size:12px;padding:7px 11px !important;">Idle</button>
         <button type="button" onclick="window.setNorelRingState('listening')" style="font-size:12px;padding:7px 11px !important;">Listening</button>
         <button type="button" onclick="window.setNorelRingState('thinking')" style="font-size:12px;padding:7px 11px !important;">Thinking</button>
