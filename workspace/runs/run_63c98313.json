@@ -1,0 +1,32 @@
+{
+  "run_id": "run_63c98313",
+  "turn": 4,
+  "status": "awaiting_signoff",
+  "note": "submit_memo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Verify ADA wheelchair van from 1200 Broadway to 3401 West End Ave"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_1",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_2",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_3",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_4",
+      "output": "{\"status\": \"awaiting_signoff\"}"
+    }
+  ]
+}

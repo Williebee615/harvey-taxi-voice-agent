@@ -1,0 +1,32 @@
+{
+  "run_id": "run_afaff0da",
+  "turn": 4,
+  "status": "awaiting_signoff",
+  "note": "submit_memo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Did Caldera know the ERP system was not ready for go-live and tell Northbridge it was?"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_1",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_2",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_3",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_4",
+      "output": "{\"status\": \"awaiting_signoff\"}"
+    }
+  ]
+}

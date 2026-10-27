@@ -1,0 +1,32 @@
+{
+  "run_id": "run_41c7a018",
+  "turn": 4,
+  "status": "awaiting_signoff",
+  "note": "submit_memo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Audit quarterly ADA hydraulic ramp inspection certificates across Fleet Lot B."
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_1",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_2",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_3",
+      "output": "{\"status\": \"running\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_4",
+      "output": "{\"status\": \"awaiting_signoff\"}"
+    }
+  ]
+}
