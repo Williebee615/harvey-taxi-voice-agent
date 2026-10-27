@@ -1,3 +1,8 @@
+import os
+def verify_meta_api_key_status():
+    key = os.environ.get("MODEL_API_KEY", "")
+    return {"metaApiKeyConfiguredInModal": bool(key.startswith("LLM_")), "keyPrefix": (key[:10] + "...") if key else "none", "primaryModel": os.environ.get("ANTHROPIC_MODEL", "muse-wonder-1.0")}
+
 import modal
 
 app = modal.App("norel-ai-harvey-taxi-assistant")
