@@ -31,7 +31,7 @@ Built from the ground up during the hackathon using the **Muse Code** CLI agent 
    * **Tool #3 — Verifiable Policy Lookup (`knowledge.js`):** Answers rider policy questions from 11 verified fleet rules with zero hallucination.
 
 ## 3. Technical Depth, Execution & Verification (20% Execution)
-* **50/50 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
+* **60/60 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
 * **Safe Sandboxed Execution:** Live fleet dispatch (`liveDispatchEnabled: false`) and payment charging (`paymentsEnabled: false`) are hard-coded off and verified in the test suite so judges can safely test every edge case live.
 
 - **Live Meta Model API Verification (`https://api.meta.ai`):** Integrated with `muse-wonder-1.0` (verified with 40+ live API requests and 765.6k+ tokens processed on `dev.meta.ai`).
@@ -65,7 +65,7 @@ Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
   4. **Validate (`SAM 3.1` Curbside Clearance):** Verifies `>= 8.0 ft` physical ADA wheelchair ramp clearance and triggers autonomous +35ft safe-curb relocation if an obstacle blocks the primary curb.
   5. **Prepare (Explainable Matching & Preview):** Explicitly distinguishes rider-stated requirements from unverified vehicle availability.
   6. **Confirm (Rider-in-the-Loop):** Displays an editable Structured Booking Preview Card and creates a labeled sandbox booking (`SANDBOX_BOOKING_CONFIRMED`) only after explicit rider confirmation.
-- **Automated Verification:** **50/50 deterministic tests passing** via `node tests/run-tests.js`.
+- **Automated Verification:** **60/60 deterministic tests passing** via `node tests/run-tests.js`.
 
 ### 2. Long-Term Norel AI Platform Roadmap (Post-Hackathon)
 - Provider-independent multi-agent architecture expanding beyond `Norel Mobility` into `Norel Research`, `Norel Business`, `Norel Documents`, `Norel Tasks`, `Norel Vision`, and `Norel Developer/Creator` with persistent cross-workspace RLS projects, scoped memory approvals, and live fleet dispatch telemetry.

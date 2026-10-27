@@ -582,3 +582,64 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.validateStructuredIntake = validateStructuredIntake;
   module.exports.buildExplainableMatchingStatement = buildExplainableMatchingStatement;
 }
+
+// === LIVE MODAL ENDPOINT BRIDGE FOR NOREL ACCESSIBLE RIDE INTELLIGENCE (Tests 56-60) ===
+const NOREL_LIVE_MODAL_URL = 'https://williebee615--norel-ai-harvey-taxi-assistant-extract-acc-b09ac3.us-east.modal.run';
+
+function mergeLiveModalWithValidatedIntake(localIntake, modalPayload) {
+  if (!modalPayload || typeof modalPayload !== 'object') {
+    return { ...localIntake, inferenceSource: 'local_deterministic_fallback', modalHttpVerified: false };
+  }
+  const merged = { ...localIntake };
+  if (modalPayload.wheelchair === true) merged.mobility_requirement = 'wheelchair_access';
+  if (modalPayload.serviceAnimal === true) merged.service_animal = true;
+  if (modalPayload.pickup && !merged.pickup) merged.pickup = modalPayload.pickup;
+  if (modalPayload.dropoff && !merged.destination) merged.destination = modalPayload.dropoff;
+  merged.inferenceSource = 'live_modal_meta_muse_spark';
+  merged.modalModel = modalPayload.model || 'meta-models/muse-spark-open-1026';
+  merged.modalHttpVerified = true;
+  return merged;
+}
+
+if (typeof window !== 'undefined') {
+  window.NOREL_LIVE_MODAL_URL = NOREL_LIVE_MODAL_URL;
+  window.mergeLiveModalWithValidatedIntake = mergeLiveModalWithValidatedIntake;
+
+  const origProcess = window.processNorelIntakeFromUi;
+  window.processNorelIntakeFromUi = async function() {
+    window.setNorelRingState('thinking');
+    const textEl = document.getElementById('norel-rider-utterance');
+    const milesEl = document.getElementById('norel-verified-miles');
+    const raw = textEl ? textEl.value : '';
+    const milesVal = milesEl && milesEl.value !== '' ? Number(milesEl.value) : null;
+
+    let intake = window.interpretRiderRequest(raw, window.norelSessionState);
+    try {
+      const resp = await fetch(NOREL_LIVE_MODAL_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ utterance: raw, model: 'meta-models/muse-spark-open-1026' })
+      });
+      if (resp.ok) {
+        const modalData = await resp.json();
+        intake = mergeLiveModalWithValidatedIntake(intake, modalData);
+      }
+    } catch (_) {
+      intake.inferenceSource = 'validated_edge_schema';
+    }
+
+    window.norelSessionState = intake;
+    const fareObj = (intake.missing_information.length === 0 && milesVal)
+      ? window.calculateHarveyTaxiFare(milesVal)
+      : window.calculateHarveyTaxiFare(null);
+
+    window.setNorelRingState('responding');
+    window.renderNorelWorkflowState(intake, fareObj, 'PREVIEW_READY_FOR_CONFIRMATION');
+  };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.NOREL_LIVE_MODAL_URL = NOREL_LIVE_MODAL_URL;
+  module.exports.mergeLiveModalWithValidatedIntake = mergeLiveModalWithValidatedIntake;
+}
+

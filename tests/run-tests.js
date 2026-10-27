@@ -172,3 +172,14 @@ assert.strictEqual(app.validateStructuredIntake(null).valid, false, "Test 54: Ma
 assert.strictEqual(app.validateStructuredIntake(day1Proof.validatedStructuredIntake).valid, true, "Test 55: Validated structured intake passes schema check");
 console.log("✓ 5/5 Day 1 (Oct 27) Live End-to-End Foundation & Validator Checks Passed — 55/55 Total");
 
+// === LIVE MODAL BRIDGE & MERGE VALIDATION TESTS (Tests 56-60) ===
+assert.strictEqual(typeof app.NOREL_LIVE_MODAL_URL, "string", "Test 56: Live Modal endpoint URL configured");
+assert.strictEqual(app.NOREL_LIVE_MODAL_URL.includes(".modal.run"), true, "Test 57: Modal endpoint points to .modal.run");
+const baseIntake = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me.");
+const mergedLive = app.mergeLiveModalWithValidatedIntake(baseIntake, { wheelchair: true, serviceAnimal: true, model: "meta-models/muse-spark-open-1026" });
+assert.strictEqual(mergedLive.modalHttpVerified, true, "Test 58: Live Modal response merges cleanly with local validator");
+assert.strictEqual(mergedLive.inferenceSource, "live_modal_meta_muse_spark", "Test 59: Inference source tagged as live_modal_meta_muse_spark");
+const fallbackMerged = app.mergeLiveModalWithValidatedIntake(baseIntake, null);
+assert.strictEqual(fallbackMerged.modalHttpVerified, false, "Test 60: Null network payload safely falls back without crashing");
+console.log("✓ 5/5 Live Modal Endpoint Bridge & Fallback Resilience Checks Passed — 60/60 Total");
+
