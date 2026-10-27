@@ -232,11 +232,7 @@ function buildAgentAuditTrace({ booking, fare, fleetEval, curbCheck } = {}) {
 }
 
 if (typeof module !== 'undefined') module.exports = {
-  autonomousCurbRecovery,
-  buildDurableSseWaterfall,
-  META_SAI_MODELS,
-  buildMuseGlimmerConfig,
-  generateMuseImageAdaPassSpec, computeIdempotencyKey, evaluateFleet, verifyCurbsideClearance, buildAgentAuditTrace, ADA_RAMP_MIN_CLEARANCE_FT, callMetaAgentAPI, PRICING, ADAPTER_CONFIG, META_MODEL_CONFIG, calculateFare, extractBooking, extractBookingWithMemory, appendTurn, matchDriver, retrieveFact: _kb.retrieveFact, HARVEY_TAXI_FACTS: _kb.HARVEY_TAXI_FACTS };
+   computeIdempotencyKey, evaluateFleet, verifyCurbsideClearance, buildAgentAuditTrace, ADA_RAMP_MIN_CLEARANCE_FT, callMetaAgentAPI, PRICING, ADAPTER_CONFIG, META_MODEL_CONFIG, calculateFare, extractBooking, extractBookingWithMemory, appendTurn, matchDriver, retrieveFact: _kb.retrieveFact, HARVEY_TAXI_FACTS: _kb.HARVEY_TAXI_FACTS };
 
 
 // === META S.A.I. FULL STACK HELPERS (Muse Glimmer 30B, Muse Spark 1.3, Muse Image) ===
@@ -430,4 +426,12 @@ if (typeof window !== 'undefined') {
     a.click();
     URL.revokeObjectURL(url);
   };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  if (typeof META_SAI_MODELS !== 'undefined') module.exports.META_SAI_MODELS = META_SAI_MODELS;
+  if (typeof buildMuseGlimmerConfig === 'function') module.exports.buildMuseGlimmerConfig = buildMuseGlimmerConfig;
+  if (typeof generateMuseImageAdaPassSpec === 'function') module.exports.generateMuseImageAdaPassSpec = generateMuseImageAdaPassSpec;
+  if (typeof autonomousCurbRecovery === 'function') module.exports.autonomousCurbRecovery = autonomousCurbRecovery;
+  if (typeof buildDurableSseWaterfall === 'function') module.exports.buildDurableSseWaterfall = buildDurableSseWaterfall;
 }
