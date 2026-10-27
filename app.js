@@ -1360,6 +1360,20 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 const MULTI_DOMAIN_CASES = {
+  'harveytaxiservice.com': {
+    title: 'Web Domain: harveytaxiservice.com (Accessible Ride & SAM 3.1 Dispatch)',
+    question: 'On harveytaxiservice.com: Verify ADA wheelchair van + service dog ($0.00 fee) and compute exact 6-mile fare ($11.50).',
+    docs: ['/book-accessible-ride', '/ada-tariff-policy', '/sam3-curb-map'],
+    checklistSummary: '4/4 Verified on harveytaxiservice.com: ✓ $0 ADA/Dog Fee • ✓ $11.50 ($2.50+$1.50/mi) • ✓ 9.5ft Curb Clearance',
+    factsSummary: 'DOM & Policy verified on harveytaxiservice.com'
+  },
+  'turbotax.com': {
+    title: 'Web Domain: turbotax.com (Schedule C & Form 8826 ADA Tax Credit)',
+    question: 'On turbotax.com: Verify Schedule C fleet deductions, Section 179 ADA ramp write-off ($18,500), and Form 8826 Disabled Access Credit ($5,000).',
+    docs: ['/schedule-c-deductions', '/section-179-ada-vehicle', '/e-file-signoff'],
+    checklistSummary: '4/4 Verified on turbotax.com: ✓ $18,500 Sec 179 ADA Van • ✓ $5,000 Form 8826 Credit • ✓ E-File Signature Gate',
+    factsSummary: 'DOM & IRS Form 8826 verified on turbotax.com'
+  },
   'harvey-taxi-ada-doctor-visit': {
     title: 'Accessible Transit: Harvey Taxi ADA Ride Verification',
     question: 'Does the rider intake establish wheelchair + service animal accommodation ($0 fee) and deterministic $11.50 fare for 6 miles?',

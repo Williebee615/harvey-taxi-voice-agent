@@ -1,6 +1,6 @@
 {
   "run_id": "run_97dda515",
-  "turn": 11,
+  "turn": 13,
   "status": "awaiting_signoff",
   "note": "submit_memo -> awaiting_signoff \u2014 Conclusion: APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Me",
   "messages": [
@@ -93,6 +93,24 @@
     {
       "type": "function_call_output",
       "call_id": "call_11",
+      "output": "{\"status\": \"awaiting_signoff\", \"memo\": {\"objective\": \"Verify ADA ride\", \"answer\": \"APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).\", \"findings\": [\"APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).\"], \"gaps\": []}, \"note\": \"submit_memo -> awaiting_signoff \\u2014 Conclusion: APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Me\"}"
+    },
+    {
+      "role": "user",
+      "content": "1200 Broadway to 3401 West End Ave"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_12",
+      "output": "{\"status\": \"awaiting_signoff\", \"memo\": {\"objective\": \"Verify ADA ride\", \"answer\": \"APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).\", \"findings\": [\"APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).\"], \"gaps\": []}, \"note\": \"submit_memo -> awaiting_signoff \\u2014 Conclusion: APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Me\"}"
+    },
+    {
+      "role": "user",
+      "content": "1200 Broadway to 3401 West End Ave"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_13",
       "output": "{\"status\": \"awaiting_signoff\", \"memo\": {\"objective\": \"Verify ADA ride\", \"answer\": \"APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).\", \"findings\": [\"APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Medical Plaza (9.5ft > 8.0ft min).\"], \"gaps\": []}, \"note\": \"submit_memo -> awaiting_signoff \\u2014 Conclusion: APPROVED ($11.50): ADA ramp van + service dog ($0 fee) verified; rerouted to North Me\"}"
     }
   ]

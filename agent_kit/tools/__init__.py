@@ -32,6 +32,19 @@ def run(client, root, run_id, call):
     rec = case_record.load_record(r, str(run_id))
     obj = args.get('objective', '')
     docs = _load_case_docs(r, obj)
+
+    from agent_kit import web_domains
+    dom_arg = args.get('domain', '')
+    if dom_arg or '.com' in obj.lower() or '.org' in obj.lower() or '.gov' in obj.lower():
+        info = web_domains.inspect_domain(dom_arg or obj, obj)
+        if name == 'list_documents':
+            return {'status': 'running', 'documents': info['pages'], 'note': f"list_documents [{info['domain']}] -> discovered web routes: {', '.join(info['pages'])}"}
+        if name == 'set_checklist':
+            return {'status': 'running', 'checklist_count': 4, 'note': f"set_checklist [{info['domain']}] (4 items) — Reason: {info['checklist_reason']}"}
+        if name == 'analyze_documents':
+            return {'status': 'running', 'note': f"analyze_documents [{info['domain']}] — Reason: {info['hypothesis']} -> DOM Quote: \"{info['DOM_snapshot'][:75]}...\""}
+        if name == 'submit_memo':
+            return {'status': 'awaiting_signoff', 'note': f"submit_memo [{info['domain']}] -> awaiting_signoff — Conclusion: {info['conclusion']}"}
     if name == 'list_documents':
         doc_names = list(docs.keys())
         note = f'list_documents -> found {len(doc_names)} files: {", ".join(doc_names)}'

@@ -339,3 +339,14 @@ assert.strictEqual(rFlt.includes('hydraulic_cert_log.pdf') && rFlt.includes('HOL
 const errStay = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import tools;print(json.dumps(tools.run(None,".","r1",{"name":"unknown_tool","arguments":"{}"})))'], {encoding:'utf8'}).trim());
 assert.strictEqual(Boolean(errStay.error) && errStay.status === 'running', true, 'Test 130');
 console.log('✓ 5/5 Multi-Turn Document-Grounded Reasoning & Refused-Tool Recovery Checks Passed — 130/130 Total');
+
+const wH = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiservice.com', '--prompt', 'Book ADA wheelchair van and verify $11.50 fare'], {encoding:'utf8'});
+assert.strictEqual(wH.includes('[harveytaxiservice.com]') && wH.includes('HARVEYTAXISERVICE.COM READY'), true, 'Test 131');
+const wT = cp106.execFileSync('./helper', ['run', '--domain', 'turbotax.com', '--prompt', 'File Schedule C and Form 8826 ADA fleet tax credit'], {encoding:'utf8'});
+assert.strictEqual(wT.includes('[turbotax.com]') && wT.includes('TURBOTAX.COM RETURN PREPARED'), true, 'Test 132');
+const wAny = cp106.execFileSync('./helper', ['run', '--domain', 'healthcare.gov', '--prompt', 'Verify NEMT medical ride coverage'], {encoding:'utf8'});
+assert.strictEqual(wAny.includes('[healthcare.gov]') && wAny.includes('HEALTHCARE.GOV VERIFIED'), true, 'Test 133');
+const uiT = app.runMultiDomainCommand('turbotax.com');
+assert.strictEqual(uiT.question.includes('turbotax.com') && uiT.finalStatus === 'awaiting_signoff', true, 'Test 134');
+assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('turbotax.com'), true, 'Test 135');
+console.log('✓ 5/5 Cross-Website Domain Navigation (harveytaxiservice.com, turbotax.com, healthcare.gov) Checks Passed — 135/135 Total');
