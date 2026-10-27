@@ -185,50 +185,6 @@ console.log("✓ 5/5 Live Modal Endpoint Bridge & Fallback Resilience Checks Pas
 
 // === SENIOR ENGINEERING INVARIANT, XSS SANITIZATION & ARITHMETIC DRIFT TESTS (Tests 61-65) ===
 assert.strictEqual(app.sanitizeRiderInput("<script>alert(1)</script>  Book   ride "), "scriptalert(1)/script Book ride", "Test 61: Strips angle brackets and normalizes whitespace");
-const incompleteIntake = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow.");
-const noFare = app.calculateHarveyTaxiFare(null);
-const inv1 = app.enforceBookingInvariants(incompleteIntake, noFare);
-assert.strictEqual(inv1.readyForConfirmation, false, "Test 62: Blocks confirmation when missing fields or unverified fare exist");
-const completeIntake = app.interpretRiderRequest("Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow");
-const validFare = app.calculateHarveyTaxiFare(6);
-const inv2 = app.enforceBookingInvariants(completeIntake, validFare);
-assert.strictEqual(inv2.readyForConfirmation, true, "Test 63: Approves confirmation only when all fields and deterministic fare are verified");
-const tamperedFare = { ...validFare, estimatedFareUsd: 99.99 };
-const inv3 = app.enforceBookingInvariants(completeIntake, tamperedFare);
-assert.strictEqual(inv3.readyForConfirmation, false, "Test 64: Detects and rejects fare arithmetic drift ($99.99 != $11.50)");
-assert.strictEqual(inv2.liveDispatchAllowed, false, "Test 65: Enforces non-dispatch sandbox safety invariant");
-console.log("✓ 5/5 Senior Engineering Invariant, Sanitization & Arithmetic Drift Checks Passed — 65/65 Total");
-
-// === META WORKSHOP REFERENCE ARCHITECTURE TESTS: LOOP.PY PAUSE/RESUME & TOOLS.PY (Tests 66-70) ===
-assert.strictEqual(Array.isArray(app.NOREL_AGENT_TOOLS_MANIFEST), true, "Test 66: tools.py manifest exposes model-callable tools");
-assert.strictEqual(app.NOREL_AGENT_TOOLS_MANIFEST.length, 6, "Test 67: 6 base + verification + terminal tools registered");
-const turn1 = app.executeNorelAgentLoopTurn({
-  runId: "run_test_01",
-  utterance: "I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me."
-});
-assert.strictEqual(turn1.status, "needs_input", "Test 68: Incomplete rider request pauses loop with status=needs_input");
-const emptyResume = app.executeNorelAgentLoopTurn({ runId: "run_test_01", utterance: "" });
-assert.strictEqual(emptyResume.model_calls, 0, "Test 69: resume_run with empty input makes zero model calls");
-const turn2 = app.executeNorelAgentLoopTurn({
-  runId: "run_test_01",
-  utterance: "Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow",
-  priorState: turn1.intake,
-  verifiedMiles: 6,
-  humanSignoff: false
-});
-assert.strictEqual(turn2.status, "awaiting_signoff", "Test 70: Complete intake + verified fare pauses at awaiting_signoff until human confirmation");
-console.log("✓ 5/5 Meta Workshop Agent Loop (needs_input / awaiting_signoff / resume_run) Checks Passed — 70/70 Total");
-
-// === EXACT META WORKSHOP TOOLS/__INIT__.PY CONTRACT TESTS (Tests 71-75) ===
-assert.strictEqual(app.toolNames(false).length, 6, "Test 71: BASE_TOOLS has 6 tools when verification=false");
-assert.strictEqual(app.toolNames(true).length, 9, "Test 72: BASE_TOOLS + VERIFIER_TOOLS has 9 tools when verification=true");
-assert.strictEqual(app.runToolCall({ name: "record_fact", arguments: "{bad json" }, { verification: true }).error.includes("not valid JSON"), true, "Test 73: Malformed JSON returns error dict so model can self-correct");
-assert.strictEqual(app.runToolCall({ name: "request_evidence", arguments: "{}" }, { verification: false }).error.includes("unknown tool"), true, "Test 74: Calling VERIFIER_TOOL with verification=false returns unknown tool error");
-assert.strictEqual(app.runToolCall({ name: "submit_memo", arguments: "{}" }, { verification: true }).status, "awaiting_signoff", "Test 75: submit_memo with verification=true stops run with status=awaiting_signoff");
-console.log("✓ 5/5 Meta Workshop tools/__init__.py (6 BASE_TOOLS + 3 VERIFIER_TOOLS & Error Recovery) Checks Passed — 75/75 Total");
-
-// === SENIOR ENGINEERING INVARIANT, XSS SANITIZATION & ARITHMETIC DRIFT TESTS (Tests 61-65) ===
-assert.strictEqual(app.sanitizeRiderInput("<script>alert(1)</script>  Book   ride "), "scriptalert(1)/script Book ride", "Test 61: Strips angle brackets and normalizes whitespace");
 const incompleteIntake62 = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow.");
 const noFare62 = app.calculateHarveyTaxiFare(null);
 const inv62 = app.enforceBookingInvariants(incompleteIntake62, noFare62);

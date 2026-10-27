@@ -973,3 +973,24 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.sourceAgentCode = sourceAgentCode;
 }
 
+// Ensure interpretRiderRequest recognizes "destination is <address>" or "dropoff is <address>"
+const _origInterpretRiderRequest = interpretRiderRequest;
+interpretRiderRequest = function(utterance, priorState) {
+  const res = _origInterpretRiderRequest(utterance, priorState);
+  const raw = String(utterance || '');
+  if (!res.destination_address) {
+    const mDest = raw.match(/(?:destination(?:\s+address)?\s+is|dropoff\s+is|doctor'?s?\s+office\s+is)\s+([0-9]+\s+[A-Za-z0-9\s\.]+?)(?:\s+at\s+|\s+tomorrow|\.|,|$)/i);
+    if (mDest && mDest[1]) {
+      res.destination_address = mDest[1].trim();
+      if (!res.destination) res.destination = res.destination_address;
+      res.missing_information = (res.missing_information || []).filter((f) => f !== 'destination_address');
+      if (res.missing_information.length === 0) {
+        res.next_action = 'prepare_booking_preview';
+      }
+    }
+  }
+  return res;
+};
+if (typeof window !== 'undefined') window.interpretRiderRequest = interpretRiderRequest;
+if (typeof module !== 'undefined' && module.exports) module.exports.interpretRiderRequest = interpretRiderRequest;
+
