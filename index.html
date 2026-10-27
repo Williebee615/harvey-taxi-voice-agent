@@ -3,6 +3,212 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Norel AI OS v1.0.0 — Unified Multi-Agent Platform & Harvey Accessible Mobility</title>
 <style>body{font-family:system-ui,sans-serif;font-size:20px;max-width:800px;margin:2rem auto;padding:0 1rem;line-height:1.5}button,input,select{font-size:20px;padding:.6rem;margin:.3rem 0}input[type="text"],input[type="number"],input[type="password"]{width:100%;box-sizing:border-box}button{width:100%;cursor:pointer}#out{background:#f4f4f4;padding:1rem;white-space:pre-wrap;border-radius:6px;margin-top:8px}</style>
+<style id="norel-production-css">
+/* === NOREL AI v1.0.0 PRODUCTION DESIGN SYSTEM OVERRIDE === */
+:root {
+  --norel-bg: #070B16;
+  --norel-bg-elevated: #0F1629;
+  --norel-card: #131C33;
+  --norel-card-alt: #182340;
+  --norel-border: #26355D;
+  --norel-border-glow: rgba(98, 217, 234, 0.45);
+  --norel-pearl: #F4F6FC;
+  --norel-muted: #94A3B8;
+  --norel-cyan: #62D9EA;
+  --norel-violet: #A89BF6;
+  --norel-emerald: #34D399;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  background: radial-gradient(circle at 50% 0%, #131D3B 0%, #070B16 65%) !important;
+  color: var(--norel-pearl) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif !important;
+  line-height: 1.6 !important;
+  margin: 0;
+  padding: 0 16px 64px 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+main, .container, body > div, body > section {
+  max-width: 1020px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Force every light card, inline white box, or callout into Norel Dark Surface */
+section, .card, fieldset, details, aside,
+div[style*="background"], section[style*="background"], p[style*="background"] {
+  background: var(--norel-card) !important;
+  color: var(--norel-pearl) !important;
+  border: 1px solid var(--norel-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38) !important;
+}
+
+div[style*="background"], section[style*="background"] {
+  padding: 20px 22px !important;
+  margin-bottom: 18px !important;
+}
+
+/* Typography & High-Contrast Readability */
+h1, h2, h3, h4, legend, strong, b {
+  color: #FFFFFF !important;
+  letter-spacing: -0.015em;
+}
+
+h1 {
+  font-size: 1.65rem !important;
+  font-weight: 800 !important;
+}
+
+h2 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  margin-top: 28px !important;
+  margin-bottom: 12px !important;
+  border-bottom: 1px solid var(--norel-border);
+  padding-bottom: 8px;
+}
+
+p, li, label, span, small {
+  color: var(--norel-pearl) !important;
+}
+
+small, .muted {
+  color: var(--norel-muted) !important;
+}
+
+/* Code & Telemetry Badges */
+code {
+  background: rgba(98, 217, 234, 0.12) !important;
+  color: var(--norel-cyan) !important;
+  border: 1px solid rgba(98, 217, 234, 0.3) !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace !important;
+  font-size: 0.85em !important;
+}
+
+pre {
+  background: #060913 !important;
+  color: var(--norel-cyan) !important;
+  border: 1px solid #1E2B4D !important;
+  border-radius: 10px !important;
+  padding: 14px 16px !important;
+  overflow-x: auto !important;
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace !important;
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
+}
+
+/* Enterprise Inputs, Selects & Checkboxes */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input:not([type]),
+select,
+textarea {
+  background: #080D1A !important;
+  color: var(--norel-pearl) !important;
+  border: 1px solid #33467A !important;
+  border-radius: 10px !important;
+  padding: 11px 14px !important;
+  font-size: 14px !important;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 6px !important;
+  margin-bottom: 12px !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--norel-cyan) !important;
+  box-shadow: 0 0 0 3px rgba(98, 217, 234, 0.2) !important;
+}
+
+input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: var(--norel-cyan) !important;
+  vertical-align: middle !important;
+  margin-right: 8px !important;
+  cursor: pointer;
+}
+
+label {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 13.5px;
+  margin-right: 18px;
+  margin-top: 6px;
+}
+
+/* Production Action Buttons */
+button {
+  background: linear-gradient(135deg, #62D9EA 0%, #A89BF6 100%) !important;
+  color: #070B16 !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 11px 18px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(98, 217, 234, 0.25) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
+}
+
+button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(98, 217, 234, 0.4) !important;
+}
+
+/* Norel Hero & 8-Card Grid Refinement */
+.norel-hero {
+  background: linear-gradient(160deg, #15203D 0%, #0B1020 100%) !important;
+  border: 1.5px solid var(--norel-cyan) !important;
+  border-radius: 18px !important;
+  padding: 26px !important;
+  margin: 24px auto !important;
+  max-width: 1020px !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 28px rgba(98, 217, 234, 0.14) !important;
+}
+
+.norel-agent-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 16px !important;
+}
+
+.norel-agent-card {
+  background: #0B1224 !important;
+  border: 1px solid #283A6B !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  margin-bottom: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.norel-agent-card:hover {
+  border-color: var(--norel-violet) !important;
+  transform: translateY(-2px);
+}
+
+.norel-agent-card.primary {
+  border: 1.5px solid var(--norel-cyan) !important;
+  background: rgba(98, 217, 234, 0.1) !important;
+  box-shadow: 0 0 18px rgba(98, 217, 234, 0.2) !important;
+}
+</style>
 </head><body>
 
   <style id="norel-dominant-theme">
@@ -192,7 +398,7 @@
     </div>
   </header>
 
-<h1>Book a Ride — Voice Booking Assistant</h1>
+<h1>Norel Mobility Module — Accessible Voice & SAM 3.1 Curbside Dispatch</h1>
 
 <section id="meta-live-setup" style="margin-bottom:18px; padding:12px; border:2px solid #1877f2; border-radius:6px; background:#f0f6ff;">
   <h2 style="margin-top:0;">Meta AI Agent Setup (Live Model API &amp; Open Weights)</h2>
