@@ -386,9 +386,47 @@ button:hover {
   <section id="norel-accessible-ride-intelligence" style="background-color:#0F172A;border:2px solid #62D9EA;border-radius:18px;padding:26px;margin:20px auto;max-width:1020px;box-shadow:0 18px 45px rgba(0,0,0,0.6);">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:1px solid #26355D;padding-bottom:18px;margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:18px;">
-        <div id="norel-concentric-ring" style="position:relative;width:62px;height:62px;border-radius:50%;border:2.5px solid #62D9EA;box-shadow:0 0 22px rgba(98,217,234,0.55),inset 0 0 14px rgba(168,155,246,0.45);display:flex;align-items:center;justify-content:center;background:#050811;flex-shrink:0;">
-          <img src="assets/norel-ai-logo.svg" alt="Norel AI" style="width:48px;height:48px;border-radius:50%;display:block;" />
-          <div id="norel-offset-spark" style="position:absolute;top:2px;right:4px;width:10px;height:10px;border-radius:50%;background:#62D9EA;box-shadow:0 0 10px #62D9EA;"></div>
+        <div id="norel-concentric-ring" style="position:relative;width:76px;height:76px;min-width:76px;border-radius:18px;border:2.5px solid #2CE5FF;box-shadow:0 0 24px rgba(44,229,255,0.55);display:flex;align-items:center;justify-content:center;background:#000000;overflow:hidden;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="70" height="70">
+  <defs>
+    <linearGradient id="leftPillar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A2E7A"/>
+      <stop offset="45%" stop-color="#1565D8"/>
+      <stop offset="100%" stop-color="#19C6FF"/>
+    </linearGradient>
+    <linearGradient id="rightPillar" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#071F5C"/>
+      <stop offset="50%" stop-color="#0E68E6"/>
+      <stop offset="100%" stop-color="#2CE5FF"/>
+    </linearGradient>
+    <linearGradient id="diagRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2EE6FF"/>
+      <stop offset="35%" stop-color="#1282F6"/>
+      <stop offset="75%" stop-color="#0B3B9E"/>
+      <stop offset="100%" stop-color="#25D8FF"/>
+    </linearGradient>
+    <linearGradient id="aiGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#0E68E6"/>
+      <stop offset="100%" stop-color="#2CE5FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="500" height="500" rx="70" fill="#000000"/>
+  <!-- Left vertical fold -->
+  <path d="M122 145 C122 105, 152 95, 168 115 L192 225 C192 255, 182 280, 155 298 L122 320 Z" fill="url(#leftPillar)"/>
+  <!-- Right vertical fold -->
+  <path d="M312 155 C312 128, 338 110, 386 84 L386 296 C386 332, 355 348, 322 332 L312 315 Z" fill="url(#rightPillar)"/>
+  <!-- Center 3D twisted diagonal ribbon -->
+  <path d="M126 125 C146 86, 198 86, 232 132 L352 292 C372 320, 355 348, 315 340 C272 332, 236 290, 202 232 L138 135 Z" fill="url(#diagRibbon)"/>
+  <!-- Specular glowing edge along twist -->
+  <path d="M132 118 C164 98, 202 128, 245 192 L338 320" stroke="#9CF5FF" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- Norel Ai Typography (with custom Lambda 'A') -->
+  <text x="202" y="432" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="800" font-size="78" fill="#FFFFFF" letter-spacing="-2">Norel</text>
+  <!-- Stylized Cyan-Blue 'Ai' -->
+  <path d="M346 432 L378 358 L396 358 L428 432 L406 432 L387 382 L368 432 Z" fill="url(#aiGrad)"/>
+  <rect x="436" y="376" width="18" height="56" fill="url(#aiGrad)"/>
+  <circle cx="445" cy="360" r="10" fill="#2CE5FF"/>
+</svg>
+          <div id="norel-offset-spark" style="position:absolute;top:4px;right:4px;width:9px;height:9px;border-radius:50%;background:#2CE5FF;box-shadow:0 0 10px #2CE5FF;"></div>
         </div>
         <div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
