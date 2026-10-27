@@ -328,3 +328,14 @@ const md3 = app.runMultiDomainCommand('Verify emergency hospital shuttle dispatc
 assert.strictEqual(md3.title.includes('Custom Command: Verify emergency'), true, 'Test 124');
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-domain-case-select'), true, 'Test 125');
 console.log('✓ 5/5 Browser Multi-Domain Case Switcher & Custom Command Bar Checks Passed — 125/125 Total');
+
+const lp126 = fs106.readFileSync('legal_agent/loop.py', 'utf8');
+assert.strictEqual(lp126.includes('Call exactly one tool') && lp126.includes('submit_memo'), true, 'Test 126');
+assert.strictEqual(lp126.includes('tools.definitions(r, rid') && lp126.includes('tools.run(api, r, rid, c)'), true, 'Test 127');
+const rCal = cp106.execFileSync('./helper', ['run', '--case', 'northbridge-v-caldera'], {encoding:'utf8'});
+assert.strictEqual(rCal.includes('qa_defect_log.csv') && rCal.includes('Conclusion: YES:'), true, 'Test 128');
+const rFlt = cp106.execFileSync('./helper', ['run', '--case', 'fleet-compliance-audit'], {encoding:'utf8'});
+assert.strictEqual(rFlt.includes('hydraulic_cert_log.pdf') && rFlt.includes('HOLD LOT B'), true, 'Test 129');
+const errStay = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import tools;print(json.dumps(tools.run(None,".","r1",{"name":"unknown_tool","arguments":"{}"})))'], {encoding:'utf8'}).trim());
+assert.strictEqual(Boolean(errStay.error) && errStay.status === 'running', true, 'Test 130');
+console.log('✓ 5/5 Multi-Turn Document-Grounded Reasoning & Refused-Tool Recovery Checks Passed — 130/130 Total');

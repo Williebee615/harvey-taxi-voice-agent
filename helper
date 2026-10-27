@@ -10,11 +10,11 @@ case_name, prompt, turns = None, None, 4
 for i, a in enumerate(args):
     if a == '--case' and i + 1 < len(args): case_name = args[i+1]
     if a == '--prompt' and i + 1 < len(args): prompt = args[i+1]
-    if a == '--turns' and i + 1 < len(args): turns = max(3, int(args[i+1]))
+    if a == '--turns' and i + 1 < len(args): turns = max(4, int(args[i+1]))
 r = run_agent(pathlib.Path('.'), objective=prompt, turns=turns, case_name=case_name)
 print('objective=' + r.get('objective', ''))
 for x in r['trace']:
-    print(f"[turn {x['turn']}] tool={x['tool']} status={x['status']}")
+    print(f"[turn {x['turn']}] tool={x['tool']} status={x['status']} | {x['note']}")
 print('final_status=' + r['status'])
 PYEOF
 fi
