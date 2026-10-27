@@ -31,7 +31,7 @@ Built from the ground up during the hackathon using the **Muse Code** CLI agent 
    * **Tool #3 — Verifiable Policy Lookup (`knowledge.js`):** Answers rider policy questions from 11 verified fleet rules with zero hallucination.
 
 ## 3. Technical Depth, Execution & Verification (20% Execution)
-* **35/35 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
+* **45/45 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
 * **Safe Sandboxed Execution:** Live fleet dispatch (`liveDispatchEnabled: false`) and payment charging (`paymentsEnabled: false`) are hard-coded off and verified in the test suite so judges can safely test every edge case live.
 
 ## 🏆 Built During the Meta Global AI Developer Hackathon (Original Contributions Disclosure)
