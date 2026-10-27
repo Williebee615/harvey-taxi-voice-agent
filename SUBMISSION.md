@@ -31,7 +31,7 @@ Built from the ground up during the hackathon using the **Muse Code** CLI agent 
    * **Tool #3 — Verifiable Policy Lookup (`knowledge.js`):** Answers rider policy questions from 11 verified fleet rules with zero hallucination.
 
 ## 3. Technical Depth, Execution & Verification (20% Execution)
-* **45/45 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
+* **50/50 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
 * **Safe Sandboxed Execution:** Live fleet dispatch (`liveDispatchEnabled: false`) and payment charging (`paymentsEnabled: false`) are hard-coded off and verified in the test suite so judges can safely test every edge case live.
 
 - **Live Meta Model API Verification (`https://api.meta.ai`):** Integrated with `muse-wonder-1.0` (verified with 40+ live API requests and 765.6k+ tokens processed on `dev.meta.ai`).
@@ -47,3 +47,25 @@ Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
   3. **`muse-voice-transcribe`** (Voice-to-intent capture with mandatory rider review before dispatch).
   4. **`sam-3.1`** (Curbside ADA wheelchair ramp physical clearance verification — 8.0 ft minimum check).
 - **Non-Medical Logistics Disclaimer:** This agent strictly performs **physical transportation logistics, curbside ramp clearance verification, and deterministic taxi fare calculation**. It never generates or provides medical advice or clinical diagnoses.
+
+## 🎯 Hackathon Scope vs. Long-Term Norel AI Platform Roadmap
+
+### 1. Dedicated Hackathon Release Scope (Built Oct 27 – Nov 4, 2026)
+- **Product:** **Norel AI — Voice-First Accessible Transportation Agent (`Norel Accessible Ride Intelligence`)**
+- **Competition Track:** **Startups Track** | **Problem Statement:** **Build for Your World**
+- **Real-World Application:** Accessible transportation intake, validation, and transparent pricing through **Harvey Taxi Service**.
+- **Core 6-Step Agentic Workflow:**
+  1. **Interpret (`Muse Spark`):** Parses natural-language rider requests into a validated booking schema (`intent`, `mobility_requirement`, `service_animal`, `missing_information`, `next_action`).
+  2. **Clarify:** Identifies missing fields (`pickup_location`, `destination_address`, `requested_time`) and asks targeted clarifying questions before quoting a fare.
+  3. **Calculate (Deterministic Application Code):** Computes transparent estimates using Harvey Taxi's exact pricing formula—never allowing the LLM to invent distances or prices:
+     - **Booking & Safety Fee:** `$2.50`
+     - **Distance Rate:** `$1.50 / mile`
+     - **Formula:** `Estimated Fare = $2.50 + ($1.50 × verified miles)` (`4 mi = $8.50`, `6 mi = $11.50`, `10 mi = $17.50`)
+     - **Zero Surge & Zero Accessibility Surcharges:** `$0.00` fee for wheelchair-accessible vans or service animals.
+  4. **Validate (`SAM 3.1` Curbside Clearance):** Verifies `>= 8.0 ft` physical ADA wheelchair ramp clearance and triggers autonomous +35ft safe-curb relocation if an obstacle blocks the primary curb.
+  5. **Prepare (Explainable Matching & Preview):** Explicitly distinguishes rider-stated requirements from unverified vehicle availability.
+  6. **Confirm (Rider-in-the-Loop):** Displays an editable Structured Booking Preview Card and creates a labeled sandbox booking (`SANDBOX_BOOKING_CONFIRMED`) only after explicit rider confirmation.
+- **Automated Verification:** **50/50 deterministic tests passing** via `node tests/run-tests.js`.
+
+### 2. Long-Term Norel AI Platform Roadmap (Post-Hackathon)
+- Provider-independent multi-agent architecture expanding beyond `Norel Mobility` into `Norel Research`, `Norel Business`, `Norel Documents`, `Norel Tasks`, `Norel Vision`, and `Norel Developer/Creator` with persistent cross-workspace RLS projects, scoped memory approvals, and live fleet dispatch telemetry.
