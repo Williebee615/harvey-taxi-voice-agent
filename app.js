@@ -917,6 +917,13 @@ const NOREL_VERIFIED_SOURCE_FILES = {
     verifiedQuote: 'A result carries "status" only when the run must stop: "answered", "needs_input", "awaiting_signoff", or "paused".',
     snippet: 'def names(verification: bool) -> list:\n    return BASE_TOOLS + VERIFIER_TOOLS if verification else list(BASE_TOOLS)'
   },
+  'legal_agent/system_instructions.md': {
+    language: 'markdown',
+    module: 'legal_agent.system_instructions',
+    exports: ['Understand the question', 'set_checklist (4-8 items)', 'requires_signature', 'points_other_way (counter-evidence)', 'update_plan'],
+    verifiedQuote: 'Always include an item for evidence that points the other way: anything that weakens the answer you are reaching.',
+    snippet: '1. Understand the question -> list_documents\n2. Work out what must be settled -> set_checklist (4-8 items, requires_signature, counter-evidence)\n3. Plan -> update_plan (revise when you learn something)'
+  },
   'agent_kit/loop.py': {
     language: 'python',
     module: 'agent_kit.loop',
@@ -1105,5 +1112,89 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports.simulateAgentConsoleRun = simulateAgentConsoleRun;
   module.exports.triggerLiveWorkshopConsoleUI = triggerLiveWorkshopConsoleUI;
+}
+
+// === META WORKSHOP SYSTEM_INSTRUCTIONS.MD CAPABILITIES: 4-8 ITEMS, SIGNATURE FLAGS, COUNTER-EVIDENCE & PLAN REVISION (Tests 91-95) ===
+const NOREL_WORKSHOP_CASE_CHECKLIST = [
+  {
+    id: 'item_1_mobility_accommodation',
+    question: 'Does the rider transcript establish both wheelchair-accessible ramp van and service animal requirements with $0.00 ADA surcharge?',
+    evidence_needed: 'Signed/verified rider intake transcript and HANDBOOK.md ADA policy section.',
+    requires_signature: false,
+    points_other_way: false
+  },
+  {
+    id: 'item_2_pickup_destination_time',
+    question: 'Are the exact pickup address, destination address, and appointment time established from rider evidence?',
+    evidence_needed: 'Rider follow-up response establishing 1200 Broadway to 3401 West End Ave at 10:30 AM tomorrow.',
+    requires_signature: false,
+    points_other_way: false
+  },
+  {
+    id: 'item_3_curb_clearance_sam3',
+    question: 'Does SAM 3.1 curbside telemetry confirm at least 8.0 feet of unobstructed ramp deployment zone at drop-off?',
+    evidence_needed: 'SAM 3.1 segmentation log confirming >= 8.0ft curb width (9.5ft verified).',
+    requires_signature: false,
+    points_other_way: false
+  },
+  {
+    id: 'item_4_deterministic_fare_signature',
+    question: 'Is the $11.50 fare ($2.50 base + $1.50 x 6 miles) signed off under the Harvey Taxi pricing schedule and confirmed by the rider?',
+    evidence_needed: 'Signed Harvey Taxi pricing schedule and rider confirmation signature on BookingPreviewCard.',
+    requires_signature: true,
+    points_other_way: false
+  },
+  {
+    id: 'item_5_counter_evidence_disconfirming',
+    question: 'Is there any evidence that points the other way (e.g., curb obstruction < 8.0ft, unverified mileage, hidden ADA fee, or unauthorized live dispatch)?',
+    evidence_needed: 'Audit of failure reports, obstruction logs, and invariant checks for anything that weakens readiness.',
+    requires_signature: false,
+    points_other_way: true
+  }
+];
+
+function validateWorkshopChecklist(items) {
+  if (!Array.isArray(items)) return { valid: false, reason: 'checklist_not_array' };
+  const countValid = items.length >= 4 && items.length <= 8;
+  const allQuestions = items.every((it) => it && typeof it.question === 'string' && it.question.trim().endsWith('?') && typeof it.evidence_needed === 'string');
+  const hasSignatureItem = items.some((it) => it.requires_signature === true);
+  const hasCounterEvidenceItem = items.some((it) => it.points_other_way === true);
+  return {
+    valid: Boolean(countValid && allQuestions && hasSignatureItem && hasCounterEvidenceItem),
+    itemCount: items.length,
+    countInRange4To8: countValid,
+    allQuestionsWithEvidence: allQuestions,
+    hasSignatureItem,
+    hasCounterEvidenceItem
+  };
+}
+
+function reviseAgentPlanOnLearning(currentPlan, newLearning) {
+  const basePlan = Array.isArray(currentPlan) && currentPlan.length > 0 ? currentPlan.slice() : [
+    '1. Understand the question and call list_documents() to inspect inbox.',
+    '2. Call set_checklist() with 5 questions (including requires_signature and counter-evidence item).',
+    '3. Inspect transcripts and HANDBOOK.md with analyze_document() and record_fact().'
+  ];
+  if (newLearning && typeof newLearning === 'string' && newLearning.trim()) {
+    basePlan.push('REVISED PLAN STEP (update_plan): ' + newLearning.trim());
+  }
+  return {
+    tool: 'update_plan',
+    revised: Boolean(newLearning && String(newLearning).trim()),
+    steps: basePlan,
+    judgedAgainst: 'set_checklist'
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.NOREL_WORKSHOP_CASE_CHECKLIST = NOREL_WORKSHOP_CASE_CHECKLIST;
+  window.validateWorkshopChecklist = validateWorkshopChecklist;
+  window.reviseAgentPlanOnLearning = reviseAgentPlanOnLearning;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.NOREL_WORKSHOP_CASE_CHECKLIST = NOREL_WORKSHOP_CASE_CHECKLIST;
+  module.exports.validateWorkshopChecklist = validateWorkshopChecklist;
+  module.exports.reviseAgentPlanOnLearning = reviseAgentPlanOnLearning;
 }
 
