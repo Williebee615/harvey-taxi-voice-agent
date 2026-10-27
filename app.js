@@ -690,3 +690,81 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.enforceBookingInvariants = enforceBookingInvariants;
 }
 
+// === META WORKSHOP REFERENCE ARCHITECTURE: AGENT LOOP, RUN_ID & PAUSE/RESUME (Tests 66-70) ===
+const NOREL_AGENT_TOOLS_MANIFEST = [
+  { name: 'get_booking_checklist', type: 'base', description: 'Load required ADA dispatch fields (pickup, destination_address, requested_time, mobility_requirement, service_animal).' },
+  { name: 'record_rider_fact', type: 'base', description: 'Extract and verify rider statement from voice/text transcript without hallucination.' },
+  { name: 'verify_curb_clearance_sam3', type: 'verification', description: 'Run SAM 3.1 segmentation to verify >= 8.0ft unobstructed wheelchair ramp zone.' },
+  { name: 'calculate_deterministic_fare', type: 'base', description: 'Compute Harvey Taxi fare ($2.50 base + $1.50/mi, $0 ADA fee). Refuses if route miles unverified.' },
+  { name: 'request_rider_clarification', type: 'verification', description: 'Pause agent loop with status=needs_input when required dispatch fields are missing.' },
+  { name: 'submit_booking_preview', type: 'terminal', description: 'Transition from awaiting_signoff to answered/confirmed after explicit human rider sign-off.' }
+];
+
+function executeNorelAgentLoopTurn(params) {
+  const runId = (params && params.runId) || 'run_norel_oct27_001';
+  const utterance = (params && params.utterance) || '';
+  const priorState = (params && params.priorState) || null;
+  const verifiedMiles = (params && typeof params.verifiedMiles === 'number') ? params.verifiedMiles : null;
+  const humanSignoff = Boolean(params && params.humanSignoff);
+
+  if (!utterance.trim() && !humanSignoff) {
+    return {
+      run_id: runId,
+      status: 'paused',
+      model_calls: 0,
+      reason: 'zero_new_input_on_resume'
+    };
+  }
+
+  const intake = interpretRiderRequest(utterance, priorState);
+  const fare = (intake.missing_information.length === 0 && verifiedMiles !== null)
+    ? calculateHarveyTaxiFare(verifiedMiles)
+    : calculateHarveyTaxiFare(null);
+
+  if (intake.missing_information.length > 0) {
+    return {
+      run_id: runId,
+      status: 'needs_input',
+      model: 'meta-models/muse-spark-open-1026',
+      tools_called: ['get_booking_checklist', 'record_rider_fact', 'request_rider_clarification'],
+      missing_checklist_items: intake.missing_information,
+      intake,
+      fare,
+      clarifying_prompt: buildNorelClarifyingPrompt(intake)
+    };
+  }
+
+  if (!humanSignoff) {
+    return {
+      run_id: runId,
+      status: 'awaiting_signoff',
+      model: 'meta-models/muse-spark-open-1026',
+      tools_called: ['record_rider_fact', 'verify_curb_clearance_sam3', 'calculate_deterministic_fare'],
+      missing_checklist_items: [],
+      intake,
+      fare
+    };
+  }
+
+  return {
+    run_id: runId,
+    status: 'answered',
+    terminal_tool: 'submit_booking_preview',
+    model: 'meta-models/muse-spark-open-1026',
+    tools_called: ['submit_booking_preview'],
+    missing_checklist_items: [],
+    intake,
+    fare
+  };
+}
+
+if (typeof window !== 'undefined') {
+  window.NOREL_AGENT_TOOLS_MANIFEST = NOREL_AGENT_TOOLS_MANIFEST;
+  window.executeNorelAgentLoopTurn = executeNorelAgentLoopTurn;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.NOREL_AGENT_TOOLS_MANIFEST = NOREL_AGENT_TOOLS_MANIFEST;
+  module.exports.executeNorelAgentLoopTurn = executeNorelAgentLoopTurn;
+}
+

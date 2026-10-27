@@ -199,3 +199,23 @@ assert.strictEqual(inv3.readyForConfirmation, false, "Test 64: Detects and rejec
 assert.strictEqual(inv2.liveDispatchAllowed, false, "Test 65: Enforces non-dispatch sandbox safety invariant");
 console.log("✓ 5/5 Senior Engineering Invariant, Sanitization & Arithmetic Drift Checks Passed — 65/65 Total");
 
+// === META WORKSHOP REFERENCE ARCHITECTURE TESTS: LOOP.PY PAUSE/RESUME & TOOLS.PY (Tests 66-70) ===
+assert.strictEqual(Array.isArray(app.NOREL_AGENT_TOOLS_MANIFEST), true, "Test 66: tools.py manifest exposes model-callable tools");
+assert.strictEqual(app.NOREL_AGENT_TOOLS_MANIFEST.length, 6, "Test 67: 6 base + verification + terminal tools registered");
+const turn1 = app.executeNorelAgentLoopTurn({
+  runId: "run_test_01",
+  utterance: "I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me."
+});
+assert.strictEqual(turn1.status, "needs_input", "Test 68: Incomplete rider request pauses loop with status=needs_input");
+const emptyResume = app.executeNorelAgentLoopTurn({ runId: "run_test_01", utterance: "" });
+assert.strictEqual(emptyResume.model_calls, 0, "Test 69: resume_run with empty input makes zero model calls");
+const turn2 = app.executeNorelAgentLoopTurn({
+  runId: "run_test_01",
+  utterance: "Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow",
+  priorState: turn1.intake,
+  verifiedMiles: 6,
+  humanSignoff: false
+});
+assert.strictEqual(turn2.status, "awaiting_signoff", "Test 70: Complete intake + verified fare pauses at awaiting_signoff until human confirmation");
+console.log("✓ 5/5 Meta Workshop Agent Loop (needs_input / awaiting_signoff / resume_run) Checks Passed — 70/70 Total");
+
