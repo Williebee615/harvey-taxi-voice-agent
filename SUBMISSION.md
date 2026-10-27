@@ -31,3 +31,15 @@ Built from the ground up during the hackathon using the **Muse Code** CLI agent 
 * **Safe Sandboxed Execution:** Live fleet dispatch (`liveDispatchEnabled: false`) and payment charging (`paymentsEnabled: false`) are hard-coded off and verified in the test suite so judges can safely test every edge case live.
 
 - **Live Meta Model API Verification (`https://api.meta.ai`):** Integrated with `muse-wonder-1.0` (verified with 40+ live API requests and 765.6k+ tokens processed on `dev.meta.ai`).
+
+## 🏆 Built During the Meta Global AI Developer Hackathon (Original Contributions Disclosure)
+
+Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
+- **Problem Statement Track:** **Build for Your World** (Accessible Voice Dispatch & Curbside Verification built from firsthand domain experience at Harvey Taxi Service).
+- **100% Built During the Hackathon:** Every file in this repository (`index.html`, `app.js`, `modal_app.py`, `src/`, `tests/run-tests.js`, and the live Modal & GitHub Pages deployments) was written and deployed from scratch for the Meta Global AI Developer Hackathon.
+- **Meta Models & Tooling Integrated:**
+  1. **`muse-wonder-1.0`** (`https://api.meta.ai` — Live Meta Model API & Claude Code / Muse Code workflow with 765.6k+ verified tokens).
+  2. **`meta-models/muse-spark-open-1026`** (Meta Open Weights served via Modal serverless endpoint & Baseten).
+  3. **`muse-voice-transcribe`** (Voice-to-intent capture with mandatory rider review before dispatch).
+  4. **`sam-3.1`** (Curbside ADA wheelchair ramp physical clearance verification — 8.0 ft minimum check).
+- **Non-Medical Logistics Disclaimer:** This agent strictly performs **physical transportation logistics, curbside ramp clearance verification, and deterministic taxi fare calculation**. It never generates or provides medical advice or clinical diagnoses.
