@@ -1,2 +1,2 @@
-# Ground Truth Evaluation Suite
-Contains deterministic ground-truth JSON specifications for grading Norel AI agent runs.
+# Ground Truth
+Reference evaluation targets for workshop cases.

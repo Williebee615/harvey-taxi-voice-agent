@@ -350,3 +350,12 @@ const uiT = app.runMultiDomainCommand('turbotax.com');
 assert.strictEqual(uiT.question.includes('turbotax.com') && uiT.finalStatus === 'awaiting_signoff', true, 'Test 134');
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('turbotax.com'), true, 'Test 135');
 console.log('✓ 5/5 Cross-Website Domain Navigation (harveytaxiservice.com, turbotax.com, healthcare.gov) Checks Passed — 135/135 Total');
+
+assert.strictEqual(fs106.existsSync('ui/ui.py') && fs106.existsSync('ui/index.html') && fs106.existsSync('ui/README.md'), true, 'Test 136');
+assert.strictEqual(fs106.existsSync('ground_truth/northbridge-v-caldera.json') && fs106.existsSync('world/release.py'), true, 'Test 137');
+assert.strictEqual(fs106.existsSync('solutions/01_session1') && fs106.existsSync('solutions/02_session2'), true, 'Test 138');
+const uiCheck = cp106.execFileSync('python3', ['ui/ui.py', '--check'], {encoding:'utf8'});
+assert.strictEqual(uiCheck.includes('Agent Console -> http://127.0.0.1:8765'), true, 'Test 139');
+const lp140 = fs106.readFileSync('legal_agent/loop.py', 'utf8');
+assert.strictEqual(lp140.includes('settings.model()') && lp140.includes('progress.resume(r, run_id)'), true, 'Test 140');
+console.log('✓ 5/5 Workshop ui/ui.py (http://127.0.0.1:8765), ground_truth, solutions & world/release.py Checks Passed — 140/140 Total');

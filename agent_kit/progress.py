@@ -10,3 +10,7 @@ def save_progress(r, rid, t, s, n, m):
 def load_progress(r, rid):
  f = _d(r)/f'{rid}.json'
  return json.loads(f.read_text()) if f.exists() else {'run_id':rid,'turn':0,'status':'paused','note':'none','messages':[]}
+
+def resume(root, run_id):
+    f = Path(root) / 'world' / 'follow_up' / f'{run_id}.txt'
+    return f.read_text().strip() if f.exists() else None

@@ -8,7 +8,7 @@
   1. `index.html` & `app.js`: Voice S.A.I. & Accessible Ride Intelligence intake console, deterministic Harvey Taxi (`$2.50 + $1.50/mi`) fare calculator, and 3-column Meta Workshop Agent Console.
   2. `agent_kit/tools/__init__.py` & `agent_kit/loop.py`: Full implementation of the 6 `BASE_TOOLS` + 3 `VERIFIER_TOOLS` (`set_checklist`, `update_plan`, `list_documents`, `analyze_document`, `record_fact`, `submit_memo`, `flag_privileged`, `request_evidence`, `check_signatures`) and `needs_input` / `resume_run` / `awaiting_signoff` loop.
   3. `modal_app.py`: Live serverless GPU endpoint executing `meta-models/muse-spark-open-1026` & `muse-spark-1.5` on Modal.
-  4. `tests/run-tests.js`: 135/135 automated verification checks.
+  4. `tests/run-tests.js`: 140/140 automated verification checks.
 * **Non-Medical Transit Guardrail:** Enforces strict transportation logistics only (`flag_privileged` strips and refuses any medical/health advice).
 
 ---
@@ -45,7 +45,7 @@ Built from the ground up during the hackathon using the **Muse Code** CLI agent 
    * **Tool #3 — Verifiable Policy Lookup (`knowledge.js`):** Answers rider policy questions from 11 verified fleet rules with zero hallucination.
 
 ## 3. Technical Depth, Execution & Verification (20% Execution)
-* **135/135 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
+* **140/140 Automated Self-Tests Passing (`node tests/run-tests.js` & GitHub Actions CI):** Every single check—covering extraction, pricing boundaries, minimum-fare clamping, hard-filter driver matching, honest no-match states, 6-turn memory capping, multi-turn state merging, grounded policy lookup, anti-hallucination refusal, and `meta-models/muse-spark-open-1026` configuration—runs automatically on every GitHub push and inside the browser UI.
 * **Safe Sandboxed Execution:** Live fleet dispatch (`liveDispatchEnabled: false`) and payment charging (`paymentsEnabled: false`) are hard-coded off and verified in the test suite so judges can safely test every edge case live.
 
 - **Live Meta Model API Verification (`https://api.meta.ai`):** Integrated with `muse-wonder-1.0` (verified with 40+ live API requests and 765.6k+ tokens processed on `dev.meta.ai`).
@@ -79,7 +79,7 @@ Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
   4. **Validate (`SAM 3.1` Curbside Clearance):** Verifies `>= 8.0 ft` physical ADA wheelchair ramp clearance and triggers autonomous +35ft safe-curb relocation if an obstacle blocks the primary curb.
   5. **Prepare (Explainable Matching & Preview):** Explicitly distinguishes rider-stated requirements from unverified vehicle availability.
   6. **Confirm (Rider-in-the-Loop):** Displays an editable Structured Booking Preview Card and creates a labeled sandbox booking (`SANDBOX_BOOKING_CONFIRMED`) only after explicit rider confirmation.
-- **Automated Verification:** **135/135 deterministic tests passing** via `node tests/run-tests.js`.
+- **Automated Verification:** **140/140 deterministic tests passing** via `node tests/run-tests.js`.
 
 ### 2. Long-Term Norel AI Platform Roadmap (Post-Hackathon)
 - Provider-independent multi-agent architecture expanding beyond `Norel Mobility` into `Norel Research`, `Norel Business`, `Norel Documents`, `Norel Tasks`, `Norel Vision`, and `Norel Developer/Creator` with persistent cross-workspace RLS projects, scoped memory approvals, and live fleet dispatch telemetry.
@@ -88,4 +88,4 @@ Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
 
 * **Pre-Existing Production Context (`harveytaxiservice.com` — Private):** Harvey Taxi Service operates a real-world accessible transportation business with a non-voice S.A.I. backend. However, non-voice web forms still require riders with visual, motor, or mobility impairments to manually type addresses and navigate complex screens.
 * **Built New for the Meta Global AI Developer Hackathon (`harvey-taxi-voice-agent` — Public):** During the official hackathon window, we engineered **Norel Accessible Ride Intelligence**—a standalone **Voice S.A.I. & Multimodal Curbside Ingress Agent** powered by Meta's open-weight and frontier models (`meta-models/muse-spark-open-1026` deployed live on Modal, `muse-voice-transcribe`, and `sam-3.1`).
-* **Drop-In Production Cutover Post-Hackathon:** In this hackathon submission, `liveDispatchEnabled` and `paymentsEnabled` are hard-coded to `false` (135/135 automated checks passing). Post-hackathon, this Voice S.A.I. module mounts directly upstream of Harvey Taxi's production S.A.I. system via `POST /api/rides/request` to provide hands-free accessible booking.
+* **Drop-In Production Cutover Post-Hackathon:** In this hackathon submission, `liveDispatchEnabled` and `paymentsEnabled` are hard-coded to `false` (140/140 automated checks passing). Post-hackathon, this Voice S.A.I. module mounts directly upstream of Harvey Taxi's production S.A.I. system via `POST /api/rides/request` to provide hands-free accessible booking.

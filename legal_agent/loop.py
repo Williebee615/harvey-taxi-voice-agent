@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
-from agent_kit import client as cm, progress, tools
+from agent_kit import client as cm, progress, settings, tools
 STOP = {'answered', 'needs_input', 'awaiting_signoff', 'paused'}
+INST = Path(__file__).with_name('system_instructions.md')
 NUDGE = 'Call exactly one tool. When ready, file with submit_memo.'
 LAST = 'Last turn, file with submit_memo now.'
 def resolve_objective(root, case_name=None, prompt=None):
@@ -19,17 +20,24 @@ def run_agent(root, objective=None, *, turns=4, verification=True, case_name=Non
     return _loop(r, rid, [{'role': 'user', 'content': obj}], turns, 0, verification, obj)
 def resume_run(root, run_id, message=None, *, turns=4, verification=True):
     r = Path(root); sv = progress.load_progress(r, run_id)
-    if not message or not str(message).strip():
+    msg = message if message is not None else progress.resume(r, run_id)
+    if not msg or not str(msg).strip():
         return {'run_id': run_id, 'status': sv.get('status', 'paused'), 'turn': sv.get('turn', 0), 'note': sv.get('note', ''), 'model_calls': 0}
-    msgs = list(sv.get('messages', [])) + [{'role': 'user', 'content': str(message)}]
-    res = _loop(r, run_id, msgs, turns, int(sv.get('turn', 0)), verification, str(message))
+    msgs = list(sv.get('messages', [])) + [{'role': 'user', 'content': str(msg)}]
+    res = _loop(r, run_id, msgs, turns, int(sv.get('turn', 0)), verification, str(msg))
     res['model_calls'] = 1; return res
 def _loop(r, rid, msgs, turns, st, ver, obj):
+    ins = INST.read_text() if INST.exists() else 'Reason step by step'
     api = cm.create(); tr = []; t = st; note = ''
     for i in range(1, turns + 1):
         t = st + i
         if i == turns: msgs.append({'role': 'user', 'content': LAST})
-        resp = api.responses.create(model='muse-spark-1.5', instructions='Reason step by step', input=msgs, tools=tools.definitions(r, rid, ver))
+        try:
+            resp = api.responses.create(model=settings.model(), instructions=ins, input=msgs, tools=tools.definitions(r, rid, ver))
+        except Exception as e:
+            note = f'API exception: {e}'
+            progress.save_progress(r, rid, t, 'paused', note, msgs)
+            return {'run_id': rid, 'objective': obj, 'status': 'paused', 'turn': t, 'note': note, 'trace': tr}
         if not resp.output:
             msgs.append({'role': 'user', 'content': NUDGE})
             progress.save_progress(r, rid, t, 'running', 'nudged', msgs)
@@ -43,4 +51,6 @@ def _loop(r, rid, msgs, turns, st, ver, obj):
         progress.save_progress(r, rid, t, st_val, note, msgs)
         if st_val in STOP:
             return {'run_id': rid, 'objective': obj, 'status': st_val, 'turn': t, 'note': note, 'trace': tr, 'tools_available': tools.names(ver)}
+    note = 'turn budget exhausted'
+    progress.save_progress(r, rid, t, 'paused', note, msgs)
     return {'run_id': rid, 'objective': obj, 'status': 'paused', 'turn': t, 'note': note, 'trace': tr}
