@@ -17,7 +17,8 @@ KNOWN_SITES = {
     }
 }
 def inspect_domain(domain_url, objective=''):
-    clean = str(domain_url or '').lower().replace('https://', '').replace('http://', '').split('/')[0].strip()
+    m_dom = re.search(r'([a-z0-9-]+\.(?:com|org|gov|net|io|ai|edu))', str(domain_url or '').lower())
+    clean = m_dom.group(1) if m_dom else 'custom-domain.com'
     for k, v in KNOWN_SITES.items():
         if k in clean or k.split('.')[0] in objective.lower():
             return {'domain': k, **v}
