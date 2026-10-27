@@ -1,5 +1,6 @@
+const app = require("../app.js");
+const assert = require("node:assert");
 'use strict';
-const assert = require('node:assert');
 const { PRICING, ADAPTER_CONFIG, META_MODEL_CONFIG, computeIdempotencyKey, evaluateFleet, verifyCurbsideClearance, buildAgentAuditTrace, calculateFare, extractBooking, extractBookingWithMemory, appendTurn, matchDriver, retrieveFact, HARVEY_TAXI_FACTS } = require('../app.js');
 let n = 0;
 const test = (name, fn) => { fn(); n++; console.log(`ok ${n} - ${name}`); };
