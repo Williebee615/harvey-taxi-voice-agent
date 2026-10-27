@@ -239,3 +239,14 @@ const unknownFile80 = app.sourceAgentCode("non_existent_file.py");
 assert.strictEqual(Boolean(unknownFile80.error), true, "Test 80: Agent safely reports error on unknown source file");
 console.log("✓ 5/5 Agent Source Code Introspection & Exact Quote Verification Checks Passed — 80/80 Total");
 
+// === META WORKSHOP DIRECTORY TREE & GROUND_TRUTH.JSON VERIFICATION TESTS (Tests 81-85) ===
+const fs81 = require("fs");
+assert.strictEqual(fs81.existsSync("ESCALATION_RULES.md") && fs81.existsSync("VERIFICATION.md") && fs81.existsSync("HANDBOOK.md"), true, "Test 81: Workshop policy & verification markdown specs exist");
+assert.strictEqual(fs81.existsSync("ground_truth/harvey-taxi-ada-case.json"), true, "Test 82: Ground truth evaluation JSON exists in ground_truth/");
+const gt83 = JSON.parse(fs81.readFileSync("ground_truth/harvey-taxi-ada-case.json", "utf8"));
+const calc83 = app.calculateHarveyTaxiFare(gt83.verified_miles);
+assert.strictEqual(calc83.estimatedFareUsd, gt83.expected_fare_usd, "Test 83: Deterministic fare calculator matches ground_truth expected_fare_usd ($11.50)");
+assert.strictEqual(fs81.existsSync("workspace/runs/run_norel_oct27_001.json"), true, "Test 84: Run persistence artifact exists in workspace/runs/<run_id>.json");
+assert.strictEqual(fs81.existsSync("helper"), true, "Test 85: Executable ./helper CLI harness exists");
+console.log("✓ 5/5 Meta Workshop Directory Tree (ESCALATION_RULES, VERIFICATION, ground_truth, workspace/runs, ./helper) Checks Passed — 85/85 Total");
+

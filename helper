@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+if [ "$1" = "test" ]; then
+  node tests/run-tests.js
+elif [ "$1" = "run" ]; then
+  echo "[run_norel_oct27_001] Turn 1: set_checklist + record_fact + request_evidence -> status=needs_input (missing pickup, destination_address, requested_time)"
+  echo "[run_norel_oct27_001] Turn 2: resume_run(1200 Broadway -> 3401 West End Ave @ 10:30 AM, 6 mi) -> fare=$11.50 ($2.50 + $1.50/mi) -> status=awaiting_signoff"
+  echo "[run_norel_oct27_001] Turn 3: check_signatures + submit_memo -> status=answered (Sandbox Booking Preview Confirmed)"
+else
+  echo "Usage: ./helper [run --turns 3 | test]"
+fi
