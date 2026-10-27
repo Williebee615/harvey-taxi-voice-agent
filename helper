@@ -1,2 +1,20 @@
 #!/usr/bin/env bash
-if [ "$1" = "test" ]; then node tests/run-tests.js; else python3 -c "import pathlib; from legal_agent.loop import run_agent; r=run_agent(pathlib.Path('.'),turns=3); [print(f'[turn {x[\"turn\"]}] tool={x[\"tool\"]} status={x[\"status\"]}') for x in r['trace']]; print('final_status='+r['status'])"; fi
+if [ "$1" = "test" ]; then
+  node tests/run-tests.js
+else
+  python3 - "$@" << 'PYEOF'
+import sys, pathlib
+from legal_agent.loop import run_agent
+args = sys.argv[1:]
+case_name, prompt, turns = None, None, 4
+for i, a in enumerate(args):
+    if a == '--case' and i + 1 < len(args): case_name = args[i+1]
+    if a == '--prompt' and i + 1 < len(args): prompt = args[i+1]
+    if a == '--turns' and i + 1 < len(args): turns = max(3, int(args[i+1]))
+r = run_agent(pathlib.Path('.'), objective=prompt, turns=turns, case_name=case_name)
+print('objective=' + r.get('objective', ''))
+for x in r['trace']:
+    print(f"[turn {x['turn']}] tool={x['tool']} status={x['status']}")
+print('final_status=' + r['status'])
+PYEOF
+fi
