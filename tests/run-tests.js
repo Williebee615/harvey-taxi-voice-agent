@@ -227,15 +227,59 @@ assert.strictEqual(app.runToolCall({ name: "request_evidence", arguments: "{}" }
 assert.strictEqual(app.runToolCall({ name: "submit_memo", arguments: "{}" }, { verification: true }).status, "awaiting_signoff", "Test 75: submit_memo with verification=true stops run with status=awaiting_signoff");
 console.log("✓ 5/5 Meta Workshop tools/__init__.py (6 BASE_TOOLS + 3 VERIFIER_TOOLS & Error Recovery) Checks Passed — 75/75 Total");
 
+// === SENIOR ENGINEERING INVARIANT, XSS SANITIZATION & ARITHMETIC DRIFT TESTS (Tests 61-65) ===
+assert.strictEqual(app.sanitizeRiderInput("<script>alert(1)</script>  Book   ride "), "scriptalert(1)/script Book ride", "Test 61: Strips angle brackets and normalizes whitespace");
+const incompleteIntake62 = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow.");
+const noFare62 = app.calculateHarveyTaxiFare(null);
+const inv62 = app.enforceBookingInvariants(incompleteIntake62, noFare62);
+assert.strictEqual(inv62.readyForConfirmation, false, "Test 62: Blocks confirmation when missing fields or unverified fare exist");
+const completeIntake63 = app.interpretRiderRequest("Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow");
+const validFare63 = app.calculateHarveyTaxiFare(6);
+const inv63 = app.enforceBookingInvariants(completeIntake63, validFare63);
+assert.strictEqual(inv63.readyForConfirmation, true, "Test 63: Approves confirmation only when all fields and deterministic fare are verified");
+const tamperedFare64 = { ...validFare63, estimatedFareUsd: 99.99 };
+const inv64 = app.enforceBookingInvariants(completeIntake63, tamperedFare64);
+assert.strictEqual(inv64.readyForConfirmation, false, "Test 64: Detects and rejects fare arithmetic drift ($99.99 != $11.50)");
+assert.strictEqual(inv63.liveDispatchAllowed, false, "Test 65: Enforces non-dispatch sandbox safety invariant");
+console.log("✓ 5/5 Senior Engineering Invariant, Sanitization & Arithmetic Drift Checks Passed — 65/65 Total");
+
+// === META WORKSHOP AGENT_KIT TESTS: LOOP.PY PAUSE/RESUME & TOOLS.PY (Tests 66-70) ===
+assert.strictEqual(Array.isArray(app.NOREL_AGENT_TOOLS_MANIFEST), true, "Test 66: tools.py manifest exposes model-callable tools");
+assert.strictEqual(app.NOREL_AGENT_TOOLS_MANIFEST.length, 6, "Test 67: 6 base + terminal tools registered in manifest");
+const turn1_68 = app.executeNorelAgentLoopTurn({
+  runId: "run_test_01",
+  utterance: "I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me."
+});
+assert.strictEqual(turn1_68.status, "needs_input", "Test 68: Incomplete rider request pauses loop with status=needs_input");
+const emptyResume69 = app.executeNorelAgentLoopTurn({ runId: "run_test_01", utterance: "" });
+assert.strictEqual(emptyResume69.model_calls, 0, "Test 69: resume_run with empty input makes zero model calls");
+const turn2_70 = app.executeNorelAgentLoopTurn({
+  runId: "run_test_01",
+  utterance: "Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow",
+  priorState: turn1_68.intake,
+  verifiedMiles: 6,
+  humanSignoff: false
+});
+assert.strictEqual(turn2_70.status, "awaiting_signoff", "Test 70: Complete intake + verified fare pauses at awaiting_signoff until human confirmation");
+console.log("✓ 5/5 Meta Workshop Agent Loop (needs_input / awaiting_signoff / resume_run / muse-spark-1.5) Checks Passed — 70/70 Total");
+
+// === EXACT META WORKSHOP TOOLS/__INIT__.PY CONTRACT TESTS (Tests 71-75) ===
+assert.strictEqual(app.toolNames(false).length, 6, "Test 71: BASE_TOOLS has 6 tools when verification=false");
+assert.strictEqual(app.toolNames(true).length, 9, "Test 72: BASE_TOOLS + VERIFIER_TOOLS has 9 tools when verification=true");
+assert.strictEqual(app.runToolCall({ name: "record_fact", arguments: "{bad json" }, { verification: true }).error.includes("not valid JSON"), true, "Test 73: Malformed JSON returns error dict so model can self-correct");
+assert.strictEqual(app.runToolCall({ name: "request_evidence", arguments: "{}" }, { verification: false }).error.includes("unknown tool"), true, "Test 74: Calling VERIFIER_TOOL with verification=false returns unknown tool error");
+assert.strictEqual(app.runToolCall({ name: "submit_memo", arguments: "{}" }, { verification: true }).status, "awaiting_signoff", "Test 75: submit_memo with verification=true stops run with status=awaiting_signoff");
+console.log("✓ 5/5 Meta Workshop tools/__init__.py (6 BASE_TOOLS + 3 VERIFIER_TOOLS & Error Recovery) Checks Passed — 75/75 Total");
+
 // === AGENT SOURCE CODE INTROSPECTION & QUOTE VERIFICATION TESTS (Tests 76-80) ===
 assert.strictEqual(app.listAgentSourceFiles().length, 4, "Test 76: Agent lists 4 verified source code modules");
-const srcTools = app.sourceAgentCode("agent_kit/tools/__init__.py", "BASE_TOOLS + VERIFIER_TOOLS");
-assert.strictEqual(srcTools.verified, true, "Test 77: Agent sources agent_kit/tools/__init__.py and verifies exact code substring");
-const srcLoop = app.sourceAgentCode("agent_kit/loop.py", "zero model calls");
-assert.strictEqual(srcLoop.verified, true, "Test 78: Agent sources agent_kit/loop.py and verifies resume_run quote");
-const badQuote = app.sourceAgentCode("agent_kit/tools/__init__.py", "invented_hallucinated_function()");
-assert.strictEqual(badQuote.status, "refused_unverified_quote", "Test 79: Agent refuses unverified code quote that does not exist in source");
-const unknownFile = app.sourceAgentCode("non_existent_file.py");
-assert.strictEqual(Boolean(unknownFile.error), true, "Test 80: Agent safely reports error on unknown source file");
+const srcTools77 = app.sourceAgentCode("agent_kit/tools/__init__.py", "BASE_TOOLS + VERIFIER_TOOLS");
+assert.strictEqual(srcTools77.verified, true, "Test 77: Agent sources agent_kit/tools/__init__.py and verifies exact code substring");
+const srcLoop78 = app.sourceAgentCode("agent_kit/loop.py", "zero model calls");
+assert.strictEqual(srcLoop78.verified, true, "Test 78: Agent sources agent_kit/loop.py and verifies resume_run quote");
+const badQuote79 = app.sourceAgentCode("agent_kit/tools/__init__.py", "invented_hallucinated_function()");
+assert.strictEqual(badQuote79.status, "refused_unverified_quote", "Test 79: Agent refuses unverified code quote that does not exist in source");
+const unknownFile80 = app.sourceAgentCode("non_existent_file.py");
+assert.strictEqual(Boolean(unknownFile80.error), true, "Test 80: Agent safely reports error on unknown source file");
 console.log("✓ 5/5 Agent Source Code Introspection & Exact Quote Verification Checks Passed — 80/80 Total");
 
