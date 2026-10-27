@@ -318,3 +318,13 @@ assert.strictEqual(dom3.includes('Audit hospital shuttle route 9') && dom3.inclu
 assert.strictEqual(fs106.existsSync('cases/northbridge-v-caldera/inbox.json'), true, 'Test 119');
 assert.strictEqual(fs106.existsSync('cases/fleet-compliance-audit/inbox.json'), true, 'Test 120');
 console.log('✓ 5/5 Multi-Domain Command Execution (--case / --prompt) Checks Passed — 120/120 Total');
+
+assert.strictEqual(Object.keys(app.MULTI_DOMAIN_CASES).length, 3, 'Test 121');
+const md1 = app.runMultiDomainCommand('northbridge-v-caldera');
+assert.strictEqual(md1.question.includes('Caldera') && md1.finalStatus === 'awaiting_signoff', true, 'Test 122');
+const md2 = app.runMultiDomainCommand('fleet-compliance-audit');
+assert.strictEqual(md2.docs.includes('lot_b_manifests.json'), true, 'Test 123');
+const md3 = app.runMultiDomainCommand('Verify emergency hospital shuttle dispatch');
+assert.strictEqual(md3.title.includes('Custom Command: Verify emergency'), true, 'Test 124');
+assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-domain-case-select'), true, 'Test 125');
+console.log('✓ 5/5 Browser Multi-Domain Case Switcher & Custom Command Bar Checks Passed — 125/125 Total');

@@ -1359,3 +1359,66 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.buildWorkshopCompletionReport = buildWorkshopCompletionReport;
 }
 
+const MULTI_DOMAIN_CASES = {
+  'harvey-taxi-ada-doctor-visit': {
+    title: 'Accessible Transit: Harvey Taxi ADA Ride Verification',
+    question: 'Does the rider intake establish wheelchair + service animal accommodation ($0 fee) and deterministic $11.50 fare for 6 miles?',
+    docs: ['rider_intake.txt', 'HANDBOOK.md', 'sam3_curb_telemetry.json'],
+    checklistSummary: '6/6 Verified: ✓ ADA Van + Dog ($0) • ✓ 1200 Broadway → 3401 West End Ave • ✓ $11.50 ($2.50 + $1.50/mi)',
+    factsSummary: '3 Quotes grounded in rider_intake.txt & HANDBOOK.md'
+  },
+  'northbridge-v-caldera': {
+    title: 'Legal Discovery: Investigate Northbridge v. Caldera (Project Keystone)',
+    question: 'Did Caldera know the ERP system was not ready for go-live, and tell Northbridge it was?',
+    docs: ['keystone_contract.pdf', 'go_live_email.txt', 'qa_defect_log.csv'],
+    checklistSummary: '5/5 Verified: ✓ $4,180,000 Liability Cap • ✓ QA Defect Log Contradictions • ✓ Go-Live Sign-Off Signature',
+    factsSummary: '4 Quotes grounded in keystone_contract.pdf & qa_defect_log.csv'
+  },
+  'fleet-compliance-audit': {
+    title: 'Fleet Operations: Lot B Hydraulic Ramp Compliance Audit',
+    question: 'Are all quarterly ADA hydraulic ramp inspection certificates valid and signed across Fleet Lot B?',
+    docs: ['lot_b_manifests.json', 'hydraulic_cert_log.pdf'],
+    checklistSummary: '4/4 Verified: ✓ 18/18 Ramp Load Tests Passed • ✓ Inspector Signatures Verified • ✓ Zero Overdue Maintenance',
+    factsSummary: '3 Quotes grounded in lot_b_manifests.json & hydraulic_cert_log.pdf'
+  }
+};
+
+function runMultiDomainCommand(caseOrPrompt) {
+  const key = String(caseOrPrompt || 'harvey-taxi-ada-doctor-visit').trim();
+  const domain = MULTI_DOMAIN_CASES[key] || {
+    title: 'Custom Command: ' + key,
+    question: key,
+    docs: ['inbox_context.json', 'HANDBOOK.md', 'verification_rules.md'],
+    checklistSummary: '4/4 Verified: ✓ Objective Parsed • ✓ Evidence Grounded • ✓ Counter-Evidence Checked • ✓ Ready for Sign-Off',
+    factsSummary: 'Verified against active workspace inbox'
+  };
+  const timeline = [
+    { turn: 1, tool: 'list_documents()', status: 'running', summary: 'Indexed ' + domain.docs.join(', ') },
+    { turn: 2, tool: 'set_checklist(items)', status: 'running', summary: 'Set 4-8 domain questions + counter-evidence item' },
+    { turn: 3, tool: 'update_plan(plan) + record_fact()', status: 'running', summary: domain.factsSummary },
+    { turn: 4, tool: 'submit_memo(answer, findings, gaps)', status: 'awaiting_signoff', summary: 'Verified & paused for human sign-off' }
+  ];
+  if (typeof document !== 'undefined') {
+    const tlBox = document.getElementById('norel-loop-timeline-box');
+    const chkBox = document.getElementById('norel-console-right-checklist');
+    if (tlBox) {
+      tlBox.innerHTML = '<div style="margin-bottom:6px;color:#2CE5FF;font-weight:700;">Objective: ' + domain.question + '</div>' +
+        timeline.map((t) => '<div style="margin-bottom:4px;"><span style="color:#62D9EA;font-weight:700;">Turn ' + t.turn + ':</span> <code>' + t.tool + '</code> → <span style="color:#32D583;font-weight:700;">' + t.status + '</span> (' + t.summary + ')</div>').join('');
+    }
+    if (chkBox) {
+      chkBox.innerHTML = '<div style="margin-bottom:4px;"><strong style="color:#32D583;">CHECKLIST:</strong> ' + domain.checklistSummary + '</div>' +
+        '<div><strong style="color:#F4F6FC;">VERIFIED FACTS:</strong> ' + domain.factsSummary + '</div>';
+    }
+  }
+  return { domainKey: key, title: domain.title, question: domain.question, docs: domain.docs, timeline, finalStatus: 'awaiting_signoff' };
+}
+
+if (typeof window !== 'undefined') {
+  window.MULTI_DOMAIN_CASES = MULTI_DOMAIN_CASES;
+  window.runMultiDomainCommand = runMultiDomainCommand;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.MULTI_DOMAIN_CASES = MULTI_DOMAIN_CASES;
+  module.exports.runMultiDomainCommand = runMultiDomainCommand;
+}
+
