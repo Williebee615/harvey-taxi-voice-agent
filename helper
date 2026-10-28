@@ -1,23 +1,56 @@
-#!/usr/bin/env bash
-if [ "$1" = "test" ]; then
-  node tests/run-tests.js
-else
-  python3 - "$@" << 'PYEOF'
-import sys, pathlib
-from legal_agent.loop import run_agent
-args = sys.argv[1:]
-case_name, prompt, domain, turns = None, None, None, 4
-for i, a in enumerate(args):
-    if a == '--case' and i + 1 < len(args): case_name = args[i+1]
-    if a == '--domain' and i + 1 < len(args): domain = args[i+1]
-    if a == '--prompt' and i + 1 < len(args): prompt = args[i+1]
-    if a == '--turns' and i + 1 < len(args): turns = max(4, int(args[i+1]))
+#!/usr/bin/env python3
+from __future__ import annotations
+import subprocess, sys
+from pathlib import Path
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+cmd = sys.argv[1] if len(sys.argv) > 1 else 'run'
+if cmd == 'test':
+    sys.exit(subprocess.call(['node', 'tests/run-tests.js'], cwd=ROOT))
+if cmd == 'export-pdf':
+    from agent_kit import pdf_export, work_engine
+    info = pdf_export.generate_report(ROOT)
+    wk = work_engine.execute_work(ROOT, 'turbotax.com', 'Prepare Schedule C and Form 8826 ADA fleet tax credit')
+    print(f"PDF Report exported -> {info['pdf_path']} (HTML: {info['html_path']})")
+    print(f"Work Deliverable exported -> {wk['files']['pdf']} | {wk['files']['csv']}")
+    sys.exit(0)
+if cmd == 'firefox':
+    from agent_kit import firefox_bridge, work_engine, pdf_export
+    wk = work_engine.execute_work(ROOT, 'turbotax.com', 'Prepare Schedule C and Form 8826 ADA fleet tax credit for $24,500 Van #07')
+    rep = pdf_export.generate_report(ROOT)
+    firefox_bridge.launch_in_firefox(ROOT / 'index.html')
+    firefox_bridge.launch_in_firefox(wk['files']['html'])
+    print(f"[FIREFOX OPENED] Launched index.html and {wk['files']['html']} in Firefox!")
+    sys.exit(0)
+from legal_agent.loop import run_agent, resume_run
+from agent_kit import pdf_export, work_engine, firefox_bridge
+if cmd == 'resume':
+    rid = sys.argv[2] if len(sys.argv) > 2 else 'run_default'
+    msg = sys.argv[3] if len(sys.argv) > 3 else '1200 Broadway to 3401 West End Ave at 10:30 AM (6.0 miles)'
+    res = resume_run(ROOT, rid, msg)
+    print(f"resumed_status={res.get('status')}")
+    sys.exit(0)
+turns = 10
+case_name = None
+prompt = None
+domain = None
+open_ff = '--firefox' in sys.argv
+for idx, a in enumerate(sys.argv):
+    if a == '--turns' and idx + 1 < len(sys.argv): turns = int(sys.argv[idx + 1])
+    if a == '--case' and idx + 1 < len(sys.argv): case_name = sys.argv[idx + 1]
+    if a == '--prompt' and idx + 1 < len(sys.argv): prompt = sys.argv[idx + 1]
+    if a == '--domain' and idx + 1 < len(sys.argv): domain = sys.argv[idx + 1]
 if domain:
-    prompt = f"[Domain: {domain}] {prompt or 'Inspect web domain and verify task'}"
-r = run_agent(pathlib.Path('.'), objective=prompt, turns=turns, case_name=case_name)
-print('objective=' + r.get('objective', ''))
-for x in r['trace']:
-    print(f"[turn {x['turn']}] tool={x['tool']} status={x['status']} | {x['note']}")
-print('final_status=' + r['status'])
-PYEOF
-fi
+    prompt = f'[Domain: {domain}] ' + (prompt or f'Inspect {domain} and verify compliance checklist')
+res = run_agent(ROOT, max_turns=turns, objective=prompt, case_name=case_name)
+print(f"final_status={res.get('status')}")
+pdf_export.generate_report(ROOT, res.get('run_id'))
+ff = firefox_bridge.fetch_live_dom_via_firefox_ua(domain or 'harveytaxiservice.com')
+wk = work_engine.execute_work(ROOT, domain or '', prompt or '', res.get('run_id', 'latest'))
+print(f"[FIREFOX BRIDGE] {ff['browser']} -> {ff['url']} (HTTP {ff['status']} | Title: {ff['title']})")
+print(f"[WORK COMPLETED] {wk['deliverable_type']} -> {wk['files']['pdf']} | {wk['files']['csv']}")
+for item in wk['line_items'][:4]:
+    print(f"  * {item['form']}: {item['field']} = {item['value']}")
+if open_ff:
+    firefox_bridge.launch_in_firefox(wk['files']['html'])
+    firefox_bridge.launch_in_firefox(ROOT / 'index.html')
