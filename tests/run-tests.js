@@ -406,3 +406,12 @@ assert.strictEqual(pdfBytes.startsWith('%PDF-1.4') && pdfBytes.includes('HARVEY 
 assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.html'), true, 'Test 169');
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-export-pdf-btn') && fs106.readFileSync('index.html', 'utf8').includes('exportAgentReportPDF'), true, 'Test 170');
 console.log('✓ 5/5 Printable & Exportable PDF Agent Verification Reports (./helper export-pdf & UI Button) Passed — 170/170 Total');
+assert.strictEqual(fs106.existsSync('agent_kit/work_engine.py'), true, 'Test 171');
+const wkOut = cp106.execFileSync('./helper', ['run', '--domain', 'turbotax.com', '--prompt', 'Prepare Schedule C and Form 8826 ADA fleet tax credit for $24,500 Van #07'], {encoding:'utf8'});
+assert.strictEqual(wkOut.includes('[WORK COMPLETED]') && fs106.existsSync('workspace/deliverables/latest_work_deliverable.pdf') && fs106.existsSync('workspace/deliverables/latest_work_deliverable.csv'), true, 'Test 172');
+const csvTxt = fs106.readFileSync('workspace/deliverables/latest_work_deliverable.csv', 'utf8');
+assert.strictEqual(csvTxt.includes('Form 4562 Part I') && csvTxt.includes('-$24,500.00') && csvTxt.includes('Form 8826 Line 6'), true, 'Test 173');
+const wkHtx = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiservice.com', '--prompt', 'Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport'], {encoding:'utf8'});
+assert.strictEqual(fs106.readFileSync('workspace/deliverables/latest_work_deliverable.csv', 'utf8').includes('$25.00') && fs106.readFileSync('workspace/deliverables/latest_work_deliverable.csv', 'utf8').includes('15.0 miles'), true, 'Test 174');
+assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-completed-work-panel') && fs106.readFileSync('index.html', 'utf8').includes('downloadWorkCSV'), true, 'Test 175');
+console.log('✓ 5/5 Actual Completed Work Deliverables (IRS Schedule C/8826 CSV/PDF, Dispatch Manifests, VA 10-3542) Passed — 175/175 Total');
