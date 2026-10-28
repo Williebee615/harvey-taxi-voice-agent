@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, uuid
+import json, uuid, re
 from datetime import datetime, timezone
 from pathlib import Path
 from agent_kit import settings
@@ -8,8 +8,8 @@ from verification import checks
 def run_agent(root: str | Path, turns: int = 4, objective: str | None = None, case_name: str | None = None) -> dict:
     root_path = Path(root).resolve()
     cname = case_name or 'harvey-taxi-ada-doctor-visit'
-    if not (root_path / 'cases' / cname).exists():
-        cname = 'harvey-taxi-ada-doctor-visit'
+    if not (root_path / 'cases' / cname).is_dir():
+        raise ValueError(f'Unknown case: {cname}. Refusing to substitute a default case.')
     inbox = root_path / 'cases' / cname / 'inbox'
     docs = sorted([p.name for p in inbox.iterdir() if p.is_file()]) if inbox.exists() else []
     intake_txt = (inbox / 'rider_intake.txt').read_text() if (inbox / 'rider_intake.txt').exists() else ''
@@ -17,7 +17,8 @@ def run_agent(root: str | Path, turns: int = 4, objective: str | None = None, ca
     sam_json = json.loads((inbox / 'sam3_curb_telemetry.json').read_text()) if (inbox / 'sam3_curb_telemetry.json').exists() else {}
     obj = objective or f'Verify ADA ride booking for case {cname}'
     run_id = f'run_{uuid.uuid4().hex[:8]}'
-    mode = settings.inference_mode()
+    # This loop is deterministic. A separate model probe must never be presented as this run's inference.
+    mode = 'DETERMINISTIC_FALLBACK_SIMULATION'
 
     t1 = {'turn': 1, 'phase': 'PLAN', 'tool': 'list_documents', 'arguments': {'case': cname}, 'observation': {'documents': docs}}
     checklist_items = [
@@ -29,47 +30,72 @@ def run_agent(root: str | Path, turns: int = 4, objective: str | None = None, ca
     ]
     t2 = {'turn': 2, 'phase': 'PLAN', 'tool': 'set_checklist', 'arguments': {'items': checklist_items}, 'observation': {'count': len(checklist_items)}}
 
-    quote_target = '$2.50 base component plus $1.50 per verified mile.' if '$2.50 base component' in handbook_txt else handbook_txt.splitlines()[-1]
+    # Verify the policy quote against case evidence. Never invent a quote if the file is absent.
+    quote_target = '$2.50 base component plus $1.50 per verified mile.'
     quote_check = checks.verify_exact_quote(root_path, cname, 'HANDBOOK.md', quote_target)
-    miles = 6.0
-    for ln in intake_txt.splitlines():
-        if 'Verified Distance:' in ln:
-            try: miles = float(ln.split(':')[1].replace('miles', '').strip())
-            except Exception: miles = 6.0
-    claimed_fare = settings.calculate_verified_fare(miles)['total_fare']
-    if '$26.50' in intake_txt or 'wrong-fare' in cname or (obj and 'wrong fare' in obj.lower()):
-        claimed_fare = 26.50
-    fare_check = checks.verify_fare_invariant(miles, claimed_fare, 15.0 if claimed_fare == 26.50 else 0.0)
-    selected_bay = sam_json.get('selected_bay', 'north_bay')
-    bay_info = sam_json.get(selected_bay, {'clearance_ft': 9.4})
-    curb_check = checks.verify_curb_safety(float(bay_info.get('clearance_ft', 9.4)))
-    missing_intake = 'MISSING_PICKUP' in intake_txt or 'incomplete' in cname or (obj and 'missing' in obj.lower())
+    fields = {}
+    for line in intake_txt.splitlines():
+        if ':' in line:
+            k, v = line.split(':', 1)
+            fields[k.strip()] = v.strip()
+    rider_name = fields.get('Rider', '').strip()
+    required_fields = ('Rider', 'Pickup', 'Dropoff', 'Pickup Time', 'Verified Distance')
+    missing_fields = [field for field in required_fields if not fields.get(field) or fields[field].startswith('MISSING_')]
+    miles = None
+    raw_miles = fields.get('Verified Distance', '')
+    match_miles = re.fullmatch(r'\s*(\d+(?:\.\d+)?)\s*miles?\s*', raw_miles, re.I)
+    if match_miles:
+        value = float(match_miles.group(1))
+        if value > 0:
+            miles = value
+    if miles is None and 'Verified Distance' not in missing_fields:
+        missing_fields.append('Verified Distance')
+    quoted = fields.get('Quoted Fare', '')
+    fare_match = re.match(r'^\$(\d+(?:\.\d{1,2})?)\b', quoted)
+    claimed_fare = float(fare_match.group(1)) if fare_match else None
+    if claimed_fare is None:
+        missing_fields.append('Quoted Fare')
+    claimed_ada_fee = 15.0 if re.search(r'\$15(?:\.00)?\s*(?:ADA|wheelchair|service)', quoted, re.I) else 0.0
+    fare_check = (checks.verify_fare_invariant(miles, claimed_fare, claimed_ada_fee)
+                  if miles is not None and claimed_fare is not None else
+                  {'passed': False, 'expected_fare': None, 'claimed_fare': claimed_fare,
+                   'formula': None, 'reason': 'Missing verified mileage or explicitly quoted fare'})
+    selected_bay = sam_json.get('selected_bay')
+    bay_info = sam_json.get(selected_bay) if isinstance(selected_bay, str) else None
+    try:
+        clearance = float(bay_info['clearance_ft']) if isinstance(bay_info, dict) else None
+    except (KeyError, ValueError, TypeError):
+        clearance = None
+    curb_check = (checks.verify_curb_safety(clearance) if clearance is not None else
+                  {'passed': False, 'clearance_ft': None, 'required_ft': settings.MIN_RAMP_CLEARANCE_FT,
+                   'reason': 'Missing selected curb bay or verified clearance telemetry'})
+    missing_intake = bool(missing_fields) or 'incomplete' in cname or (obj and 'missing' in obj.lower())
     contradiction = 'CONTRADICTION' in json.dumps(sam_json) or 'contradictory' in cname
 
     t3 = {
         'turn': 3, 'phase': 'ACT', 'tool': 'analyze_documents',
         'arguments': {'documents': docs, 'verbatim_quote': quote_target, 'counter_evidence_probe': '6.1ft South Bay vs 9.4ft North Bay'},
-        'observation': {'quote_verification': quote_check, 'fare_verification': fare_check, 'curb_verification': curb_check, 'missing_intake': missing_intake, 'contradiction_detected': contradiction}
+        'observation': {'quote_verification': quote_check, 'fare_verification': fare_check, 'curb_verification': curb_check, 'missing_intake': missing_intake, 'missing_fields': missing_fields, 'contradiction_detected': contradiction}
     }
 
     if missing_intake:
         final_status = 'needs_input'
         t4_tool = 'request_evidence'
-        t4_args = {'missing_fields': ['pickup_address', 'pickup_time'], 'reason': 'Missing required intake fields'}
-    elif not curb_check['passed'] or not fare_check['passed'] or contradiction:
+        t4_args = {'missing_fields': missing_fields, 'reason': 'Missing required rider evidence; no values substituted'}
+    elif not quote_check['passed'] or not curb_check['passed'] or not fare_check['passed'] or contradiction:
         final_status = 'needs_input'
         t4_tool = 'request_evidence'
-        t4_args = {'escalated_risk': curb_check['reason'] if not curb_check['passed'] else fare_check['reason'], 'corrected_fare': fare_check['formula']}
+        t4_args = {'escalated_risk': (quote_check['reason'] if not quote_check['passed'] else curb_check['reason'] if not curb_check['passed'] else fare_check['reason']), 'corrected_fare': fare_check['formula']}
     else:
         final_status = 'awaiting_signoff'
         t4_tool = 'submit_memo'
-        t4_args = {'rider': 'Evelyn Carter', 'verified_fare': f"${fare_check['expected_fare']:.2f}", 'formula': fare_check['formula'], 'selected_curb_bay': f'{selected_bay} (9.4ft >= 8.0ft)', 'rejected_counter_evidence': 'South Bay 6.1ft rejected', 'status': 'awaiting_signoff'}
+        t4_args = {'rider': rider_name, 'verified_fare': f"${fare_check['expected_fare']:.2f}", 'formula': fare_check['formula'], 'selected_curb_bay': f'{selected_bay} ({clearance:.1f}ft >= 8.0ft)', 'rejected_counter_evidence': 'South Bay 6.1ft rejected', 'status': 'awaiting_signoff'}
 
     t4 = {'turn': 4, 'phase': 'OBSERVE', 'tool': t4_tool, 'arguments': t4_args, 'observation': {'final_status': final_status}}
     record = {
         'run_id': run_id, 'timestamp': datetime.now(timezone.utc).isoformat(), 'case': cname, 'objective': obj,
-        'inference_mode': mode, 'model_roles': settings.MODEL_ROLES, 'status': final_status,
-        'counter_evidence_checked': True, 'human_signoff_token': None,
+        'inference_mode': mode, 'model_invoked_in_run': False, 'model_roles_configured_not_executed': settings.MODEL_ROLES, 'telemetry_source': 'simulation_fixture', 'status': final_status,
+        'counter_evidence_checked': bool(sam_json), 'human_signoff_token': None,
         'verification': {'quote_check': quote_check, 'fare_check': fare_check, 'curb_check': curb_check},
         'turns': [t1, t2, t3, t4]
     }
@@ -90,6 +116,10 @@ def resume_run(root: str | Path, run_id: str = 'run_latest', dispatcher_signatur
         raise ValueError(f"Cannot approve run in status '{record.get('status')}'")
     if not dispatcher_signature or len(dispatcher_signature.strip()) < 3:
         raise ValueError('Valid human dispatcher signature required')
+    if not record.get('run_integrity', {}).get('passed') or not all(record['verification'][key]['passed'] for key in ('quote_check', 'fare_check', 'curb_check')):
+        raise ValueError('Cannot approve failed or unverifiable evidence')
+    # A typed demo signature is not authenticated authorization for real dispatch.
+    record['authorization_mode'] = 'SIMULATED_DISPATCHER_SIGNOFF'
     record['human_signoff_token'] = dispatcher_signature.strip()
     record['status'] = 'completed_after_human_signoff'
     rpath.write_text(json.dumps(record, indent=2) + '\n')
