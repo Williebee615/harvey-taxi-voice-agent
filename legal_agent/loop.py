@@ -1,97 +1,161 @@
+"""Workshop-style model -> tool -> observation loop with resumable run records."""
 from __future__ import annotations
-import json, uuid
-from datetime import datetime, timezone
+import json
 from pathlib import Path
-from agent_kit import settings
-from verification import checks
+from agent_kit import client as model_client, evidence, progress, settings, tools
 
-def run_agent(root: str | Path, turns: int = 4, objective: str | None = None, case_name: str | None = None) -> dict:
-    root_path = Path(root).resolve()
-    cname = case_name or 'harvey-taxi-ada-doctor-visit'
-    if not (root_path / 'cases' / cname).exists():
-        cname = 'harvey-taxi-ada-doctor-visit'
-    inbox = root_path / 'cases' / cname / 'inbox'
-    docs = sorted([p.name for p in inbox.iterdir() if p.is_file()]) if inbox.exists() else []
-    intake_txt = (inbox / 'rider_intake.txt').read_text() if (inbox / 'rider_intake.txt').exists() else ''
-    handbook_txt = (inbox / 'HANDBOOK.md').read_text() if (inbox / 'HANDBOOK.md').exists() else ''
-    sam_json = json.loads((inbox / 'sam3_curb_telemetry.json').read_text()) if (inbox / 'sam3_curb_telemetry.json').exists() else {}
-    obj = objective or f'Verify ADA ride booking for case {cname}'
-    run_id = f'run_{uuid.uuid4().hex[:8]}'
-    mode = settings.inference_mode()
+STOP = {'needs_input', 'awaiting_signoff', 'paused', 'completed_after_human_signoff'}
 
-    t1 = {'turn': 1, 'phase': 'PLAN', 'tool': 'list_documents', 'arguments': {'case': cname}, 'observation': {'documents': docs}}
-    checklist_items = [
-        {'id': 'q1_intake', 'question': 'Are pickup, dropoff, and pickup time complete?'},
-        {'id': 'q2_fare', 'question': 'Does fare equal $2.50 + $1.50/mi with $0.00 ADA fee?'},
-        {'id': 'q3_curb', 'question': 'Does SAM 3.1 confirm >= 8.0ft ramp clearance?'},
-        {'id': 'q4_counter_evidence', 'question': 'Were obstructed bays (6.1ft South Bay) or illegal overrides rejected?'},
-        {'id': 'q5_signoff', 'question': 'Is dispatch held at awaiting_signoff until human authorization?'}
-    ]
-    t2 = {'turn': 2, 'phase': 'PLAN', 'tool': 'set_checklist', 'arguments': {'items': checklist_items}, 'observation': {'count': len(checklist_items)}}
 
-    quote_target = '$2.50 base component plus $1.50 per verified mile.' if '$2.50 base component' in handbook_txt else handbook_txt.splitlines()[-1]
-    quote_check = checks.verify_exact_quote(root_path, cname, 'HANDBOOK.md', quote_target)
-    miles = 6.0
-    for ln in intake_txt.splitlines():
-        if 'Verified Distance:' in ln:
-            try: miles = float(ln.split(':')[1].replace('miles', '').strip())
-            except Exception: miles = 6.0
-    claimed_fare = settings.calculate_verified_fare(miles)['total_fare']
-    if '$26.50' in intake_txt or 'wrong-fare' in cname or (obj and 'wrong fare' in obj.lower()):
-        claimed_fare = 26.50
-    fare_check = checks.verify_fare_invariant(miles, claimed_fare, 15.0 if claimed_fare == 26.50 else 0.0)
-    selected_bay = sam_json.get('selected_bay', 'north_bay')
-    bay_info = sam_json.get(selected_bay, {'clearance_ft': 9.4})
-    curb_check = checks.verify_curb_safety(float(bay_info.get('clearance_ft', 9.4)))
-    missing_intake = 'MISSING_PICKUP' in intake_txt or 'incomplete' in cname or (obj and 'missing' in obj.lower())
-    contradiction = 'CONTRADICTION' in json.dumps(sam_json) or 'contradictory' in cname
+def _instructions():
+    return Path(__file__).with_name('system_instructions.md').read_text()
 
-    t3 = {
-        'turn': 3, 'phase': 'ACT', 'tool': 'analyze_documents',
-        'arguments': {'documents': docs, 'verbatim_quote': quote_target, 'counter_evidence_probe': '6.1ft South Bay vs 9.4ft North Bay'},
-        'observation': {'quote_verification': quote_check, 'fare_verification': fare_check, 'curb_verification': curb_check, 'missing_intake': missing_intake, 'contradiction_detected': contradiction}
-    }
 
-    if missing_intake:
-        final_status = 'needs_input'
-        t4_tool = 'request_evidence'
-        t4_args = {'missing_fields': ['pickup_address', 'pickup_time'], 'reason': 'Missing required intake fields'}
-    elif not curb_check['passed'] or not fare_check['passed'] or contradiction:
-        final_status = 'needs_input'
-        t4_tool = 'request_evidence'
-        t4_args = {'escalated_risk': curb_check['reason'] if not curb_check['passed'] else fare_check['reason'], 'corrected_fare': fare_check['formula']}
-    else:
-        final_status = 'awaiting_signoff'
-        t4_tool = 'submit_memo'
-        t4_args = {'rider': 'Evelyn Carter', 'verified_fare': f"${fare_check['expected_fare']:.2f}", 'formula': fare_check['formula'], 'selected_curb_bay': f'{selected_bay} (9.4ft >= 8.0ft)', 'rejected_counter_evidence': 'South Bay 6.1ft rejected', 'status': 'awaiting_signoff'}
+def _simulation_calls(root, record):
+    """Explicit offline demonstration. These choices are scripted, never called AI."""
+    docs = evidence.documents(root, record['case'])
+    items = [
+        {'id': 'intake', 'question': 'Are the rider, journey, time and quoted fare supplied?'},
+        {'id': 'fare', 'question': 'Does the quoted fare follow the supplied tariff?'},
+        {'id': 'curb', 'question': 'Does supplied curb telemetry meet the demo fleet policy?'},
+        {'id': 'counter', 'question': 'Is contradictory evidence rejected and human signoff required?'}]
+    calls = [('list_documents', {}), ('set_checklist', {'items': items}),
+             ('analyze_documents', {'documents': list(docs)}), ('verify_booking', {})]
+    if not evidence.inspect(root, record['case'])['passed']:
+        return calls + [('request_evidence', {'missing': ['Resolve the failed independent booking checks shown in verification.']})]
+    sources = [('intake', 'rider_intake.txt'), ('fare', 'HANDBOOK.md'),
+               ('curb', 'sam3_curb_telemetry.json'), ('counter', 'HANDBOOK.md')]
+    findings = []
+    for i, (item, document) in enumerate(sources, 1):
+        if item == 'fare':
+            quote = '$2.50 base component plus $1.50 per verified mile.'
+        elif item == 'counter':
+            quote = next((line for line in docs[document].splitlines() if 'awaiting_signoff' in line), docs[document])
+        elif item == 'curb':
+            quote = docs[document]
+        else:
+            quote = next(line for line in docs[document].splitlines() if line.strip())
+        claim = 'Source evidence for ' + item + '; see independent checks.'
+        calls.append(('record_fact', {'item': item, 'document': document, 'quote': quote, 'claim': claim}))
+        findings.append({'item': item, 'finding': claim, 'fact_ids': [f'F{i}']})
+    return calls + [('submit_memo', {'answer': 'Demo evidence passed independent checks; dispatcher review is required.', 'findings': findings, 'gaps': []})]
 
-    t4 = {'turn': 4, 'phase': 'OBSERVE', 'tool': t4_tool, 'arguments': t4_args, 'observation': {'final_status': final_status}}
-    record = {
-        'run_id': run_id, 'timestamp': datetime.now(timezone.utc).isoformat(), 'case': cname, 'objective': obj,
-        'inference_mode': mode, 'model_roles': settings.MODEL_ROLES, 'status': final_status,
-        'counter_evidence_checked': True, 'human_signoff_token': None,
-        'verification': {'quote_check': quote_check, 'fare_check': fare_check, 'curb_check': curb_check},
-        'turns': [t1, t2, t3, t4]
-    }
-    record['run_integrity'] = checks.verify_run_record(record)
-    runs_dir = root_path / 'workspace' / 'runs'
-    runs_dir.mkdir(parents=True, exist_ok=True)
-    (runs_dir / 'run_latest.json').write_text(json.dumps(record, indent=2) + '\n')
-    for t in record['turns']:
-        print(f"[turn {t['turn']}] {t['tool']} -> {json.dumps(t['arguments'])}")
-    print(f'inference_mode={mode} final_status={final_status}')
+
+def _advance(root, record, turns, api=None):
+    if isinstance(turns, bool) or not isinstance(turns, int) or not 1 <= turns <= 40:
+        raise ValueError('Turn limit must be 1-40')
+    if record['turn'] + turns > 200:
+        raise ValueError('Run budget exceeded; start a new run')
+    record['status'] = 'running'
+    progress.save(root, record)
+    scripted = _simulation_calls(root, record) if record['requested_mode'] == 'simulation' else None
+    api = api or (model_client.create() if scripted is None else None)
+    for offset in range(turns):
+        turn = record['turn'] + 1
+        event = {'turn': turn, 'phase': 'ACT', 'timestamp': progress.now()}
+        try:
+            if scripted is not None:
+                if turn > len(scripted):
+                    record['status'] = 'paused'
+                    break
+                name, args = scripted[turn - 1]
+                call = {'type': 'function_call', 'name': name, 'call_id': f'simulation_{turn}', 'arguments': json.dumps(args)}
+                output = [call]
+            else:
+                response = api.responses.create(model=record['configured_model'], instructions=_instructions(),
+                    input=record['messages'], tools=tools.definitions(root, record['run_id']))
+                record['model_invoked_in_run'] = True
+                record['inference_mode'] = 'LIVE_META_API'
+                receipt = {'turn': turn, 'response_id': response.get('id'), 'model': response.get('model'), 'usage': response.get('usage', {})}
+                record['receipts'].append(receipt)
+                output = response['output']
+                event['receipt'] = receipt
+                calls = [x for x in output if x.get('type') == 'function_call']
+                # Preserve exact provider output (including encrypted replay data), not hidden reasoning text in UI.
+                record['messages'].extend(output)
+                if len(calls) != 1 or not calls[0].get('call_id'):
+                    for bad in calls:
+                        record['messages'].append({'type': 'function_call_output', 'call_id': bad.get('call_id'), 'output': json.dumps({'error': 'Exactly one tool per turn; none executed.'})})
+                    record['messages'].append({'role': 'user', 'content': 'Call exactly one available tool. No tool was executed this turn.'})
+                    event.update(tool='no_tool_executed', arguments={}, observation={'error': 'Model must select exactly one tool'})
+                    record['turn'] = turn
+                    record['turns'].append(event)
+                    progress.save(root, record)
+                    continue
+                call = calls[0]
+            if scripted is not None:
+                record['messages'].extend(output)
+            result = tools.run(api, root, record['run_id'], call, record=record)
+            record['messages'].append({'type': 'function_call_output', 'call_id': call['call_id'], 'output': json.dumps(result)})
+            if offset == turns - 2:
+                record['messages'].append({'role': 'user', 'content': 'One turn remains in this batch. Submit a fully cited memo if ready; otherwise request missing evidence. Never skip checks.'})
+            try:
+                arguments = json.loads(call.get('arguments', '{}')) if isinstance(call.get('arguments'), str) else call.get('arguments', {})
+            except ValueError:
+                arguments = {'invalid_json': True}
+            event.update(tool=call['name'], arguments=arguments, observation=result)
+            record['status'] = result.get('status', 'running')
+        except model_client.ModelError as error:
+            event.update(tool='api_error', arguments={}, observation={'error': str(error)})
+            record['status'] = 'paused'
+            record['pause_reason'] = str(error)
+        record['turn'] = turn
+        record['turns'].append(event)
+        progress.save(root, record)
+        print(f"[turn {turn}] {event['tool']} -> {record['status']}", flush=True)
+        if record['status'] in STOP:
+            break
+    if record['status'] == 'running':
+        record['status'] = 'paused'
+        record['pause_reason'] = 'Turn batch exhausted; continue explicitly.'
+    progress.save(root, record)
+    print(f"inference_mode={record['inference_mode']} final_status={record['status']}", flush=True)
     return record
 
-def resume_run(root: str | Path, run_id: str = 'run_latest', dispatcher_signature: str = '') -> dict:
-    root_path = Path(root).resolve()
-    rpath = root_path / 'workspace' / 'runs' / 'run_latest.json'
-    record = json.loads(rpath.read_text())
-    if record.get('status') != 'awaiting_signoff':
-        raise ValueError(f"Cannot approve run in status '{record.get('status')}'")
-    if not dispatcher_signature or len(dispatcher_signature.strip()) < 3:
-        raise ValueError('Valid human dispatcher signature required')
-    record['human_signoff_token'] = dispatcher_signature.strip()
-    record['status'] = 'completed_after_human_signoff'
-    rpath.write_text(json.dumps(record, indent=2) + '\n')
-    print(f"[resume_run] run_id={record['run_id']} human_signoff_token='{dispatcher_signature.strip()}' final_status={record['status']}")
-    return record
+
+def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation', api=None):
+    if mode not in ('simulation', 'live'):
+        raise ValueError('Choose simulation or live')
+    case = case_name or 'harvey-taxi-ada-doctor-visit'
+    evidence.case_path(root, case)
+    if objective is not None and (not isinstance(objective, str) or len(objective) > 10_000):
+        raise ValueError('Objective must be text of at most 10000 characters')
+    objective = objective or f'Investigate accessible booking evidence for {case}. Verify fare, intake, curb evidence and counter-evidence; hold for dispatcher signoff.'
+    record = progress.new_record(case, objective, mode, settings.model())
+    return _advance(root, record, turns, api)
+
+
+def resume_run(root, run_id='run_latest', dispatcher_signature='', *, message='', turns=20, api=None):
+    record = progress.load_progress(root, run_id)
+    if dispatcher_signature:
+        return approve_run(root, record['run_id'], dispatcher_signature)
+    if record['status'] in ('awaiting_signoff', 'completed_after_human_signoff'):
+        return record  # No API calls when no work is required.
+    if record['status'] == 'needs_input' and not message.strip():
+        return record
+    if message:
+        if not isinstance(message, str) or len(message) > 10_000:
+            raise ValueError('Follow-up must be text of at most 10000 characters')
+        record['messages'].append({'role': 'user', 'content': 'Human follow-up (not proof of source changes): ' + message})
+        # Evidence must be rechecked and re-cited, never approved from a follow-up alone.
+        record['verified_digest'] = None
+        record['facts'] = []
+        record['memo'] = None
+        if record['requested_mode'] == 'simulation':
+            raise ValueError('For changed simulation evidence, start a new run. Live runs support follow-up.')
+    return _advance(root, record, turns, api)
+
+
+def approve_run(root, run_id, signature):
+    record = progress.load_progress(root, run_id)
+    if record['status'] != 'awaiting_signoff':
+        raise ValueError('Only an awaiting_signoff run can be approved')
+    if not isinstance(signature, str) or not 3 <= len(signature.strip()) <= 120:
+        raise ValueError('Enter a reviewer name of 3-120 characters')
+    current = evidence.inspect(root, record['case'])
+    if not current['passed'] or current['evidence_digest'] != record.get('verified_digest') or not record.get('run_integrity', {}).get('passed') or not record.get('memo'):
+        raise ValueError('Evidence failed or changed since verification. Start a new review.')
+    record.update(status='completed_after_human_signoff', human_signoff_token=signature.strip(),
+                  authorization_mode='SIMULATED_DISPATCHER_SIGNOFF', signed_at=progress.now())
+    record.setdefault('audit', []).append({'action': 'demo_signoff', 'timestamp': progress.now(), 'reviewer': signature.strip()})
+    return progress.save(root, record)

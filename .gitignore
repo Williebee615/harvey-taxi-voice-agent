@@ -8,3 +8,10 @@ __pycache__/
 workspace/case_records/run_[0-9a-f]*.json
 workspace/reports/run_[0-9a-f]*.pdf
 workspace/runs/run_[0-9a-f]*.json
+workspace/runs/run_latest.json
+workspace/runs/.writing-*
+workspace/runs/run_*.json
+!workspace/runs/live_fireworks_gpu_receipt.json
+!.env.example
+workspace/reports/run_*.json
+world/follow_up/run_*.txt

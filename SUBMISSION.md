@@ -1,38 +1,19 @@
-# Harvey Taxi — Accessible Voice-Booking & Verification Agent
-**Meta Global AI Developer Hackathon (Startup Track)**
-**Strict Scope:** Harvey Taxi Accessible Voice-Booking & Verification Agent (`Williebee615/harvey-taxi-voice-agent`)
+# Submission working draft — Accessible Care Transportation Review
 
-## 1. Architecture Diagram
-    [Rider Intake (rider_intake.txt) + Policy (HANDBOOK.md) + SAM 3.1 Curb Sensor (sam3_curb_telemetry.json)]
-                                                |
-                                                v
-    [4-Turn Document-Grounded Agent Loop (legal_agent/loop.py)]
-      Turn 1 (PLAN):    list_documents    -> Enumerate case evidence files
-      Turn 2 (PLAN):    set_checklist     -> 5 verification items + counter-evidence probe
-      Turn 3 (ACT):     analyze_documents -> Verify verbatim quote, $2.50+$1.50/mi fare, & SAM 3.1 >=8.0ft curb
-      Turn 4 (OBSERVE): request_evidence  -> Halt at needs_input on missing fields, unsafe 6.1ft curb, or fare drift
-                        submit_memo       -> Halt at awaiting_signoff until human dispatcher sign-off
-                                                |
-                                                v
-    [Human Dispatcher Sign-Off Gate (./helper resume '<Signature>')] -> final_status=completed_after_human_signoff
+## Problem
+Transportation coordination can become a barrier between a rider and a healthcare appointment. Harvey Taxi brings firsthand transportation context to a tool that checks the request, fare and pickup evidence before a dispatcher reviews it.
 
-## 2. Meta Model Role Mapping & Live vs. Fallback Transparency
-- **Primary Reasoning Engine:** Meta `muse-spark-1.5` (`https://api.meta.ai/v1`)
-- **Fine-Tuned Policy & Fare Verifier (Fireworks AI SFT):** Meta `Muse Glimmer 30B` (Job `vxd87q0r`, Loss `0.57 -> 0.04`, Live Deployment `accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq`)
-- **Speech Intake Transcription:** Meta `muse-wonder-audio-1.0`
-- **Visual Curb Clearance Verifier:** Meta `sam-3.1-curb-segmentation` (`>= 8.0ft` ramp clearance requirement)
-- **Simulation Boundary:** When run without API keys in `.env` (such as in GitHub Actions CI or browser-only judge preview), `inference_mode()` explicitly reports `DETERMINISTIC_FALLBACK_SIMULATION`. No real vehicles are dispatched and no real payments are processed.
+## What the prototype does
+A Meta-powered investigator chooses tools, reads fictional transport evidence, records exact quotations and prepares a cited memo. Independent code checks the fare, intake, selected curb bay, counter-evidence and healthcare coordination fields. Missing return plans and requests requiring clinical support are held for human follow-up. Every turn can be inspected in the local console.
 
-## 3. Before vs. After: Unverified Agent vs. Verified Harvey Taxi Agent
-- **Obstructed 6.1ft South Curb Bay:** Unverified agent dispatches to South Bay and strands wheelchair rider; Verified Agent checks SAM 3.1 counter-evidence, rejects 6.1ft South Bay, and selects 9.4ft North Bay or halts with `needs_input`.
-- **Illegal $15.00 Wheelchair/Service Dog Fee ($26.50 quote):** Unverified agent accepts overcharge; Verified Agent enforces `$2.50 base + $1.50/mi + $0.00 ADA fee = $11.50` (49 CFR Part 37) and halts on fare drift.
-- **Missing Pickup Address/Time:** Unverified agent hallucinates defaults; Verified Agent calls `request_evidence` and halts at `needs_input`.
-- **Premature Completion:** Unverified agent marks ride `completed` immediately; Verified Agent halts at `awaiting_signoff` until `./helper resume` records human authorization.
+## Demonstration boundaries
+Live mode invokes Meta Muse Spark through the Responses API. Offline mode is explicitly scripted. Curb data is a simulated fixture; live SAM and speech are not implemented. Human sign-off is a demo acknowledgment, not authenticated clinical clearance or dispatch. No real patients, vehicles, payments or EHRs are involved.
 
-## 4. Verification & Demo Commands
-    ./helper test
-    ./helper validate-models
-    ./helper run --case harvey-taxi-ada-doctor-visit
-    ./helper resume Dispatcher-Willie-Harvey
-    ./helper run --case harvey-taxi-unsafe-curb-boarding
-    ./helper run --case harvey-taxi-incomplete-intake
+## Original work and evidence
+Use the upgrade PR diff and dated commits to identify work completed during the event. Do not present existing Harvey Taxi services, workshop starter code or historical Fireworks receipts as newly developed integrations. Confirm track eligibility with organizers.
+
+## Before submitting
+- Run the integrated live acceptance checklist in VERIFICATION.md and record honest results.
+- Record the three-minute demo in docs/DEMO.md; link a publicly accessible video here.
+- Supply the public repository URL, participant names and exact newly built contribution scope.
+- Replace this working draft with verified submission facts. No pilot outcome or first-place claim is established.

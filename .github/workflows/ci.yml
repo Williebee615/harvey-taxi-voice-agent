@@ -1,18 +1,21 @@
-name: Hackathon Verification (35/35 Checks)
+name: Verifiable agent regression
 on:
   push:
-    branches: [ main ]
+    branches: [main, codex/live-verifiable-agent]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 jobs:
   verify-agent:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run 35/35 Verifiable Agent Tests
-        run: node tests/run-tests.js
+      - name: Offline behavior and HTTP security tests
+        run: ./helper test
+      - name: JavaScript syntax
+        run: node --check app.js

@@ -1,0 +1,14 @@
+Rider: Jordan Ellis (fictional demo rider)
+Pickup: Demo Residence, Nashville, TN
+Dropoff: Demo Community Clinic, Nashville, TN
+Pickup Time: 2026-11-02 09:00 America/Chicago
+Verified Distance: 6.0 miles
+Mobility Device: Wheelchair requiring side-entry ramp
+Assistance Animal: Service dog
+Quoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)
+Trip Purpose: Scheduled clinic appointment (transportation only)
+Coordinator Contact: Demo Clinic transportation desk (fictional contact)
+Appointment Time: 2026-11-02 10:00 America/Chicago
+Return Plan: Coordinator to confirm return pickup after appointment; rider will wait inside with clinic staff
+Vehicle Capability: CONFIRMED in demo fixture: wheelchair securement and side-entry ramp vehicle
+Clinical Support Required: no

@@ -1,69 +1,62 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-import sys, os, subprocess, json, urllib.request
+"""Harvey Taxi developer CLI. Secrets are loaded locally, never printed."""
+import argparse
+import json
+import subprocess
+import sys
 from pathlib import Path
-
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
+from agent_kit import progress, settings
+from legal_agent.loop import approve_run, resume_run, run_agent
 
-def _load_env():
-    ef = ROOT / '.env'
-    if ef.exists():
-        for ln in ef.read_text().splitlines():
-            ln = ln.strip()
-            if ln and not ln.startswith('#') and '=' in ln:
-                k, v = ln.split('=', 1)
-                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-_load_env()
-cmd = sys.argv[1] if len(sys.argv) > 1 else 'run'
+def main():
+    parser = argparse.ArgumentParser(description='Harvey Taxi verifiable agent. Live mode sends case evidence to Meta; simulation makes no API calls.')
+    subs = parser.add_subparsers(dest='command', required=True)
+    run = subs.add_parser('run', help='Start a new evidence review')
+    run.add_argument('--case', default='harvey-taxi-ada-doctor-visit')
+    run.add_argument('--mode', choices=['simulation', 'live'], default='simulation')
+    run.add_argument('--turns', type=int, default=20)
+    run.add_argument('--prompt')
+    resume = subs.add_parser('resume', help='Continue a paused run or supply a follow-up')
+    resume.add_argument('--run-id', default='run_latest')
+    resume.add_argument('--message', default='')
+    resume.add_argument('--turns', type=int, default=20)
+    approve = subs.add_parser('approve', help='Record demo human signoff; never dispatches')
+    approve.add_argument('--run-id', required=True)
+    approve.add_argument('--signature', required=True)
+    show = subs.add_parser('show', help='Inspect the public audit record')
+    show.add_argument('--run-id', default='run_latest')
+    subs.add_parser('validate-models', help='Make one Meta API probe (separate from booking runs)')
+    subs.add_parser('test', help='Run offline regression tests; no keys or API calls required')
+    serve = subs.add_parser('serve', help='Open the local agent console server')
+    serve.add_argument('--port', type=int, default=8765)
+    args = parser.parse_args()
+    settings.load_env(ROOT)
+    try:
+        if args.command == 'test':
+            return subprocess.call([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py', '-v'], cwd=ROOT)
+        if args.command == 'serve':
+            from ui.ui import main as serve_console
+            serve_console(args.port)
+            return 0
+        if args.command == 'run':
+            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode)
+        elif args.command == 'resume':
+            result = resume_run(ROOT, args.run_id, message=args.message, turns=args.turns)
+        elif args.command == 'approve':
+            result = approve_run(ROOT, args.run_id, args.signature)
+        elif args.command == 'show':
+            result = progress.load_progress(ROOT, args.run_id)
+        else:
+            result = settings.probe_live_inference()
+        print(json.dumps(progress.public_record(result), indent=2))
+        return 2 if result.get('status') == 'paused' and result.get('turns', [{}])[-1].get('tool') == 'api_error' else 0
+    except (ValueError, OSError, RuntimeError) as error:
+        print(f'Error: {error}', file=sys.stderr)
+        return 1
 
-if cmd == 'test':
-    res = subprocess.run(['node', str(ROOT / 'tests' / 'run-tests.js')])
-    sys.exit(res.returncode)
 
-if cmd in ('validate-models', 'live-norel'):
-    from agent_kit import settings
-    probe = settings.probe_live_inference()
-    report = {
-        'reasoning_meta_api': {
-            'configured_model': settings.MODEL_ROLES['reasoning'],
-            'live_verified': False,
-            'mode': 'DETERMINISTIC_FALLBACK_SIMULATION',
-            'note': 'Direct api.meta.ai key not active; reasoning loop uses deterministic verifier or Fireworks Muse Glimmer 30B.'
-        },
-        'fireworks_muse_glimmer_30b': {
-            'fine_tuned_deployment': settings.FIREWORKS_DEPLOYED_MODEL,
-            'base_model': settings.FIREWORKS_BASE_MODEL,
-            'active_model_used': probe['active_model'],
-            'live_verified': probe['live'],
-            'mode': probe['mode'],
-            'sample_response': probe['response'],
-            'usage': probe['usage'],
-            'archived_live_gpu_receipt': 'workspace/runs/live_fireworks_gpu_receipt.json (Job vxd87q0r -> Model ft-f7pywv9kusek5 -> Deployment myxfl5zq: 193 tokens, 0.30 GPU hrs, $1.97 spend)'
-        }
-    }
-    print(json.dumps(report, indent=2))
-    sys.exit(0)
-
-if cmd == 'resume':
-    sig = ' '.join(sys.argv[2:]) or 'Dispatcher-Willie-Harvey-Verified'
-    from legal_agent.loop import resume_run
-    resume_run(ROOT, 'run_latest', dispatcher_signature=sig)
-    sys.exit(0)
-
-case_name = None
-prompt = None
-args = sys.argv[2:]
-i = 0
-while i < len(args):
-    if args[i] == '--case' and i + 1 < len(args):
-        case_name = args[i + 1]; i += 2
-    elif args[i] == '--prompt' and i + 1 < len(args):
-        prompt = args[i + 1]; i += 2
-    elif args[i] == '--turns' and i + 1 < len(args):
-        i += 2
-    else:
-        i += 1
-from legal_agent.loop import run_agent
-run_agent(ROOT, objective=prompt, case_name=case_name)
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -1,48 +1,62 @@
-from __future__ import annotations
-from pathlib import Path
-from agent_kit import settings
+"""Independent numerical and source verification for the demo fleet policy."""
+import math
+from agent_kit import evidence, settings
 
-def verify_exact_quote(root: str | Path, case_name: str, doc_name: str, claimed_quote: str) -> dict:
-    fpath = Path(root) / 'cases' / case_name / 'inbox' / doc_name
-    if not fpath.exists():
-        return {'passed': False, 'reason': f'Missing document {doc_name}'}
-    content = fpath.read_text()
-    passed = bool(claimed_quote and claimed_quote.strip() in content)
-    return {'passed': passed, 'doc_name': doc_name, 'claimed_quote': claimed_quote, 'reason': 'Exact verbatim quote verified' if passed else 'Quote not found verbatim'}
 
-def verify_fare_invariant(miles: float, claimed_total: float, claimed_ada_fee: float = 0.0) -> dict:
+def verify_exact_quote(root, case_name, doc_name, claimed_quote):
+    text = evidence.documents(root, case_name).get(doc_name, '')
+    passed = verify_fact_quote(claimed_quote, text)
+    return {'passed': passed, 'doc_name': doc_name, 'claimed_quote': claimed_quote,
+            'reason': 'Exact quote verified' if passed else 'Quote not found verbatim'}
+
+
+def finite(value):
+    try:
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+    except (OverflowError, ValueError):
+        return False
+
+
+def verify_fare_invariant(miles, claimed_total, claimed_ada_fee=0.0):
+    if not all(finite(x) for x in (miles, claimed_total, claimed_ada_fee)) or miles < 0:
+        return {'passed': False, 'reason': 'Invalid finite fare inputs', 'expected_fare': None, 'formula': None}
     expected = settings.calculate_verified_fare(miles)
     total_ok = abs(claimed_total - expected['total_fare']) < 0.005
-    ada_ok = abs(claimed_ada_fee - 0.0) < 0.005
-    passed = total_ok and ada_ok
+    ada_ok = claimed_ada_fee == 0
     reasons = []
     if not total_ok:
-        reasons.append(f"Fare drift: claimed ${claimed_total:.2f} != expected ${expected['total_fare']:.2f}")
+        reasons.append('Fare drift: quoted total differs from demo tariff')
     if not ada_ok:
-        reasons.append(f'Illegal ADA surcharge: ${claimed_ada_fee:.2f} (must be $0.00)')
-    return {'passed': passed, 'expected_fare': expected['total_fare'], 'claimed_fare': claimed_total, 'formula': expected['formula'], 'reason': 'Fare invariant satisfied' if passed else '; '.join(reasons)}
+        reasons.append('Accessibility surcharge must be $0.00 under demo policy')
+    return {'passed': total_ok and ada_ok, 'expected_fare': expected['total_fare'], 'claimed_fare': claimed_total,
+            'formula': expected['formula'], 'reason': '; '.join(reasons) or 'Fare invariant satisfied'}
 
-def verify_curb_safety(clearance_ft: float) -> dict:
-    passed = clearance_ft >= settings.MIN_RAMP_CLEARANCE_FT
-    return {'passed': passed, 'clearance_ft': clearance_ft, 'required_ft': settings.MIN_RAMP_CLEARANCE_FT, 'reason': f'SAFE ({clearance_ft:.1f}ft >= 8.0ft)' if passed else f'UNSAFE BOARDING: {clearance_ft:.1f}ft < 8.0ft minimum ADA ramp clearance'}
 
-def verify_run_record(record: dict) -> dict:
+def verify_curb_safety(clearance_ft):
+    passed = finite(clearance_ft) and clearance_ft >= settings.MIN_RAMP_CLEARANCE_FT
+    return {'passed': passed, 'clearance_ft': clearance_ft if finite(clearance_ft) else None,
+            'required_ft': settings.MIN_RAMP_CLEARANCE_FT, 'reason': 'Demo fleet clearance met' if passed else 'Missing or insufficient demo fleet clearance'}
+
+
+def verify_run_record(record):
+    checks = record.get('verification', {})
     errors = []
-    turns = record.get('turns', [])
-    seq = [t.get('tool') for t in turns]
-    if len(turns) < 4 or seq[:3] != ['list_documents', 'set_checklist', 'analyze_documents']:
-        errors.append(f'Invalid 4-turn sequence: {seq}')
-    if record.get('status') == 'completed' and not record.get('human_signoff_token'):
-        errors.append('Premature completion without human_signoff_token')
-    if not record.get('counter_evidence_checked'):
-        errors.append('Counter-evidence check missing')
-    return {'passed': len(errors) == 0, 'errors': errors}
+    if not checks or not all(x.get('passed') is True for x in checks.values()):
+        errors.append('Independent checks incomplete or failed')
+    if record.get('status') == 'completed_after_human_signoff' and not record.get('human_signoff_token'):
+        errors.append('Missing reviewer')
+    if not record.get('memo'):
+        errors.append('Cited memo missing')
+    return {'passed': not errors, 'errors': errors}
 
-def verify_checklist(items: list) -> bool:
+
+def verify_checklist(items):
     return isinstance(items, list) and 4 <= len(items) <= 8
 
-def verify_fact_quote(quote: str, source_text: str) -> bool:
-    return bool(quote and source_text and quote.strip() in source_text)
 
-def verify_memo_submission(record: dict) -> bool:
+def verify_fact_quote(quote, source_text):
+    return isinstance(quote, str) and bool(quote.strip()) and quote in source_text
+
+
+def verify_memo_submission(record):
     return verify_run_record(record)['passed']

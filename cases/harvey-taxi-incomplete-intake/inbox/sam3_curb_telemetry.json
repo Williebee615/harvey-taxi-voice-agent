@@ -5,5 +5,7 @@
     "status": "UNOBSTRUCTED_LEVEL_CURB",
     "safe_for_ramp": true
   },
-  "selected_bay": "north_bay"
+  "selected_bay": "north_bay",
+  "source": "simulation_fixture",
+  "model_executed": false
 }

@@ -1,12 +1,13 @@
-# Norel AI — Accessible Transit Escalation Rules (`ESCALATION_RULES.md`)
+# Transportation review escalation
 
-1. **Missing Critical Dispatch Fields (`status: "needs_input"`):**
-   - If `pickup_location`, `destination_address`, or `requested_time` is null or unverified, the agent MUST pause the run with `status = "needs_input"` and ask a clarifying question.
-2. **Unverified Route Distance (Fare Refusal Rule):**
-   - The agent MUST refuse to estimate or quote a dollar fare until route mileage is verified.
-3. **Curbside ADA Ramp Obstruction (`SAM 3.1 < 8.0 ft`):**
-   - If SAM 3.1 segmentation detects `< 8.0 ft` of clear curb width, the agent MUST trigger autonomous alternate drop-off zone recovery or escalate before dispatch.
-4. **Medical / Privileged Information Guardrail (`flag_privileged`):**
-   - The agent MUST strip medical diagnoses and refuse health advice, recording strictly transit accommodation facts (`wheelchair_access`, `service_animal`).
-5. **Mandatory Human Sign-Off (`status: "awaiting_signoff"`):**
-   - Before any booking preview transitions to `answered`, the loop MUST pause at `awaiting_signoff` for explicit rider confirmation.
+The following always block memo acceptance or demo acknowledgment:
+
+- Missing rider, pickup, destination, pickup time, verified mileage or explicit fare quote.
+- Missing exact tariff evidence, fare drift or a positive accessibility surcharge.
+- Missing, nonfinite, obstructed or insufficient selected-bay clearance in supplied telemetry.
+- Conflicting override instructions or unresolved counter-evidence.
+- Missing healthcare coordinator, appointment, return plan or confirmed vehicle capability.
+- A request explicitly marked as needing clinical support. Refer to the appropriate human service; the agent does not assess medical suitability.
+- Missing/invalid citations or evidence changed after verification.
+
+Model/network errors pause the run. A retry is explicit and never switches silently to simulation. The app cannot dispatch a vehicle, process payments, supply clinical care or authenticate real staff authority.

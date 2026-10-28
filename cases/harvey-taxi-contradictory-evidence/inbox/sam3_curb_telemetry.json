@@ -6,5 +6,7 @@
     "safe_for_ramp": false
   },
   "selected_bay": "south_bay",
-  "verbatim_telemetry": "CONTRADICTION: Override note requests 6.1ft South Bay without sign-off."
+  "verbatim_telemetry": "CONTRADICTION: Override note requests 6.1ft South Bay without sign-off.",
+  "source": "simulation_fixture",
+  "model_executed": false
 }
