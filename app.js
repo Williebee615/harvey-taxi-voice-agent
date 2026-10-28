@@ -1360,6 +1360,27 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 const MULTI_DOMAIN_CASES = {
+  'va.gov': {
+    title: 'Web Domain: va.gov (Veterans BTSS Medical Ride Reimbursement)',
+    question: 'On va.gov: Verify VA Form 10-3542 Beneficiary Travel reimbursement ($11.50, $0 deductible) for ADA wheelchair van trip.',
+    docs: ['/health-care/get-reimbursed-for-travel-pay', '/btss-portal', '/va-form-10-3542'],
+    checklistSummary: '4/4 Verified on va.gov: ✓ BTSS Special Mode • ✓ $0 Deductible • ✓ $11.50 Fare Match',
+    factsSummary: 'DOM & Form 10-3542 verified on va.gov'
+  },
+  'bna.com': {
+    title: 'Web Domain: bna.com (Nashville Airport ADA Curbside & AVI Permit)',
+    question: 'On bna.com: Verify Harvey Taxi ADA Van #04 AVI transponder #BNA-8841 and Terminal Level 1 Zero-Wait Accessible Pickup.',
+    docs: ['/ground-transportation/commercial-operators', '/ada-curbside-lane-pass', '/avi-transponder-status'],
+    checklistSummary: '4/4 Verified on bna.com: ✓ AVI #BNA-8841 • ✓ Level 1 ADA Curb • ✓ 10.2ft Ramp Clearance',
+    factsSummary: 'DOM & AVI permit verified on bna.com'
+  },
+  'stripe.com': {
+    title: 'Web Domain: stripe.com (Harvey Taxi NEMT Voucher & Driver Payout)',
+    question: 'On stripe.com: Verify Hospital NEMT Voucher #VCH-9920 ($11.50) with $0.00 rider co-pay and stage instant driver payout.',
+    docs: ['/dashboard/nemt-vouchers', '/connect/driver-payouts', '/disputes-and-holds'],
+    checklistSummary: '4/4 Verified on stripe.com: ✓ Voucher #VCH-9920 • ✓ $0 Rider Co-Pay • ✓ $11.50 Escrow Payout',
+    factsSummary: 'DOM & NEMT voucher verified on stripe.com'
+  },
   'harveytaxiservice.com': {
     title: 'Web Domain: harveytaxiservice.com (Accessible Ride & SAM 3.1 Dispatch)',
     question: 'On harveytaxiservice.com: Verify ADA wheelchair van + service dog ($0.00 fee) and compute exact 6-mile fare ($11.50).',

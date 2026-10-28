@@ -376,3 +376,14 @@ assert.strictEqual(h150.includes('Internal knowledge defects') && h150.includes(
 assert.strictEqual(h150.includes('Section 179 ADA Vehicle Deduction') && h150.includes('IRS Form 8826'), true, 'Test 149');
 assert.strictEqual(fs106.readFileSync('ui/index.html', 'utf8').includes('renderWorkshopConsole'), true, 'Test 150');
 console.log('✓ 5/5 Full-Width 3-Column Agent Console (PLAN/ACT/OBSERVE Badges & Dynamic Domain Switching) Passed — 150/150 Total');
+
+const wVa = cp106.execFileSync('./helper', ['run', '--domain', 'va.gov', '--prompt', 'File VA BTSS ADA medical ride reimbursement'], {encoding:'utf8'});
+assert.strictEqual(wVa.includes('[va.gov]') && wVa.includes('VA.GOV BTSS CLAIM STAGED'), true, 'Test 151');
+const wBna = cp106.execFileSync('./helper', ['run', '--domain', 'bna.com', '--prompt', 'Verify Nashville Airport ADA curbside permit and AVI transponder'], {encoding:'utf8'});
+assert.strictEqual(wBna.includes('[bna.com]') && wBna.includes('BNA.COM AIRPORT DISPATCH CLEARED'), true, 'Test 152');
+const wStr = cp106.execFileSync('./helper', ['run', '--domain', 'stripe.com', '--prompt', 'Verify hospital NEMT voucher and stage $11.50 driver payout'], {encoding:'utf8'});
+assert.strictEqual(wStr.includes('[stripe.com]') && wStr.includes('STRIPE.COM PAYOUT STAGED'), true, 'Test 153');
+const h155 = fs106.readFileSync('index.html', 'utf8');
+assert.strictEqual(h155.includes('Web Domain 3: va.gov') && h155.includes('Web Domain 4: bna.com') && h155.includes('Web Domain 5: stripe.com'), true, 'Test 154');
+assert.strictEqual(!h155.includes('>Domain 2: Legal Discovery') && !h155.includes('>Domain 3: Fleet Compliance'), true, 'Test 155');
+console.log('✓ 5/5 Custom Harvey Taxi Web Domains (harveytaxiservice.com, turbotax.com, va.gov, bna.com, stripe.com) Passed — 155/155 Total');
