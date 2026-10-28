@@ -48,7 +48,7 @@ class _Responses:
         step = len(outputs)
         dom_m = re.search(r'\[domain:\s*([^\]]+)\]', obj, re.I)
         dom = dom_m.group(1).strip() if dom_m else ''
-        if 'missing' in obj.lower() and step == 0:
+        if 'missing_evidence_test' in obj.lower() and step == 0:
             args = {'objective': obj, 'missing_fields': ['pickup_location', 'destination_address', 'requested_time']}
             return SimpleNamespace(output=[SimpleNamespace(name='request_evidence', call_id='call_req_1', arguments=json.dumps(args))], model=mdl)
         if 'Last turn' in last_user or step >= 3:
