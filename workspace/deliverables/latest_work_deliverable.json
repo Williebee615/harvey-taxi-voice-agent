@@ -1,33 +1,48 @@
 {
-  "deliverable_type": "Stripe Connect NEMT Voucher Settlement & Driver Payout Ledger",
-  "entity": "Harvey Taxi Transit Escrow \u2014 Stripe Connect",
+  "deliverable_type": "Harvey Taxi Service \u2014 Official ADA Dispatch Manifest & Rider Invoice",
+  "entity": "Harvey Taxi Service (harveytaxiservice.com)",
   "vehicle": "ADA Van #04",
-  "timestamp": "2026-10-27 21:52:36",
+  "timestamp": "2026-10-27 22:05:37",
   "line_items": [
     {
-      "form": "Voucher Auth",
-      "field": "Hospital NEMT Voucher ID",
-      "value": "#VCH-9920 (Pre-Authorized)"
+      "form": "Dispatch Ticket",
+      "field": "Assigned Wheelchair-Accessible Vehicle",
+      "value": "ADA Van #04 (800-lb Hydraulic Rear Ramp)"
     },
     {
-      "form": "Gross Capture",
-      "field": "Verified Trip Tariff ($2.50 + 8.0 mi x $1.50/mi)",
-      "value": "$14.50"
+      "form": "Route Manifest",
+      "field": "Pickup -> Destination",
+      "value": "1200 Broadway, Nashville, TN -> 3401 West End Ave, Nashville, TN"
     },
     {
-      "form": "Rider Co-Pay",
-      "field": "Rider Personal Card / Service Dog Charge",
-      "value": "$0.00 (Hard Invariant)"
+      "form": "Distance & Rate",
+      "field": "Verified Odometer Distance",
+      "value": "6.0 miles (@ $1.50/mi)"
     },
     {
-      "form": "Platform Fee",
-      "field": "NEMT Institutional Processing Fee",
-      "value": "$0.00 (Hospital Sponsored)"
+      "form": "Base Tariff",
+      "field": "Harvey Taxi Base Dispatch Fee",
+      "value": "$2.50"
     },
     {
-      "form": "Net Driver Payout",
-      "field": "Instant Payout to Driver (ADA Van #04)",
-      "value": "$14.50"
+      "form": "Mileage Charge",
+      "field": "6.0 miles x $1.50/mi",
+      "value": "$9.00"
+    },
+    {
+      "form": "ADA & Service Dog",
+      "field": "Wheelchair Ramp & Service Animal Surcharge (28 CFR 36.302)",
+      "value": "$0.00"
+    },
+    {
+      "form": "SAM 3.1 Curb Bay",
+      "field": "Autonomous Curbside Drop-Off Zone",
+      "value": "North Medical Plaza (9.5 ft clear width)"
+    },
+    {
+      "form": "Total Invoice",
+      "field": "Total Verified Fare Due",
+      "value": "$11.50"
     }
   ]
 }

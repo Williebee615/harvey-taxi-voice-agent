@@ -1,0 +1,41 @@
+{
+  "run_id": "run_cfcddf87",
+  "checklist": [
+    {
+      "id": "q1",
+      "question": "Verify rider_intake.txt"
+    },
+    {
+      "id": "q2",
+      "question": "Verify policy/math"
+    },
+    {
+      "id": "q3",
+      "question": "Check counter-evidence"
+    },
+    {
+      "id": "q4",
+      "question": "Verify human sign-off gate"
+    }
+  ],
+  "plan": [],
+  "facts": [
+    {
+      "analyzed": [
+        "rider_intake.txt",
+        "HANDBOOK.md",
+        "sam3_curb_telemetry.json"
+      ],
+      "hypothesis": "Checking if rider_intake.txt contradicts counter-evidence or policy caps"
+    }
+  ],
+  "flags": [],
+  "signatures": [],
+  "evidence_requests": [],
+  "memo": {
+    "objective": "Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport",
+    "domain": "",
+    "answer": "yes",
+    "conclusion": "Verified by Meta Muse (accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq) for: Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport"
+  }
+}

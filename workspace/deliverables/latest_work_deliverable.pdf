@@ -9,19 +9,22 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length 826 >>
+<< /Length 1059 >>
 stream
 BT
 /F1 11 Tf
-72 750 Td (Stripe Connect NEMT Voucher Settlement & Driver Payout Ledger) Tj
-0 -14 Td (Entity: Harvey Taxi Transit Escrow  Stripe Connect | Vehicle: ADA Van #04 | Date: 2026-10-27 21) Tj
-0 -14 Td (Command: Settle hospital NEMT voucher #VCH-9920 for 8 miles trip) Tj
+72 750 Td (Harvey Taxi Service  Official ADA Dispatch Manifest & Rider Invoice) Tj
+0 -14 Td (Entity: Harvey Taxi Service \(harveytaxiservice.com\) | Vehicle: ADA Van #04 | Date: 2026-10-27) Tj
+0 -14 Td (Command: ADA Doctor Visit Booking) Tj
 0 -14 Td (--------------------------------------------------------------------------------) Tj
-0 -14 Td (Voucher Auth | Hospital NEMT Voucher ID = #VCH-9920 \(Pre-Authorized\)) Tj
-0 -14 Td (Gross Capture | Verified Trip Tariff \($2.50 + 8.0 mi x $1.50/mi\) = $14.50) Tj
-0 -14 Td (Rider Co-Pay | Rider Personal Card / Service Dog Charge = $0.00 \(Hard Invariant\)) Tj
-0 -14 Td (Platform Fee | NEMT Institutional Processing Fee = $0.00 \(Hospital Sponsored\)) Tj
-0 -14 Td (Net Driver Payout | Instant Payout to Driver \(ADA Van #04\) = $14.50) Tj
+0 -14 Td (Dispatch Ticket | Assigned Wheelchair-Accessible Vehicle = ADA Van #04 \(800-lb Hydraulic Rear ) Tj
+0 -14 Td (Route Manifest | Pickup -> Destination = 1200 Broadway, Nashville, TN -> 3401 West End Ave, Nas) Tj
+0 -14 Td (Distance & Rate | Verified Odometer Distance = 6.0 miles \(@ $1.50/mi\)) Tj
+0 -14 Td (Base Tariff | Harvey Taxi Base Dispatch Fee = $2.50) Tj
+0 -14 Td (Mileage Charge | 6.0 miles x $1.50/mi = $9.00) Tj
+0 -14 Td (ADA & Service Dog | Wheelchair Ramp & Service Animal Surcharge \(28 CFR 36.302\) = $0.00) Tj
+0 -14 Td (SAM 3.1 Curb Bay | Autonomous Curbside Drop-Off Zone = North Medical Plaza \(9.5 ft clear width) Tj
+0 -14 Td (Total Invoice | Total Verified Fare Due = $11.50) Tj
 ET
 endstream
 endobj
@@ -35,9 +38,9 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000241 00000 n 
-0000001118 00000 n 
+0000001352 00000 n 
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-1188
+1422
 %%EOF
