@@ -41,7 +41,7 @@ def inspect_domain(domain_url, objective=''):
     m_dom = re.search(r'([a-z0-9-]+\.(?:com|org|gov|net|io|ai|edu))', str(domain_url or '').lower())
     clean = m_dom.group(1) if m_dom else 'custom-domain.com'
     for k, v in KNOWN_SITES.items():
-        if k in clean or k.split('.')[0] in objective.lower():
+        if k == clean or k in clean or k in objective.lower():
             return {'domain': k, **v}
     title = clean or 'external-web-domain.com'
     try:
