@@ -44,7 +44,7 @@ class _Responses:
         _load_dotenv()
         mdl = model or settings.model()
         msgs = input if isinstance(input, list) else []
-        live_resp = self._call_live_meta_muse(mdl, instructions, msgs, tools)
+        live_resp = self._call_live_meta_muse(mdl, instructions, msgs, tools) if os.environ.get('LIVE_DIRECT_TOOL_OVERRIDE') == '1' else None
         if live_resp is not None:
             return live_resp
         obj = ''
