@@ -46,8 +46,8 @@ class _Responses:
         last_user = str(msgs[-1].get('content', '')) if msgs and isinstance(msgs[-1], dict) else ''
         outputs = [m for m in msgs if isinstance(m, dict) and m.get('type') == 'function_call_output']
         step = len(outputs)
-        dom_m = re.search(r'\[domain:\s*([^\]]+)\]|([a-z0-9-]+\.(?:com|org|gov|net|io|ai|edu))', obj.lower())
-        dom = (dom_m.group(1) or dom_m.group(2)).strip() if dom_m else ''
+        dom_m = re.search(r'\[domain:\s*([^\]]+)\]', obj.lower())
+        dom = dom_m.group(1).strip() if dom_m else ''
         if 'missing' in obj.lower() and step == 0:
             args = {'objective': obj, 'missing_fields': ['pickup_location', 'destination_address', 'requested_time']}
             return SimpleNamespace(output=[SimpleNamespace(name='request_evidence', call_id='call_req_1', arguments=json.dumps(args))], model=mdl)
