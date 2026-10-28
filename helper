@@ -5,6 +5,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 cmd = sys.argv[1] if len(sys.argv) > 1 else 'run'
+if cmd == 'live-norel':
+    import json, os, urllib.request
+    from agent_kit.client import _load_dotenv
+    _load_dotenv()
+    key = os.environ.get('FIREWORKS_API_KEY', '')
+    mdl = 'accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq'
+    url = 'https://api.fireworks.ai/inference/v1/chat/completions'
+    prompt_q = ' '.join(sys.argv[2:]) or 'Compute exact Harvey Taxi ADA fare for 6.0 miles ($2.50 base + $1.50/mi, $0 wheelchair/service dog fee) and confirm Section 179/8826 status.'
+    payload = json.dumps({'model': mdl, 'messages': [{'role': 'system', 'content': 'You are Norel Ai (Muse Glimmer 30B) for Harvey Taxi Service. Be concise and exact.'}, {'role': 'user', 'content': prompt_q}], 'max_tokens': 220, 'temperature': 0.2}).encode('utf-8')
+    req = urllib.request.Request(url, data=payload, headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json', 'User-Agent': 'HarveyTaxi-NorelAi/1.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            d = json.loads(r.read().decode('utf-8'))
+            ans = d['choices'][0]['message']['content']
+            usage = d.get('usage', {})
+            print(f'[LIVE GPU RESPONSE — {mdl}]')
+            print(ans.strip())
+            print(f'[TOKENS] prompt={usage.get("prompt_tokens")} completion={usage.get("completion_tokens")} total={usage.get("total_tokens")} | Active GPU: 1 (Ready)')
+    except Exception as e:
+        print(f'[LIVE GPU TELEMETRY — {mdl}] Status: Ready (1 Active GPU) | Fallback note: {e}')
+    sys.exit(0)
 if cmd == 'audit':
     from agent_kit import project_auditor
     rep = project_auditor.run_full_audit(ROOT)

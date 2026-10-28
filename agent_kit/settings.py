@@ -3,15 +3,16 @@ import os
 from pathlib import Path
 MODEL_API_MODEL = os.environ.get('MODEL_API_MODEL', 'muse-spark-1.5')
 FIREWORKS_BASE_MODEL = 'accounts/fireworks/models/muse-glimmer-30b'
-FIREWORKS_MODEL = os.environ.get('FIREWORKS_MODEL', 'accounts/williebee615/deployments/myxfl5zq')
+FIREWORKS_DEPLOYED_MODEL = 'accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq'
+FIREWORKS_MODEL = os.environ.get('FIREWORKS_MODEL', FIREWORKS_DEPLOYED_MODEL)
 FIREWORKS_DEPLOYMENT_ID = 'accounts/williebee615/deployments/myxfl5zq'
 FIREWORKS_FINETUNE_JOB_ID = 'vxd87q0r'
-FIREWORKS_OUTPUT_MODEL = os.environ.get('FIREWORKS_OUTPUT_MODEL', 'ft-f7pywv9')
+FIREWORKS_OUTPUT_MODEL = os.environ.get('FIREWORKS_OUTPUT_MODEL', 'ft-f7pywv9kusek5')
 CASE_DIR = os.environ.get('CASE_DIR', 'cases/harvey-taxi-ada-doctor-visit')
 VERIFICATION = os.environ.get('VERIFICATION', 'on')
 def model() -> str:
     if os.environ.get('FIREWORKS_API_KEY'):
-        return os.environ.get('FIREWORKS_MODEL', FIREWORKS_DEPLOYMENT_ID)
+        return os.environ.get('FIREWORKS_MODEL', FIREWORKS_DEPLOYED_MODEL)
     return os.environ.get('MODEL_API_MODEL', MODEL_API_MODEL)
 def base_url() -> str:
     if os.environ.get('FIREWORKS_API_KEY'):
