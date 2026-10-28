@@ -9,22 +9,19 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length 1143 >>
+<< /Length 826 >>
 stream
 BT
 /F1 11 Tf
-72 750 Td (IRS Schedule C + Form 4562 \(Sec 179\) + Form 8826 Workpaper) Tj
-0 -14 Td (Entity: Harvey Taxi Service LLC \(Nashville, TN\) | Vehicle: ADA Van #04 | Date: 2026-10-27 21:) Tj
-0 -14 Td (Command: Prepare Schedule C and Form 8826 ADA fleet tax credit) Tj
+72 750 Td (Stripe Connect NEMT Voucher Settlement & Driver Payout Ledger) Tj
+0 -14 Td (Entity: Harvey Taxi Transit Escrow  Stripe Connect | Vehicle: ADA Van #04 | Date: 2026-10-27 21) Tj
+0 -14 Td (Command: Settle hospital NEMT voucher #VCH-9920 for 8 miles trip) Tj
 0 -14 Td (--------------------------------------------------------------------------------) Tj
-0 -14 Td (Schedule C Line 1 | Gross Commercial ADA Transit Receipts = $148,500.00) Tj
-0 -14 Td (Schedule C Line 9 & 15 | Fleet Fuel, Maintenance & $1M Commercial Insurance = -$24,300.00) Tj
-0 -14 Td (Form 4562 Part I \(Line 12\) | Section 179 ADA Hydraulic Ramp Deduction \(ADA Van #04\) = -$18,) Tj
-0 -14 Td (Schedule C Line 31 | Net Schedule C Business Profit = $105,700.00) Tj
-0 -14 Td (Form 8826 Line 1 | Total Eligible ADA Access Expenditures = $18,500.00) Tj
-0 -14 Td (Form 8826 Line 2 & 3 | Less $250 Statutory Floor \(Capped at $10,000 Max\) = $10,000.00) Tj
-0 -14 Td (Form 8826 Line 6 | IRS Disabled Access Tax Credit \(50% of Line 3\) = $5,000.00) Tj
-0 -14 Td (Total Tax Reduction | Combined Cash Tax Savings \(24% Bracket + Form 8826 Credit\) = $9,440.00) Tj
+0 -14 Td (Voucher Auth | Hospital NEMT Voucher ID = #VCH-9920 \(Pre-Authorized\)) Tj
+0 -14 Td (Gross Capture | Verified Trip Tariff \($2.50 + 8.0 mi x $1.50/mi\) = $14.50) Tj
+0 -14 Td (Rider Co-Pay | Rider Personal Card / Service Dog Charge = $0.00 \(Hard Invariant\)) Tj
+0 -14 Td (Platform Fee | NEMT Institutional Processing Fee = $0.00 \(Hospital Sponsored\)) Tj
+0 -14 Td (Net Driver Payout | Instant Payout to Driver \(ADA Van #04\) = $14.50) Tj
 ET
 endstream
 endobj
@@ -38,9 +35,9 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000241 00000 n 
-0000001436 00000 n 
+0000001118 00000 n 
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-1506
+1188
 %%EOF

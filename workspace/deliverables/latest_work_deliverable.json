@@ -1,48 +1,33 @@
 {
-  "deliverable_type": "IRS Schedule C + Form 4562 (Sec 179) + Form 8826 Workpaper",
-  "entity": "Harvey Taxi Service LLC (Nashville, TN)",
+  "deliverable_type": "Stripe Connect NEMT Voucher Settlement & Driver Payout Ledger",
+  "entity": "Harvey Taxi Transit Escrow \u2014 Stripe Connect",
   "vehicle": "ADA Van #04",
-  "timestamp": "2026-10-27 21:34:38",
+  "timestamp": "2026-10-27 21:42:09",
   "line_items": [
     {
-      "form": "Schedule C Line 1",
-      "field": "Gross Commercial ADA Transit Receipts",
-      "value": "$148,500.00"
+      "form": "Voucher Auth",
+      "field": "Hospital NEMT Voucher ID",
+      "value": "#VCH-9920 (Pre-Authorized)"
     },
     {
-      "form": "Schedule C Line 9 & 15",
-      "field": "Fleet Fuel, Maintenance & $1M Commercial Insurance",
-      "value": "-$24,300.00"
+      "form": "Gross Capture",
+      "field": "Verified Trip Tariff ($2.50 + 8.0 mi x $1.50/mi)",
+      "value": "$14.50"
     },
     {
-      "form": "Form 4562 Part I (Line 12)",
-      "field": "Section 179 ADA Hydraulic Ramp Deduction (ADA Van #04)",
-      "value": "-$18,500.00"
+      "form": "Rider Co-Pay",
+      "field": "Rider Personal Card / Service Dog Charge",
+      "value": "$0.00 (Hard Invariant)"
     },
     {
-      "form": "Schedule C Line 31",
-      "field": "Net Schedule C Business Profit",
-      "value": "$105,700.00"
+      "form": "Platform Fee",
+      "field": "NEMT Institutional Processing Fee",
+      "value": "$0.00 (Hospital Sponsored)"
     },
     {
-      "form": "Form 8826 Line 1",
-      "field": "Total Eligible ADA Access Expenditures",
-      "value": "$18,500.00"
-    },
-    {
-      "form": "Form 8826 Line 2 & 3",
-      "field": "Less $250 Statutory Floor (Capped at $10,000 Max)",
-      "value": "$10,000.00"
-    },
-    {
-      "form": "Form 8826 Line 6",
-      "field": "IRS Disabled Access Tax Credit (50% of Line 3)",
-      "value": "$5,000.00"
-    },
-    {
-      "form": "Total Tax Reduction",
-      "field": "Combined Cash Tax Savings (24% Bracket + Form 8826 Credit)",
-      "value": "$9,440.00"
+      "form": "Net Driver Payout",
+      "field": "Instant Payout to Driver (ADA Van #04)",
+      "value": "$14.50"
     }
   ]
 }

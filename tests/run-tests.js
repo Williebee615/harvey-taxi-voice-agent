@@ -454,3 +454,12 @@ assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_delivera
 assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.csv'), true, 'Test 199');
 assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 200');
 console.log('✓ 10/10 Executive UI Design Upgrade, 1-Click Workflow Bar & Full System Health Audit Passed — 200/200 Total');
+const s205 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
+assert.strictEqual(s205.includes('accounts/williebee615/deployments/myxfl5zq') && s205.includes('vxd87q0r'), true, 'Test 201');
+const aud205 = cp106.execFileSync('./helper', ['audit'], {encoding:'utf8'});
+assert.strictEqual(aud205.includes('myxfl5zq') && aud205.includes('100% HEALTHY'), true, 'Test 202');
+const h205 = fs106.readFileSync('index.html', 'utf8');
+assert.strictEqual(h205.includes('myxfl5zq') && h205.includes('vxd87q0r') && h205.includes('ft-f7pywv9'), true, 'Test 203');
+assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.pdf'), true, 'Test 204');
+assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 205');
+console.log('✓ 5/5 Live Fireworks AI Norel Ai On-Demand Deployment (accounts/williebee615/deployments/myxfl5zq) Passed — 205/205 Total');

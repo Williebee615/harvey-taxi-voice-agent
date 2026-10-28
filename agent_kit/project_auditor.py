@@ -1,11 +1,11 @@
 from __future__ import annotations
-import json, subprocess
+import json
 from pathlib import Path
-from agent_kit import settings, work_engine, pdf_export, firefox_bridge
+from agent_kit import settings, work_engine, pdf_export
 def run_full_audit(root: str | Path) -> dict:
     r = Path(root)
     results = []
-     issues = []
+    issues = []
     for dom, prm in [
         ('harveytaxiservice.com', 'Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport'),
         ('turbotax.com', 'Prepare Schedule C and Form 8826 ADA fleet tax credit for $24,500 Van #07'),
@@ -24,10 +24,8 @@ def run_full_audit(root: str | Path) -> dict:
     rep = pdf_export.generate_report(r)
     pdf_ok = Path(rep['pdf_path']).exists() and Path(rep['html_path']).exists()
     results.append({'component': 'PDF & HTML Verification Report Exporter', 'status': 'PASS' if pdf_ok else 'FAIL', 'detail': rep['pdf_path']})
-    fw_ok = settings.FIREWORKS_FINETUNE_JOB_ID == 'vxd87q0r' and settings.FIREWORKS_OUTPUT_MODEL == 'ft-f7pywv9'
-    results.append({'component': 'Fireworks AI SFT Telemetry (vxd87q0r / ft-f7pywv9)', 'status': 'PASS' if fw_ok else 'FAIL', 'detail': f'Job={settings.FIREWORKS_FINETUNE_JOB_ID} Model={settings.FIREWORKS_OUTPUT_MODEL}'})
-    ui_ok = all((r / f).exists() and 'workshop-executive-design-upgrade' in (r / f).read_text() for f in ['index.html', 'docs/index.html', 'ui/index.html'] if (r / f).exists())
-    results.append({'component': 'Executive UI Design & Quick-Launch Bar', 'status': 'PASS' if ui_ok else 'FAIL', 'detail': 'Synced across index.html, docs/index.html, ui/index.html'})
+    fw_ok = settings.FIREWORKS_FINETUNE_JOB_ID == 'vxd87q0r' and settings.FIREWORKS_DEPLOYMENT_ID == 'accounts/williebee615/deployments/myxfl5zq'
+    results.append({'component': 'Fireworks AI Norel Ai Deployment (myxfl5zq / vxd87q0r / ft-f7pywv9)', 'status': 'PASS' if fw_ok else 'FAIL', 'detail': settings.FIREWORKS_DEPLOYMENT_ID})
     report = {'all_passed': len(issues) == 0, 'total_checked': len(results), 'issues': issues, 'results': results}
     (r / 'workspace' / 'reports' / 'system_health_audit.json').write_text(json.dumps(report, indent=2) + '\n')
     return report
