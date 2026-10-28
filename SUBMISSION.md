@@ -1,19 +1,59 @@
-# Submission working draft — Accessible Care Transportation Review
+# Harvey Taxi — Accessible Care Transportation Review
 
-## Problem
-Transportation coordination can become a barrier between a rider and a healthcare appointment. Harvey Taxi brings firsthand transportation context to a tool that checks the request, fare and pickup evidence before a dispatcher reviews it.
+## Submission status
 
-## What the prototype does
-A Meta-powered investigator chooses tools, reads fictional transport evidence, records exact quotations and prepares a cited memo. Independent code checks the fare, intake, selected curb bay, counter-evidence and healthcare coordination fields. Missing return plans and requests requiring clinical support are held for human follow-up. Every turn can be inspected in the local console.
+The project and two live outcome audits have been reviewed. The required three-minute video is not recorded/linked yet, and the final form has not been submitted. Confirm the participant/team list and track in the event platform before submission. No paid hosting is required by the participant guide supplied to the project.
+
+- Public source: https://github.com/Williebee615/harvey-taxi-voice-agent/tree/codex/live-verifiable-agent
+- Upgrade/contribution diff: https://github.com/Williebee615/harvey-taxi-voice-agent/pull/3
+- Demo video: **PENDING — add the accessible recording URL before submission**
+- Representative: Willie Harvey IV
+- Additional contributors and track: confirm against the entrant's event registration; do not infer them from company ownership or AI assistance.
+
+## Short description
+
+Harvey Taxi uses Meta Muse Spark to investigate accessible healthcare transportation requests, cite source evidence, check fares and pickup conditions, and prepare a memo for human review. Missing return plans are escalated instead of silently accepted.
+
+## Problem and impact
+
+A ride request needs more than a destination. For a wheelchair user traveling to a clinic, the coordinator must establish pickup and appointment details, a suitable vehicle, a fare and a return coordination plan. Harvey Taxi brings firsthand transportation experience to an agent that makes those questions and their supporting evidence visible before human review.
+
+The prototype's demonstrated impact is catching incomplete or contradictory transport evidence in fictional cases. Reduced coordinator effort, better rider experience and fewer missed appointments are future evaluation goals, not measured results.
+
+## How Meta is used
+
+In live mode, `muse-spark-1.3` chooses function tools through Meta's Responses API. It lists and reads case files, creates an investigation checklist, records exact quotations, requests independent verification and submits a cited memo. Tool observations feed back into the same conversation. Run records expose actual provider response IDs, model identifiers and usage metadata.
+
+Code independently verifies intake, the supplied fare tariff, zero accessibility surcharge, selected-bay fixture evidence, counter-evidence and healthcare transport coordination fields. Every memo finding must cite current, case-scoped facts. The model cannot authorize dispatch or manufacture a human signature.
+
+## Verified demo outcomes
+
+1. Clinic visit: a live run reached `awaiting_signoff` after 24 tool turns with no recorded tool refusal or retry. Its final citations and source digest matched the files; a separate demo acknowledgment produced `completed_after_human_signoff`.
+2. Missing return plan: a live run ended in `needs_input`; the healthcare check identified `Return Plan` as missing. No human signoff was recorded and dispatch remained disabled.
+
+See [the acceptance record](docs/LIVE_ACCEPTANCE.md). The public audit omits conversation messages, so it does not independently prove the absence of follow-up messages.
+
+## Work developed for this entry
+
+The upgrade replaces the earlier canned browser trace and fixed scripted booking path with live Meta orchestration, exact source verification, run-bound citations, independent memo gates, resumable audits, a connected local console and healthcare transportation fixtures. The PR and dated commits identify the changed files and contribution boundary.
+
+The earlier Harvey Taxi business, workshop starter concepts and historical Fireworks receipts are not presented as newly created integrations. Confirm build dates and eligibility against the accepted event rules; do not describe all preexisting repository content as new work.
 
 ## Demonstration boundaries
-Live mode invokes Meta Muse Spark through the Responses API. Offline mode is explicitly scripted. Curb data is a simulated fixture; live SAM and speech are not implemented. Human sign-off is a demo acknowledgment, not authenticated clinical clearance or dispatch. No real patients, vehicles, payments or EHRs are involved.
 
-## Original work and evidence
-Use the upgrade PR diff and dated commits to identify work completed during the event. Do not present existing Harvey Taxi services, workshop starter code or historical Fireworks receipts as newly developed integrations. Confirm track eligibility with organizers.
+- Real model inference: Meta Muse Spark through the API.
+- Simulated input: fictional rider cases and curb measurements. No live SAM segmentation or physical measurement is implemented.
+- Human acknowledgment: a typed demo reviewer name, not authenticated operational authority.
+- Not implemented: clinical advice, medical clearance, live speech transcription, EHR integration, real dispatch or payments.
+- The 8ft clearance threshold and fare are the supplied demo fleet policy, not universal legal standards.
 
-## Before submitting
-- Run the integrated live acceptance checklist in VERIFICATION.md and record honest results.
-- Record the three-minute demo in docs/DEMO.md; link a publicly accessible video here.
-- Supply the public repository URL, participant names and exact newly built contribution scope.
-- Replace this working draft with verified submission facts. No pilot outcome or first-place claim is established.
+## How judges can run it
+
+Use Python 3.10+. From the contest branch:
+
+```bash
+./helper test
+./helper serve
+```
+
+Open http://127.0.0.1:8765. Offline simulation needs no key. For live mode, configure a private local `MODEL_API_KEY` from the judge's own Meta account; never commit or share a key. The repository and video must be accessible without relying on the submitter's Mac or private API credentials. GitHub Pages is not the live Python agent.

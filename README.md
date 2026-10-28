@@ -107,3 +107,8 @@ Historical Fireworks receipts remain archived as provenance only. They are not e
 ## Hackathon contribution record
 
 This upgrade replaces the preexisting scripted/canned workflow with an explicit live Meta Responses loop, exact citations, resumable audit records, independent submission gates, a connected local console and healthcare transportation fixtures. See the upgrade pull request and commit diff for precise contribution boundaries. Existing Harvey Taxi business services are context, not functionality newly built here. Confirm event eligibility and contribution dates against the organizer's rules before submission.
+
+
+## Contest submission package
+
+The current scope is the tested local application, public source and a three-minute video. No hosting purchase or public backend is part of this submission preparation. Use [SUBMISSION.md](SUBMISSION.md), the [contest checklist](docs/CONTEST_CHECKLIST.md), [timed video script](docs/DEMO.md) and [reviewed live acceptance record](docs/LIVE_ACCEPTANCE.md). The video link and event-form submission remain outstanding. The public GitHub Pages page is not the live Python backend.
