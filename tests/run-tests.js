@@ -387,3 +387,14 @@ const h155 = fs106.readFileSync('index.html', 'utf8');
 assert.strictEqual(h155.includes('Web Domain 3: va.gov') && h155.includes('Web Domain 4: bna.com') && h155.includes('Web Domain 5: stripe.com'), true, 'Test 154');
 assert.strictEqual(!h155.includes('>Domain 2: Legal Discovery') && !h155.includes('>Domain 3: Fleet Compliance'), true, 'Test 155');
 console.log('✓ 5/5 Custom Harvey Taxi Web Domains (harveytaxiservice.com, turbotax.com, va.gov, bna.com, stripe.com) Passed — 155/155 Total');
+
+const c165 = fs106.readFileSync('agent_kit/client.py', 'utf8');
+assert.strictEqual(c165.includes('_call_live_meta_muse') && c165.includes('/chat/completions'), true, 'Test 161');
+assert.strictEqual(c165.includes('MODEL_API_KEY') && c165.includes('META_API_KEY'), true, 'Test 162');
+const u165 = fs106.readFileSync('ui/ui.py', 'utf8');
+assert.strictEqual(u165.includes("res['model'] = settings.model()") && u165.includes("res['api_base'] = settings.base_url()"), true, 'Test 163');
+const h165 = fs106.readFileSync('index.html', 'utf8');
+assert.strictEqual(h165.includes('Meta Muse (muse-spark-1.5 @ api.meta.ai/v1) Reasoning Engine'), true, 'Test 164');
+const rMuse = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiservice.com', '--prompt', 'Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport'], {encoding:'utf8'});
+assert.strictEqual(rMuse.includes('$25.00') && rMuse.includes('15.0 mi') && rMuse.includes('Van #11'), true, 'Test 165');
+console.log('✓ 5/5 Meta Muse (muse-spark-1.5 @ api.meta.ai/v1) Live Reasoning Engine & Tool Orchestration Passed — 165/165 Total');
