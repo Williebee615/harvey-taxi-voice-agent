@@ -1,8 +1,8 @@
 {
-  "run_id": "run_d769e562",
-  "timestamp": "2026-10-28T11:43:35.821032+00:00",
-  "case": "harvey-taxi-ada-doctor-visit",
-  "objective": "Verify ADA ride booking for case harvey-taxi-ada-doctor-visit",
+  "run_id": "run_114eafbe",
+  "timestamp": "2026-10-28T11:47:08.591898+00:00",
+  "case": "harvey-taxi-contradictory-evidence",
+  "objective": "Verify ADA ride booking for case harvey-taxi-contradictory-evidence",
   "inference_mode": "DETERMINISTIC_FALLBACK_SIMULATION",
   "model_roles": {
     "reasoning": "muse-spark-1.5",
@@ -11,14 +11,14 @@
     "speech_intake": "muse-wonder-audio-1.0",
     "visual_curb_verifier": "sam-3.1-curb-segmentation"
   },
-  "status": "awaiting_signoff",
+  "status": "needs_input",
   "counter_evidence_checked": true,
   "human_signoff_token": null,
   "verification": {
     "quote_check": {
       "passed": true,
       "doc_name": "HANDBOOK.md",
-      "claimed_quote": "$2.50 base component plus $1.50 per verified mile.",
+      "claimed_quote": "- Curb Clearance Rule: \"ADA side-entry ramp deployment requires a minimum 8.0ft unobstructed lateral clearance.\"",
       "reason": "Exact verbatim quote verified"
     },
     "fare_check": {
@@ -29,10 +29,10 @@
       "reason": "Fare invariant satisfied"
     },
     "curb_check": {
-      "passed": true,
-      "clearance_ft": 9.4,
+      "passed": false,
+      "clearance_ft": 6.1,
       "required_ft": 8.0,
-      "reason": "SAFE (9.4ft >= 8.0ft)"
+      "reason": "UNSAFE BOARDING: 6.1ft < 8.0ft minimum ADA ramp clearance"
     }
   },
   "turns": [
@@ -41,7 +41,7 @@
       "phase": "PLAN",
       "tool": "list_documents",
       "arguments": {
-        "case": "harvey-taxi-ada-doctor-visit"
+        "case": "harvey-taxi-contradictory-evidence"
       },
       "observation": {
         "documents": [
@@ -93,14 +93,14 @@
           "rider_intake.txt",
           "sam3_curb_telemetry.json"
         ],
-        "verbatim_quote": "$2.50 base component plus $1.50 per verified mile.",
+        "verbatim_quote": "- Curb Clearance Rule: \"ADA side-entry ramp deployment requires a minimum 8.0ft unobstructed lateral clearance.\"",
         "counter_evidence_probe": "6.1ft South Bay vs 9.4ft North Bay"
       },
       "observation": {
         "quote_verification": {
           "passed": true,
           "doc_name": "HANDBOOK.md",
-          "claimed_quote": "$2.50 base component plus $1.50 per verified mile.",
+          "claimed_quote": "- Curb Clearance Rule: \"ADA side-entry ramp deployment requires a minimum 8.0ft unobstructed lateral clearance.\"",
           "reason": "Exact verbatim quote verified"
         },
         "fare_verification": {
@@ -111,29 +111,25 @@
           "reason": "Fare invariant satisfied"
         },
         "curb_verification": {
-          "passed": true,
-          "clearance_ft": 9.4,
+          "passed": false,
+          "clearance_ft": 6.1,
           "required_ft": 8.0,
-          "reason": "SAFE (9.4ft >= 8.0ft)"
+          "reason": "UNSAFE BOARDING: 6.1ft < 8.0ft minimum ADA ramp clearance"
         },
         "missing_intake": false,
-        "contradiction_detected": false
+        "contradiction_detected": true
       }
     },
     {
       "turn": 4,
       "phase": "OBSERVE",
-      "tool": "submit_memo",
+      "tool": "request_evidence",
       "arguments": {
-        "rider": "Evelyn Carter",
-        "verified_fare": "$11.50",
-        "formula": "$2.50 + (6.0 mi * $1.50/mi) + $0.00 ADA = $11.50",
-        "selected_curb_bay": "north_bay (9.4ft >= 8.0ft)",
-        "rejected_counter_evidence": "South Bay 6.1ft rejected",
-        "status": "awaiting_signoff"
+        "escalated_risk": "UNSAFE BOARDING: 6.1ft < 8.0ft minimum ADA ramp clearance",
+        "corrected_fare": "$2.50 + (6.0 mi * $1.50/mi) + $0.00 ADA = $11.50"
       },
       "observation": {
-        "final_status": "awaiting_signoff"
+        "final_status": "needs_input"
       }
     }
   ],
