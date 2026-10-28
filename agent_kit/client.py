@@ -28,7 +28,7 @@ class Responses:
                    'store': False, 'include': ['reasoning.encrypted_content'],
                    'max_output_tokens': 4096}
         if tools:
-            payload.update(tools=tools, tool_choice='required', parallel_tool_calls=False)
+            payload.update(tools=tools, tool_choice='auto', parallel_tool_calls=False)
         request = urllib.request.Request(base + '/responses', data=json.dumps(payload).encode(),
             headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
         try:
@@ -36,7 +36,16 @@ class Responses:
                 data = json.load(result)
         except urllib.error.HTTPError as error:
             # Do not expose remote error bodies, request headers, or credentials.
-            raise ModelError(f'Meta HTTP {error.code}; check API access, model, billing, or rate limits.') from None
+            hints = {
+                400: 'Request format rejected; check supported API parameters and tool schemas.',
+                401: 'Authentication rejected; check the local Meta credential.',
+                402: 'Billing or credits required; check the Meta dashboard.',
+                403: 'Access denied; check model and project permissions.',
+                404: 'Endpoint or model not found; check the configured model.',
+                429: 'Rate limit reached; pause and retry explicitly.',
+            }
+            hint = hints.get(error.code, 'Provider error; retry explicitly after checking service status.')
+            raise ModelError(f'Meta HTTP {error.code}; {hint}') from None
         except (urllib.error.URLError, TimeoutError, OSError):
             raise ModelError('Meta network/TLS connection failed or timed out; retry explicitly.') from None
         except (ValueError, TypeError):

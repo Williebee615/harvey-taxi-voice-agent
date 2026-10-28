@@ -185,7 +185,7 @@ class AgentTests(AgentFixture):
         fake=io.BytesIO(json.dumps({'id':'resp','model':'muse-spark-1.3','status':'completed','output':[]}).encode())
         with patch.dict('os.environ',{'MODEL_API_KEY':'secret'},clear=True),patch('urllib.request.OpenerDirector.open',return_value=fake) as opened:
             out=client.Responses().create(model='muse-spark-1.3',instructions='instructions',input=[],tools=tools.definitions())
-            payload=json.loads(opened.call_args.args[0].data);self.assertFalse(payload['store']);self.assertFalse(payload['parallel_tool_calls']);self.assertEqual(out['id'],'resp')
+            payload=json.loads(opened.call_args.args[0].data);self.assertFalse(payload['store']);self.assertFalse(payload['parallel_tool_calls']);self.assertEqual(payload['tool_choice'],'auto');self.assertEqual(out['id'],'resp')
     def test_no_fake_web_evidence(self):
         from agent_kit.web_domains import inspect_domain
         with self.assertRaises(ValueError):inspect_domain('example.com')

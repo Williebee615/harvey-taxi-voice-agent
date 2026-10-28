@@ -17,3 +17,9 @@ Start with fictional cases in a coordinator-led walkthrough. Evaluate whether th
 A real pilot needs participating organizations to define privacy arrangements, authenticated roles, operational handoffs, emergency exclusions, accessibility validation and outcome measurement. No clinical or regulatory compliance claim is established by this prototype.
 
 The legacy report module now exports only the actual public JSON audit. It no longer invents an approved PDF when no run exists or labels every checklist item proven. Historical files under `workspace/` are unverified archives from the prior version; the new console accepts only version-2 runs.
+
+## Meta tool-choice compatibility fix
+
+Meta currently accepts only `tool_choice: "auto"` for Responses function tools. The adapter now uses that value with `parallel_tool_calls: false`; the orchestration loop handles a no-tool reply by returning a tool-use nudge, never by inventing a result or bypassing verification. Regression coverage asserts the actual serialized request uses `auto`. HTTP status hints distinguish request-format errors from credential, access, billing and rate-limit errors without revealing remote error bodies.
+
+Reference: https://dev.meta.ai/docs/tool-calling
