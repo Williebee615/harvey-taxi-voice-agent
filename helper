@@ -24,45 +24,24 @@ if cmd == 'test':
 
 if cmd in ('validate-models', 'live-norel'):
     from agent_kit import settings
+    probe = settings.probe_live_inference()
     report = {
-        'reasoning_meta_api': {'model': settings.MODEL_ROLES['reasoning'], 'live_verified': False, 'mode': 'DETERMINISTIC_FALLBACK_SIMULATION'},
-        'fine_tuned_fireworks': {'model': settings.FIREWORKS_DEPLOYED_MODEL, 'live_verified': False, 'mode': 'DETERMINISTIC_FALLBACK_SIMULATION'}
+        'reasoning_meta_api': {
+            'configured_model': settings.MODEL_ROLES['reasoning'],
+            'live_verified': False,
+            'mode': 'DETERMINISTIC_FALLBACK_SIMULATION',
+            'note': 'Direct api.meta.ai key not active; reasoning loop uses deterministic verifier or Fireworks Muse Glimmer 30B.'
+        },
+        'fireworks_muse_glimmer_30b': {
+            'fine_tuned_deployment': settings.FIREWORKS_DEPLOYED_MODEL,
+            'base_model': settings.FIREWORKS_BASE_MODEL,
+            'active_model_used': probe['active_model'],
+            'live_verified': probe['live'],
+            'mode': probe['mode'],
+            'sample_response': probe['response'],
+            'usage': probe['usage']
+        }
     }
-    meta_key = os.environ.get('META_API_KEY') or os.environ.get('MODEL_API_KEY')
-    if meta_key:
-        try:
-            req = urllib.request.Request('https://api.meta.ai/v1/models', headers={'Authorization': f'Bearer {meta_key}'})
-            with urllib.request.urlopen(req, timeout=8) as r:
-                if r.status == 200:
-                    report['reasoning_meta_api']['live_verified'] = True
-                    report['reasoning_meta_api']['mode'] = 'LIVE_META_API'
-        except Exception as e:
-            report['reasoning_meta_api']['error'] = str(e)
-    fw_key = os.environ.get('FIREWORKS_API_KEY')
-    if fw_key:
-        payload = json.dumps({
-            'model': settings.FIREWORKS_DEPLOYED_MODEL,
-            'messages': [
-                {'role': 'system', 'content': 'You are the Harvey Taxi ADA Fare Verifier.'},
-                {'role': 'user', 'content': 'Compute Harvey Taxi fare for 6.0 miles ($2.50 base + $1.50/mi, $0 ADA fee).'}
-            ],
-            'max_tokens': 80,
-            'temperature': 0.0
-        }).encode('utf-8')
-        req = urllib.request.Request(
-            'https://api.fireworks.ai/inference/v1/chat/completions',
-            data=payload,
-            headers={'Authorization': f'Bearer {fw_key}', 'Content-Type': 'application/json', 'User-Agent': 'HarveyTaxi-Verifier/1.0'}
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=15) as r:
-                data = json.loads(r.read().decode('utf-8'))
-                report['fine_tuned_fireworks']['live_verified'] = True
-                report['fine_tuned_fireworks']['mode'] = 'LIVE_FIREWORKS_GPU'
-                report['fine_tuned_fireworks']['sample_response'] = data['choices'][0]['message']['content'].strip()
-                report['fine_tuned_fireworks']['usage'] = data.get('usage', {})
-        except Exception as e:
-            report['fine_tuned_fireworks']['error'] = str(e)
     print(json.dumps(report, indent=2))
     sys.exit(0)
 

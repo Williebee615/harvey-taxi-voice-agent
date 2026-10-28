@@ -1,5 +1,5 @@
 from __future__ import annotations
-import os
+import os, json, urllib.request
 from pathlib import Path
 
 MODEL_ROLES = {
@@ -41,12 +41,49 @@ def calculate_verified_fare(miles: float, wheelchair: bool = True, service_anima
         'formula': f'${BASE_FARE_USD:.2f} + ({miles:.1f} mi * ${PER_MILE_USD:.2f}/mi) + $0.00 ADA = ${total:.2f}'
     }
 
+def probe_live_inference(prompt_text: str = 'Verify Harvey Taxi 6.0 mile ADA fare ($2.50 + $1.50/mi, $0 ADA fee).') -> dict:
+    fw_key = os.environ.get('FIREWORKS_API_KEY', '').strip()
+    if fw_key:
+        for candidate in [FIREWORKS_DEPLOYED_MODEL, FIREWORKS_BASE_MODEL]:
+            try:
+                payload = json.dumps({
+                    'model': candidate,
+                    'messages': [
+                        {'role': 'system', 'content': 'You are the Harvey Taxi ADA Verification Agent. Be concise.'},
+                        {'role': 'user', 'content': prompt_text}
+                    ],
+                    'max_tokens': 90,
+                    'temperature': 0.0
+                }).encode('utf-8')
+                req = urllib.request.Request(
+                    'https://api.fireworks.ai/inference/v1/chat/completions',
+                    data=payload,
+                    headers={'Authorization': f'Bearer {fw_key}', 'Content-Type': 'application/json', 'User-Agent': 'HarveyTaxi-Verifier/1.0'}
+                )
+                with urllib.request.urlopen(req, timeout=8) as r:
+                    if r.status == 200:
+                        data = json.loads(r.read().decode('utf-8'))
+                        return {
+                            'live': True,
+                            'mode': 'LIVE_FIREWORKS_DEPLOYED_LORA' if '#' in candidate else 'LIVE_FIREWORKS_MUSE_GLIMMER_30B',
+                            'active_model': candidate,
+                            'response': data['choices'][0]['message']['content'].strip(),
+                            'usage': data.get('usage', {})
+                        }
+            except Exception:
+                continue
+    return {
+        'live': False,
+        'mode': 'DETERMINISTIC_FALLBACK_SIMULATION',
+        'active_model': 'deterministic-local-verifier',
+        'response': None,
+        'usage': {}
+    }
+
 def inference_mode() -> str:
-    if os.environ.get('META_API_KEY') or os.environ.get('MODEL_API_KEY'):
-        return 'LIVE_META_API'
-    if os.environ.get('FIREWORKS_API_KEY'):
-        return 'LIVE_FIREWORKS_SFT'
-    return 'DETERMINISTIC_FALLBACK_SIMULATION'
+    if not (os.environ.get('FIREWORKS_API_KEY') or os.environ.get('META_API_KEY') or os.environ.get('MODEL_API_KEY')):
+        return 'DETERMINISTIC_FALLBACK_SIMULATION'
+    return probe_live_inference()['mode']
 
 def model() -> str:
     if os.environ.get('FIREWORKS_API_KEY'):

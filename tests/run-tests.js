@@ -181,4 +181,13 @@ check('Test 25: UI and helper contain zero references to TurboTax, VA.gov, BNA, 
   }
 });
 
+check('Test 26: Invalid API key string does NOT falsely report LIVE inference mode', () => {
+  const mode = cp.execFileSync('python3', ['-c', 'from agent_kit.settings import inference_mode; print(inference_mode())'], {
+    cwd: ROOT,
+    env: { PATH: process.env.PATH, META_API_KEY: 'invalid_dummy_key', FIREWORKS_API_KEY: 'invalid_dummy_key' },
+    encoding: 'utf8'
+  }).trim();
+  assert.strictEqual(mode, 'DETERMINISTIC_FALLBACK_SIMULATION');
+});
+
 console.log(`\n✓ ${passed}/${passed} Real Behavioral Verification Checks Passed (0 No-Ops, Nonzero Exit on Failure)`);
