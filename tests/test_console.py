@@ -52,6 +52,23 @@ class ConsoleTests(unittest.TestCase):
         try:self.assertEqual(self.req('POST','/api/run',{})[0],409)
         finally:self.server.mutation_lock.release()
     def test_missing_run_returns_404(self):self.assertEqual(self.req('GET','/api/run?id=run_'+('f'*32))[0],404)
+    def test_execution_modes_are_visible_radio_controls(self):
+        from html.parser import HTMLParser
+        class Inputs(HTMLParser):
+            def __init__(self):
+                super().__init__();self.values=[];self.defaults=[]
+            def handle_starttag(self, tag, attrs):
+                attrs=dict(attrs)
+                if tag=='input' and attrs.get('name')=='execution-mode':
+                    if attrs.get('type')!='radio':raise AssertionError('Mode must be a radio input')
+                    self.values.append(attrs.get('value'))
+                    if 'checked' in attrs:self.defaults.append(attrs.get('value'))
+        parser=Inputs();parser.feed((ROOT/'index.html').read_text())
+        self.assertEqual(parser.values,['simulation','live'])
+        self.assertEqual(parser.defaults,['simulation'])
+        self.assertIn('input[name="execution-mode"]:checked',(ROOT/'app.js').read_text())
+        self.assertEqual((ROOT/'console.css').read_bytes(),(ROOT/'docs/console.css').read_bytes())
+
     def test_ui_assets_match(self):
         self.assertEqual((ROOT/'index.html').read_bytes(),(ROOT/'docs/index.html').read_bytes())
         self.assertEqual((ROOT/'app.js').read_bytes(),(ROOT/'docs/app.js').read_bytes())

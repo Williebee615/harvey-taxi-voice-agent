@@ -78,7 +78,7 @@ async function history() {
   for(const r of runs){const o=document.createElement('option');o.value=r.run_id;o.textContent=`${r.case} · ${r.status} · ${r.run_id.slice(-6)}`;$('history').append(o);}
 }
 function guarded(fn) {return async()=>{try{await fn();}catch(error){automatic=false;busy=false;notice(error.message);syncButtons();}};}
-$('start').onclick=guarded(async()=>{automatic=false;await perform('/api/run',{case:$('case').value,mode:$('mode').value,objective:$('objective').value||null});if(!$('step').checked&&!terminal.includes(run.status))await runToPause();await history();});
+$('start').onclick=guarded(async()=>{automatic=false;await perform('/api/run',{case:$('case').value,mode:document.querySelector('input[name="execution-mode"]:checked').value,objective:$('objective').value||null});if(!$('step').checked&&!terminal.includes(run.status))await runToPause();await history();});
 $('next').onclick=guarded(()=>continueRun());
 $('all').onclick=guarded(runToPause);
 $('stop').onclick=()=>{automatic=false;syncButtons();notice('Pausing after the current tool completes.');};
