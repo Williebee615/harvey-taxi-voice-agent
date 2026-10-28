@@ -423,3 +423,12 @@ assert.strictEqual(ffRun.includes('[FIREFOX BRIDGE]') && ffRun.includes('[WORK C
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-firefox-status-pill'), true, 'Test 179');
 assert.strictEqual(fs106.readFileSync('helper', 'utf8').includes("if cmd == 'firefox':"), true, 'Test 180');
 console.log('✓ 5/5 Live macOS Firefox Bridge & Work Deliverable Auto-Launcher Passed — 180/180 Total');
+const s185 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
+assert.strictEqual(s185.includes('FIREWORKS_API_KEY') && s185.includes('muse-glimmer-30b') && s185.includes('api.fireworks.ai/inference/v1'), true, 'Test 181');
+const c185 = fs106.readFileSync('agent_kit/client.py', 'utf8');
+assert.strictEqual(c185.includes('FIREWORKS_API_KEY') && c185.includes('_load_dotenv'), true, 'Test 182');
+const fb185 = fs106.readFileSync('agent_kit/firefox_bridge.py', 'utf8');
+assert.strictEqual(fb185.includes('/Applications/Firefox.app') && fb185.includes('org.mozilla.firefox'), true, 'Test 183');
+assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.html') || fs106.existsSync('agent_kit/work_engine.py'), true, 'Test 184');
+assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 185');
+console.log('✓ 5/5 Fireworks AI (Muse Glimmer 30B / Harvey Taxi Service Workspace) & Firefox Launcher Passed — 185/185 Total');

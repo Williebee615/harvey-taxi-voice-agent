@@ -1,48 +1,48 @@
 {
-  "deliverable_type": "IRS Schedule C + Form 4562 (Sec 179) + Form 8826 Workpaper",
-  "entity": "Harvey Taxi Service LLC (Nashville, TN)",
+  "deliverable_type": "Harvey Taxi Service \u2014 Official ADA Dispatch Manifest & Rider Invoice",
+  "entity": "Harvey Taxi Service (harveytaxiservice.com)",
   "vehicle": "ADA Van #04",
-  "timestamp": "2026-10-27 20:32:49",
+  "timestamp": "2026-10-27 20:48:14",
   "line_items": [
     {
-      "form": "Schedule C Line 1",
-      "field": "Gross Commercial ADA Transit Receipts",
-      "value": "$148,500.00"
+      "form": "Dispatch Ticket",
+      "field": "Assigned Wheelchair-Accessible Vehicle",
+      "value": "ADA Van #04 (800-lb Hydraulic Rear Ramp)"
     },
     {
-      "form": "Schedule C Line 9 & 15",
-      "field": "Fleet Fuel, Maintenance & $1M Commercial Insurance",
-      "value": "-$24,300.00"
+      "form": "Route Manifest",
+      "field": "Pickup -> Destination",
+      "value": "1200 Broadway, Nashville, TN -> 3401 West End Ave, Nashville, TN"
     },
     {
-      "form": "Form 4562 Part I (Line 12)",
-      "field": "Section 179 ADA Hydraulic Ramp Deduction (ADA Van #04)",
-      "value": "-$18,500.00"
+      "form": "Distance & Rate",
+      "field": "Verified Odometer Distance",
+      "value": "6.0 miles (@ $1.50/mi)"
     },
     {
-      "form": "Schedule C Line 31",
-      "field": "Net Schedule C Business Profit",
-      "value": "$105,700.00"
+      "form": "Base Tariff",
+      "field": "Harvey Taxi Base Dispatch Fee",
+      "value": "$2.50"
     },
     {
-      "form": "Form 8826 Line 1",
-      "field": "Total Eligible ADA Access Expenditures",
-      "value": "$18,500.00"
+      "form": "Mileage Charge",
+      "field": "6.0 miles x $1.50/mi",
+      "value": "$9.00"
     },
     {
-      "form": "Form 8826 Line 2 & 3",
-      "field": "Less $250 Statutory Floor (Capped at $10,000 Max)",
-      "value": "$10,000.00"
+      "form": "ADA & Service Dog",
+      "field": "Wheelchair Ramp & Service Animal Surcharge (28 CFR 36.302)",
+      "value": "$0.00"
     },
     {
-      "form": "Form 8826 Line 6",
-      "field": "IRS Disabled Access Tax Credit (50% of Line 3)",
-      "value": "$5,000.00"
+      "form": "SAM 3.1 Curb Bay",
+      "field": "Autonomous Curbside Drop-Off Zone",
+      "value": "North Medical Plaza (9.5 ft clear width)"
     },
     {
-      "form": "Total Tax Reduction",
-      "field": "Combined Cash Tax Savings (24% Bracket + Form 8826 Credit)",
-      "value": "$9,440.00"
+      "form": "Total Invoice",
+      "field": "Total Verified Fare Due",
+      "value": "$11.50"
     }
   ]
 }

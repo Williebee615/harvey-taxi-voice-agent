@@ -1,10 +1,9 @@
 from __future__ import annotations
-import os, subprocess, urllib.request, re
+import subprocess, urllib.request, re
 from pathlib import Path
-FIREFOX_APP = Path('/Applications/Firefox.app')
 FIREFOX_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0'
 def is_installed() -> bool:
-    return FIREFOX_APP.exists() or Path.home().joinpath('Applications/Firefox.app').exists()
+    return Path('/Applications/Firefox.app').exists() or Path.home().joinpath('Applications/Firefox.app').exists()
 def fetch_live_dom_via_firefox_ua(domain: str) -> dict:
     clean = re.sub(r'^https?://', '', str(domain or '').strip()).split('/')[0] or 'harveytaxiservice.com'
     url = f'https://{clean}'
@@ -22,12 +21,12 @@ def fetch_live_dom_via_firefox_ua(domain: str) -> dict:
         pass
     return {'browser': 'Firefox (macOS)', 'url': url, 'status': status_code, 'server': server, 'title': title}
 def launch_in_firefox(target: str | Path) -> bool:
-    t_str = str(target)
+    p = Path(target).resolve() if Path(str(target)).exists() else str(target)
     try:
-        if is_installed():
-            subprocess.Popen(['open', '-a', 'Firefox', t_str])
+        if Path('/Applications/Firefox.app').exists():
+            subprocess.run(['open', '-a', '/Applications/Firefox.app', str(p)], check=False)
         else:
-            subprocess.Popen(['open', t_str])
+            subprocess.run(['open', '-b', 'org.mozilla.firefox', str(p)], check=False)
         return True
     except Exception:
         return False

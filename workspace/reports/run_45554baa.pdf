@@ -14,7 +14,7 @@ stream
 BT
 /F1 11 Tf
 72 750 Td (HARVEY TAXI & NOREL AI  META MUSE \(MUSE-SPARK-1.5\) VERIFICATION REPORT) Tj
-0 -14 Td (Generated: 2026-10-27 20:32:49 | Run ID: run_45554baa | Final Status: awaiting_signoff) Tj
+0 -14 Td (Generated: 2026-10-27 20:48:03 | Run ID: run_45554baa | Final Status: awaiting_signoff) Tj
 0 -14 Td (-------------------------------------------------------------------------------------) Tj
 0 -14 Td (Objective: Did Caldera know the ERP system was not ready for go-live and tell Northbridge it wa) Tj
 0 -14 Td (Final Summary: submit_memo -> awaiting_signoff  Conclusion: yes) Tj

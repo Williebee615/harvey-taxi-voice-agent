@@ -42,7 +42,7 @@ for idx, a in enumerate(sys.argv):
     if a == '--domain' and idx + 1 < len(sys.argv): domain = sys.argv[idx + 1]
 if domain:
     prompt = f'[Domain: {domain}] ' + (prompt or f'Inspect {domain} and verify compliance checklist')
-res = run_agent(ROOT, max_turns=turns, objective=prompt, case_name=case_name)
+res = run_agent(ROOT, turns=turns, objective=prompt, case_name=case_name)
 print(f"final_status={res.get('status')}")
 pdf_export.generate_report(ROOT, res.get('run_id'))
 ff = firefox_bridge.fetch_live_dom_via_firefox_ua(domain or 'harveytaxiservice.com')

@@ -1,7 +1,16 @@
 from __future__ import annotations
 import json, os, re, urllib.request
+from pathlib import Path
 from types import SimpleNamespace
 from agent_kit import settings, web_domains
+def _load_dotenv():
+    env_p = Path(__file__).resolve().parent.parent / '.env'
+    if env_p.exists():
+        for ln in env_p.read_text().splitlines():
+            ln = ln.strip()
+            if ln and not ln.startswith('#') and '=' in ln:
+                k, v = ln.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 class _Responses:
     def __init__(self, api_key: str | None, base_url: str):
         self.api_key = api_key
@@ -17,20 +26,22 @@ class _Responses:
                 msgs.append({'role': m['role'], 'content': str(m.get('content', ''))})
             elif isinstance(m, dict) and m.get('type') == 'function_call_output':
                 msgs.append({'role': 'user', 'content': f"Tool output ({m.get('call_id')}): {m.get('output')}"})
-        payload = json.dumps({'model': model, 'messages': msgs, 'tools': oai_tools, 'tool_choice': 'auto'}).encode('utf-8')
-        req = urllib.request.Request(url, data=payload, headers={'Authorization': f'Bearer {self.api_key}', 'Content-Type': 'application/json', 'User-Agent': 'MuseAgent/1.5'})
-        try:
-            with urllib.request.urlopen(req, timeout=8) as r:
-                data = json.loads(r.read().decode('utf-8'))
-                choice = (data.get('choices') or [{}])[0].get('message') or {}
-                tcalls = choice.get('tool_calls') or []
-                if tcalls:
-                    fn = tcalls[0].get('function') or {}
-                    return SimpleNamespace(output=[SimpleNamespace(name=fn.get('name', 'list_documents'), call_id=tcalls[0].get('id', 'call_live_1'), arguments=fn.get('arguments', '{}'))], model=model, reasoning_engine='meta-muse-live-api')
-        except Exception:
-            return None
+        for candidate_model in [model, 'accounts/fireworks/models/llama-v3p3-70b-instruct']:
+            payload = json.dumps({'model': candidate_model, 'messages': msgs, 'tools': oai_tools, 'tool_choice': 'auto', 'max_tokens': 600}).encode('utf-8')
+            req = urllib.request.Request(url, data=payload, headers={'Authorization': f'Bearer {self.api_key}', 'Content-Type': 'application/json', 'User-Agent': 'HarveyTaxi-MuseAgent/1.5'})
+            try:
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    data = json.loads(r.read().decode('utf-8'))
+                    choice = (data.get('choices') or [{}])[0].get('message') or {}
+                    tcalls = choice.get('tool_calls') or []
+                    if tcalls:
+                        fn = tcalls[0].get('function') or {}
+                        return SimpleNamespace(output=[SimpleNamespace(name=fn.get('name', 'list_documents'), call_id=tcalls[0].get('id', 'call_fw_1'), arguments=fn.get('arguments', '{}'))], model=candidate_model, reasoning_engine='fireworks-muse-live')
+            except Exception:
+                continue
         return None
     def create(self, *, model=None, instructions=None, input=None, tools=None):
+        _load_dotenv()
         mdl = model or settings.model()
         msgs = input if isinstance(input, list) else []
         live_resp = self._call_live_meta_muse(mdl, instructions, msgs, tools)
@@ -60,10 +71,11 @@ class _Responses:
             prev = json.loads(outputs[-1].get('output', '{}'))
             docs = prev.get('documents', ['rider_intake.txt'])
             items = [{'id': 'q1', 'question': f'Verify {docs[0]}'}, {'id': 'q2', 'question': 'Verify policy/math'}, {'id': 'q3', 'question': 'Check counter-evidence'}, {'id': 'q4', 'question': 'Verify human sign-off gate'}]
-            return SimpleNamespace(output=[SimpleNamespace(name='set_checklist', call_id='call_2', arguments=json.dumps({'objective': obj, 'domain': dom, 'items': items, 'reason': f'Inbox has {docs}; formulating checklist'}))], model=mdl)
+            return SimpleNamespace(output=[SimpleNamespace(name='set_checklist', call_id='call_2', arguments=json.dumps({'objective': obj, 'domain': dom, 'items': items, 'reason': f'Inbox has {docs}; must verify {docs[0]} and check counter-evidence'}))], model=mdl)
         prev1 = json.loads(outputs[0].get('output', '{}')) if outputs else {}
         docs = prev1.get('documents', ['rider_intake.txt'])
-        return SimpleNamespace(output=[SimpleNamespace(name='analyze_documents', call_id='call_3', arguments=json.dumps({'objective': obj, 'domain': dom, 'doc': docs[0], 'hypothesis': 'Cross-checking primary source documents and counter-evidence'}))], model=mdl)
+        return SimpleNamespace(output=[SimpleNamespace(name='analyze_documents', call_id='call_3', arguments=json.dumps({'objective': obj, 'domain': dom, 'doc': docs[0], 'hypothesis': f'Checking if {docs[0]} contradicts counter-evidence or policy caps'}))], model=mdl)
 def create():
-    key = os.environ.get('MODEL_API_KEY') or os.environ.get('META_API_KEY') or os.environ.get('OPENAI_API_KEY')
+    _load_dotenv()
+    key = os.environ.get('FIREWORKS_API_KEY') or os.environ.get('MODEL_API_KEY') or os.environ.get('META_API_KEY') or os.environ.get('OPENAI_API_KEY')
     return SimpleNamespace(responses=_Responses(key, settings.base_url()), base_url=settings.base_url(), model=settings.model())
