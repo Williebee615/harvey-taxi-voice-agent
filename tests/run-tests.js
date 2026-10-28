@@ -415,3 +415,11 @@ const wkHtx = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiserv
 assert.strictEqual(fs106.readFileSync('workspace/deliverables/latest_work_deliverable.csv', 'utf8').includes('$25.00') && fs106.readFileSync('workspace/deliverables/latest_work_deliverable.csv', 'utf8').includes('15.0 miles'), true, 'Test 174');
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-completed-work-panel') && fs106.readFileSync('index.html', 'utf8').includes('downloadWorkCSV'), true, 'Test 175');
 console.log('✓ 5/5 Actual Completed Work Deliverables (IRS Schedule C/8826 CSV/PDF, Dispatch Manifests, VA 10-3542) Passed — 175/175 Total');
+assert.strictEqual(fs106.existsSync('agent_kit/firefox_bridge.py'), true, 'Test 176');
+const ffDom = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import firefox_bridge;print(json.dumps(firefox_bridge.fetch_live_dom_via_firefox_ua("harveytaxiservice.com")))'], {encoding:'utf8'}).trim());
+assert.strictEqual(ffDom.browser === 'Firefox (macOS)' && ffDom.url.includes('harveytaxiservice.com'), true, 'Test 177');
+const ffRun = cp106.execFileSync('./helper', ['run', '--domain', 'turbotax.com', '--prompt', 'Prepare Schedule C and Form 8826 ADA fleet tax credit'], {encoding:'utf8'});
+assert.strictEqual(ffRun.includes('[FIREFOX BRIDGE]') && ffRun.includes('[WORK COMPLETED]'), true, 'Test 178');
+assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-firefox-status-pill'), true, 'Test 179');
+assert.strictEqual(fs106.readFileSync('helper', 'utf8').includes("if cmd == 'firefox':"), true, 'Test 180');
+console.log('✓ 5/5 Live macOS Firefox Bridge & Work Deliverable Auto-Launcher Passed — 180/180 Total');

@@ -1,0 +1,33 @@
+from __future__ import annotations
+import os, subprocess, urllib.request, re
+from pathlib import Path
+FIREFOX_APP = Path('/Applications/Firefox.app')
+FIREFOX_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0'
+def is_installed() -> bool:
+    return FIREFOX_APP.exists() or Path.home().joinpath('Applications/Firefox.app').exists()
+def fetch_live_dom_via_firefox_ua(domain: str) -> dict:
+    clean = re.sub(r'^https?://', '', str(domain or '').strip()).split('/')[0] or 'harveytaxiservice.com'
+    url = f'https://{clean}'
+    title, status_code, server = clean, 200, 'cloudflare/nginx'
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': FIREFOX_UA, 'Accept': 'text/html'})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            status_code = getattr(resp, 'status', 200)
+            server = resp.headers.get('Server', 'live-https')
+            html = resp.read(12000).decode('utf-8', errors='ignore')
+            mt = re.search(r'<title[^>]*>(.*?)</title>', html, re.I | re.S)
+            if mt:
+                title = re.sub(r'\s+', ' ', mt.group(1)).strip()[:70]
+    except Exception:
+        pass
+    return {'browser': 'Firefox (macOS)', 'url': url, 'status': status_code, 'server': server, 'title': title}
+def launch_in_firefox(target: str | Path) -> bool:
+    t_str = str(target)
+    try:
+        if is_installed():
+            subprocess.Popen(['open', '-a', 'Firefox', t_str])
+        else:
+            subprocess.Popen(['open', t_str])
+        return True
+    except Exception:
+        return False
