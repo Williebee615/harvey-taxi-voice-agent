@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 MODEL_API_MODEL = os.environ.get('MODEL_API_MODEL', 'muse-spark-1.5')
+FIREWORKS_BASE_MODEL = 'accounts/fireworks/models/muse-glimmer-30b'
 FIREWORKS_MODEL = os.environ.get('FIREWORKS_MODEL', 'accounts/williebee615/deployments/myxfl5zq')
 FIREWORKS_DEPLOYMENT_ID = 'accounts/williebee615/deployments/myxfl5zq'
 FIREWORKS_FINETUNE_JOB_ID = 'vxd87q0r'
