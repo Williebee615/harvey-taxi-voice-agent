@@ -9,29 +9,29 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length 1822 >>
+<< /Length 1815 >>
 stream
 BT
 /F1 11 Tf
 72 750 Td (HARVEY TAXI & NOREL AI  META MUSE \(MUSE-SPARK-1.5\) VERIFICATION REPORT) Tj
-0 -14 Td (Generated: 2026-10-27 21:16:50 | Run ID: run_ba758a37 | Final Status: awaiting_signoff) Tj
+0 -14 Td (Generated: 2026-10-27 21:20:10 | Run ID: run_35138233 | Final Status: awaiting_signoff) Tj
 0 -14 Td (-------------------------------------------------------------------------------------) Tj
-0 -14 Td (Objective: Did Caldera know the ERP system was not ready for go-live and tell Northbridge it wa) Tj
+0 -14 Td (Objective: Audit quarterly ADA hydraulic ramp inspection certificates across Fleet Lot B.) Tj
 0 -14 Td (Final Summary: submit_memo -> awaiting_signoff  Conclusion: yes) Tj
 0 -14 Td (-------------------------------------------------------------------------------------) Tj
 0 -14 Td (CHECKLIST & VERIFIED FINDINGS:) Tj
-0 -14 Td (  [1] PROVEN: Verify keystone_contract.pdf) Tj
+0 -14 Td (  [1] PROVEN: Verify lot_b_manifests.json) Tj
 0 -14 Td (  [2] PROVEN: Verify policy/math) Tj
 0 -14 Td (  [3] PROVEN: Check counter-evidence) Tj
 0 -14 Td (  [4] PROVEN: Verify human sign-off gate) Tj
 0 -14 Td (-------------------------------------------------------------------------------------) Tj
-0 -14 Td (MEMO CONCLUSION: Verified by Meta Muse \(accounts/fireworks/models/muse-glimmer-30b\) for: Did ) Tj
+0 -14 Td (MEMO CONCLUSION: Verified by Meta Muse \(accounts/fireworks/models/muse-glimmer-30b\) for: Audi) Tj
 0 -14 Td (-------------------------------------------------------------------------------------) Tj
 0 -14 Td (TURN-BY-TURN TOOL TRACE:) Tj
-0 -14 Td (  * call_1: {"status": "running", "documents": ["keystone_contract.pdf", "qa_defect_log.csv", ") Tj
+0 -14 Td (  * call_1: {"status": "running", "documents": ["lot_b_manifests.json", "hydraulic_cert_log.pdf) Tj
 0 -14 Td (  * call_2: {"status": "running", "checklist_count": 4, "note": "set_checklist \(4 items\) \\u2) Tj
-0 -14 Td (  * call_3: {"status": "running", "excerpts": {"keystone_contract.pdf": "Section 4.2: Liability) Tj
-0 -14 Td (  * call_4: {"status": "awaiting_signoff", "memo": {"objective": "Did Caldera know the ERP syst) Tj
+0 -14 Td (  * call_3: {"status": "running", "excerpts": {"lot_b_manifests.json": "18 ADA wheelchair vans ) Tj
+0 -14 Td (  * call_4: {"status": "awaiting_signoff", "memo": {"objective": "Audit quarterly ADA hydraulic) Tj
 0 -14 Td (-------------------------------------------------------------------------------------) Tj
 0 -14 Td (HUMAN SIGN-OFF GATE: ___________________________   DATE: ______________) Tj
 ET
@@ -47,9 +47,9 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000241 00000 n 
-0000002115 00000 n 
+0000002108 00000 n 
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-2185
+2178
 %%EOF
