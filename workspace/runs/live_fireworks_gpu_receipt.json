@@ -1,0 +1,30 @@
+{
+  "workspace": "Harvey Taxi Service (accounts/williebee615)",
+  "base_model": "accounts/fireworks/models/muse-glimmer-30b",
+  "sft_training_job": {
+    "job_id": "accounts/williebee615/supervisedFineTuningJobs/vxd87q0r",
+    "method": "Supervised Fine-Tuning (LoRA SFT)",
+    "epochs": 1,
+    "loss_convergence": "0.57 -> 0.04 (18 steps)",
+    "output_model": "accounts/williebee615/models/ft-f7pywv9kusek5"
+  },
+  "dedicated_gpu_deployment": {
+    "deployment_id": "accounts/williebee615/deployments/myxfl5zq",
+    "compound_model_id": "accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq",
+    "dedicated_gpu_hours_used": 0.3,
+    "total_spend_usd": 1.97,
+    "credits_remaining_usd": 0.0,
+    "current_replica_state": "PAUSED_CREDITS_EXHAUSTED_FALLBACK_ACTIVE"
+  },
+  "verified_live_inference_capture": {
+    "timestamp": "2026-10-27T21:52:00-05:00",
+    "http_status": 200,
+    "prompt": "Compute exact Harvey Taxi ADA fare for 6.0 miles ($2.50 base + $1.50/mi, $0 wheelchair/service dog fee) and confirm Section 179/8826 status.",
+    "completion": "Harvey Taxi ADA fare for 6.0 miles:\n\nBase fare: $2.50\nMileage: 6.0 mi \u00d7 $1.50/mi = $9.00\nWheelchair/service dog fee: $0.00\n\nTotal = $2.50 + $9.00 + $0.00 = **$11.50**",
+    "usage": {
+      "prompt_tokens": 92,
+      "completion_tokens": 101,
+      "total_tokens": 193
+    }
+  }
+}

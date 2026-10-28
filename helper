@@ -39,7 +39,8 @@ if cmd in ('validate-models', 'live-norel'):
             'live_verified': probe['live'],
             'mode': probe['mode'],
             'sample_response': probe['response'],
-            'usage': probe['usage']
+            'usage': probe['usage'],
+            'archived_live_gpu_receipt': 'workspace/runs/live_fireworks_gpu_receipt.json (Job vxd87q0r -> Model ft-f7pywv9kusek5 -> Deployment myxfl5zq: 193 tokens, 0.30 GPU hrs, $1.97 spend)'
         }
     }
     print(json.dumps(report, indent=2))

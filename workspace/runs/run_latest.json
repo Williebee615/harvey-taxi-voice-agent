@@ -1,6 +1,6 @@
 {
-  "run_id": "run_114eafbe",
-  "timestamp": "2026-10-28T11:47:08.591898+00:00",
+  "run_id": "run_9bcaf103",
+  "timestamp": "2026-10-28T12:16:37.071543+00:00",
   "case": "harvey-taxi-contradictory-evidence",
   "objective": "Verify ADA ride booking for case harvey-taxi-contradictory-evidence",
   "inference_mode": "DETERMINISTIC_FALLBACK_SIMULATION",

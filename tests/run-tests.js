@@ -190,4 +190,11 @@ check('Test 26: Invalid API key string does NOT falsely report LIVE inference mo
   assert.strictEqual(mode, 'DETERMINISTIC_FALLBACK_SIMULATION');
 });
 
+check('Test 27: Archived live Fireworks GPU receipt records SFT job vxd87q0r, deployment myxfl5zq, and 193-token inference', () => {
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/live_fireworks_gpu_receipt.json'), 'utf8'));
+  assert.strictEqual(rec.sft_training_job.job_id.includes('vxd87q0r'), true);
+  assert.strictEqual(rec.dedicated_gpu_deployment.deployment_id.includes('myxfl5zq'), true);
+  assert.strictEqual(rec.verified_live_inference_capture.usage.total_tokens, 193);
+});
+
 console.log(`\n✓ ${passed}/${passed} Real Behavioral Verification Checks Passed (0 No-Ops, Nonzero Exit on Failure)`);

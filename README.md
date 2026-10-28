@@ -17,7 +17,7 @@
     [Human Dispatcher Sign-Off Gate (./helper resume '<Signature>')] -> final_status=completed_after_human_signoff
 
 ## 2. Meta Model Role Mapping & Live vs. Fallback Transparency
-- **Primary Reasoning Engine:** Meta `muse-spark-1.5` (`[https://api.meta.ai/v1](https://api.meta.ai/v1)`)
+- **Primary Reasoning Engine:** Meta `muse-spark-1.5` (`https://api.meta.ai/v1`)
 - **Fine-Tuned Policy & Fare Verifier (Fireworks AI SFT):** Meta `Muse Glimmer 30B` (Job `vxd87q0r`, Loss `0.57 -> 0.04`, Live Deployment `accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq`)
 - **Speech Intake Transcription:** Meta `muse-wonder-audio-1.0`
 - **Visual Curb Clearance Verifier:** Meta `sam-3.1-curb-segmentation` (`>= 8.0ft` ramp clearance requirement)
