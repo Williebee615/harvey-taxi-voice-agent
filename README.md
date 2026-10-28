@@ -15,7 +15,7 @@ Python 3.10+ is sufficient; the core application has no third-party Python depen
 
 Open http://127.0.0.1:8765. Choose a case and simulation or live mode. Step through individual tools or run a batch. Inspect tool arguments and observed source evidence, verification results, the cited memo and API receipt metadata. Saved reviews can be reopened and exported as JSON.
 
-The static GitHub Pages copy explains that a local server is required; it never pretends to run a live agent.
+The [public GitHub Pages overview](https://williebee615.github.io/harvey-taxi-voice-agent/) presents documented live-run outcomes and local setup instructions. It does not execute inference.
 
 ## Configure Meta privately
 

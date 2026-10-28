@@ -67,10 +67,13 @@ class ConsoleTests(unittest.TestCase):
         self.assertEqual(parser.values,['simulation','live'])
         self.assertEqual(parser.defaults,['simulation'])
         self.assertIn('input[name="execution-mode"]:checked',(ROOT/'app.js').read_text())
-        self.assertEqual((ROOT/'console.css').read_bytes(),(ROOT/'docs/console.css').read_bytes())
+        self.assertIn('github.io', (ROOT/'app.js').read_text())
 
     def test_ui_assets_match(self):
-        self.assertEqual((ROOT/'index.html').read_bytes(),(ROOT/'docs/index.html').read_bytes())
-        self.assertEqual((ROOT/'app.js').read_bytes(),(ROOT/'docs/app.js').read_bytes())
+        self.assertEqual((ROOT/'index.html').read_bytes(),(ROOT/'ui/index.html').read_bytes())
+        page=(ROOT/'docs/index.html').read_text()
+        self.assertIn('This public page does not execute inference',page)
+        self.assertIn('simulated curb evidence',page)
+        self.assertNotIn('id="start"',page)
 
 if __name__=='__main__':unittest.main()

@@ -4,7 +4,7 @@
 
 The project and two live outcome audits have been reviewed. The required three-minute video is not recorded/linked yet, and the final form has not been submitted. Confirm the participant/team list and track in the event platform before submission. No paid hosting is required by the participant guide supplied to the project.
 
-- Public source: https://github.com/Williebee615/harvey-taxi-voice-agent/tree/codex/live-verifiable-agent
+- Public source: https://github.com/Williebee615/harvey-taxi-voice-agent/tree/main
 - Upgrade/contribution diff: https://github.com/Williebee615/harvey-taxi-voice-agent/pull/3
 - Demo video: **PENDING — add the accessible recording URL before submission**
 - Representative: Willie Harvey IV
