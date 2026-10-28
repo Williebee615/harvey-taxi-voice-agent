@@ -31,7 +31,7 @@ if cmd in ('validate-models', 'live-norel'):
     meta_key = os.environ.get('META_API_KEY') or os.environ.get('MODEL_API_KEY')
     if meta_key:
         try:
-            req = urllib.request.Request('[https://api.meta.ai/v1/models](https://api.meta.ai/v1/models)', headers={'Authorization': f'Bearer {meta_key}'})
+            req = urllib.request.Request('https://api.meta.ai/v1/models', headers={'Authorization': f'Bearer {meta_key}'})
             with urllib.request.urlopen(req, timeout=8) as r:
                 if r.status == 200:
                     report['reasoning_meta_api']['live_verified'] = True
@@ -50,7 +50,7 @@ if cmd in ('validate-models', 'live-norel'):
             'temperature': 0.0
         }).encode('utf-8')
         req = urllib.request.Request(
-            '[https://api.fireworks.ai/inference/v1/chat/completions](https://api.fireworks.ai/inference/v1/chat/completions)',
+            'https://api.fireworks.ai/inference/v1/chat/completions',
             data=payload,
             headers={'Authorization': f'Bearer {fw_key}', 'Content-Type': 'application/json', 'User-Agent': 'HarveyTaxi-Verifier/1.0'}
         )

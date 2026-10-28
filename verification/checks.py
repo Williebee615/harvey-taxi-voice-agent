@@ -37,3 +37,12 @@ def verify_run_record(record: dict) -> dict:
     if not record.get('counter_evidence_checked'):
         errors.append('Counter-evidence check missing')
     return {'passed': len(errors) == 0, 'errors': errors}
+
+def verify_checklist(items: list) -> bool:
+    return isinstance(items, list) and 4 <= len(items) <= 8
+
+def verify_fact_quote(quote: str, source_text: str) -> bool:
+    return bool(quote and source_text and quote.strip() in source_text)
+
+def verify_memo_submission(record: dict) -> bool:
+    return verify_run_record(record)['passed']

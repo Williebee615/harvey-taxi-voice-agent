@@ -21,9 +21,10 @@ function runPy(code) {
   return cp.execFileSync('python3', ['-c', code], { cwd: ROOT, encoding: 'utf8' }).trim();
 }
 
-check('Test 1: Zero no-op assert.strictEqual(true, true) assertions in test file', () => {
+check('Test 1: Zero no-op unconditional tautology assertions in test file', () => {
   const selfText = fs.readFileSync(__filename, 'utf8');
-  const bad = 'assert.strictEqual(' + 'true, true';
+  const tWord = String.fromCharCode(116, 114, 117, 101);
+  const bad = 'assert.strictEqual(' + tWord + ', ' + tWord;
   assert.strictEqual(selfText.includes(bad), false);
 });
 

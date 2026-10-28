@@ -55,8 +55,8 @@ def model() -> str:
 
 def base_url() -> str:
     if os.environ.get('FIREWORKS_API_KEY'):
-        return os.environ.get('FIREWORKS_BASE_URL', '[https://api.fireworks.ai/inference/v1](https://api.fireworks.ai/inference/v1)')
-    return os.environ.get('MODEL_API_BASE', '[https://api.meta.ai/v1](https://api.meta.ai/v1)')
+        return os.environ.get('FIREWORKS_BASE_URL', 'https://api.fireworks.ai/inference/v1')
+    return os.environ.get('MODEL_API_BASE', 'https://api.meta.ai/v1')
 
 def verification_enabled() -> bool:
     return os.environ.get('VERIFICATION', VERIFICATION).lower() in ('on', 'true', '1', 'yes')
