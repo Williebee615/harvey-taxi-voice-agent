@@ -5,7 +5,7 @@ from agent_kit import evidence
 
 
 def definition(name, description, properties, required=()):
-    return {'type': 'function', 'name': name, 'description': description, 'parameters': {
+    return {'type': 'function', 'name': name, 'description': description, 'strict': False, 'parameters': {
         'type': 'object', 'properties': properties, 'required': list(required), 'additionalProperties': False}}
 
 
@@ -22,7 +22,7 @@ def definitions(root=None, run_id=None, verification=True):
         definition('verify_booking', 'Independently check intake, tariff, quoted fare, selected curb bay and contradictory evidence. Clearance is supplied fixture data, not live SAM.', {}),
         definition('request_evidence', 'Pause the run and ask for missing or contradictory evidence.', {'missing': strings}, ['missing']),
         definition('submit_memo', 'Submit a conclusion and a cited finding per checklist item. Gate independently checks all evidence; never dispatches.', {
-            'answer': string, 'findings': {'type': 'array', 'items': {'type': 'object', 'properties': {'item': string, 'finding': string, 'fact_ids': strings}, 'required': ['item', 'finding', 'fact_ids'], 'additionalProperties': False}}, 'gaps': strings}, ['answer', 'findings', 'gaps'])
+            'answer': string, 'findings': {'type': 'array', 'items': {'type': 'object', 'properties': {'item': string, 'finding': string, 'fact_ids': strings}, 'required': ['item', 'finding', 'fact_ids'], 'additionalProperties': False}}, 'gaps': {'type': 'array', 'items': string, 'description': 'Blocking missing source evidence only. Pending review and declared simulation boundaries are not evidence gaps.'}, 'pending_actions': {'type': 'array', 'items': string, 'description': 'Documented workflow steps still to be performed, including human review; not proof they are completed.'}, 'limitations': {'type': 'array', 'items': string, 'description': 'Declared prototype limitations, including simulated curb data.'}}, ['answer', 'findings', 'gaps'])
     ]
 
 
@@ -126,7 +126,7 @@ def run(client, root, run_id, call, record=None):
                     used.append(fact['document'])
             if not {'HANDBOOK.md', 'rider_intake.txt', 'sam3_curb_telemetry.json'}.issubset(used):
                 raise ValueError('Cite tariff, rider intake and curb evidence')
-            record['memo'] = {**args, 'notice': 'Model interpretation; cited quotations and independent checks are authoritative.'}
+            record['memo'] = {**args, 'pending_actions': args.get('pending_actions', []), 'limitations': args.get('limitations', []), 'notice': 'Model interpretation; cited quotations and independent checks are authoritative.'}
             record['run_integrity'] = {'passed': True, 'errors': []}
             return {'status': 'awaiting_signoff', 'memo': record['memo'], 'dispatch_enabled': False}
     except ValueError as error:

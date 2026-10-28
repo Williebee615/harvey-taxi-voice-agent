@@ -23,3 +23,7 @@ The legacy report module now exports only the actual public JSON audit. It no lo
 Meta currently accepts only `tool_choice: "auto"` for Responses function tools. The adapter now uses that value with `parallel_tool_calls: false`; the orchestration loop handles a no-tool reply by returning a tool-use nudge, never by inventing a result or bypassing verification. Regression coverage asserts the actual serialized request uses `auto`. HTTP status hints distinguish request-format errors from credential, access, billing and rate-limit errors without revealing remote error bodies.
 
 Reference: https://dev.meta.ai/docs/tool-calling
+
+## Review memo classification
+
+Memo evidence `gaps` remain blocking. New `pending_actions` and `limitations` fields disclose pending human review, documented coordinator follow-up and the simulated-data boundary without falsely treating them as missing source evidence. Human acknowledgment is still required separately; no vehicle is dispatched. Independent checks remain authoritative, including the missing-return-plan check. Unchanged-source follow-ups retain exact fact citations; changed-source follow-ups invalidate them.

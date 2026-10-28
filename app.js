@@ -52,6 +52,8 @@ function render() {
   $('checklist').replaceChildren();
   for (const item of run.checklist) appendText($('checklist'),'div',item.question);
   $('memo').textContent = run.memo ? `${run.memo.answer}\n\n` + run.memo.findings.map(f=>`${f.item}: ${f.finding} [${f.fact_ids.join(', ')}]`).join('\n\n') : 'A cited memo is required before sign-off.';
+  if (run.memo?.pending_actions?.length) $('memo').textContent += '\n\nPending actions (not completed):\n' + run.memo.pending_actions.join('\n');
+  if (run.memo?.limitations?.length) $('memo').textContent += '\n\nPrototype limitations:\n' + run.memo.limitations.join('\n');
   if (run.human_signoff_token) $('memo').textContent += `\n\nDemo acknowledgment: ${run.human_signoff_token}`;
   syncButtons();
 }

@@ -137,10 +137,13 @@ def resume_run(root, run_id='run_latest', dispatcher_signature='', *, message=''
         if not isinstance(message, str) or len(message) > 10_000:
             raise ValueError('Follow-up must be text of at most 10000 characters')
         record['messages'].append({'role': 'user', 'content': 'Human follow-up (not proof of source changes): ' + message})
-        # Evidence must be rechecked and re-cited, never approved from a follow-up alone.
-        record['verified_digest'] = None
-        record['facts'] = []
-        record['memo'] = None
+        # A clarification does not invalidate exact citations when the sources are unchanged.
+        # Submission and approval still independently recheck the current evidence.
+        current_digest = evidence.digest(evidence.documents(root, record['case']))
+        if current_digest != record.get('evidence_digest'):
+            record['verified_digest'] = None
+            record['facts'] = []
+            record['memo'] = None
         if record['requested_mode'] == 'simulation':
             raise ValueError('For changed simulation evidence, start a new run. Live runs support follow-up.')
     return _advance(root, record, turns, api)

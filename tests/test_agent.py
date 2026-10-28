@@ -195,6 +195,35 @@ class AgentTests(AgentFixture):
 
 
 class AdditionalContracts(AgentFixture):
+    def test_review_conditions_can_be_disclosed_without_false_completion(self):
+        rec=self.simulate()
+        memo={k:rec['memo'][k] for k in ('answer','findings','gaps')}
+        memo.update(pending_actions=['Human reviewer must review; no approval yet.','Coordinator must confirm later return pickup.'],limitations=['Supplied curb telemetry is simulated; no live SAM.'])
+        result=self.call(rec,'submit_memo',memo)
+        self.assertEqual(result['status'],'awaiting_signoff')
+        self.assertIsNone(rec['human_signoff_token']);self.assertFalse(rec['dispatch_enabled'])
+        self.assertEqual(rec['memo']['pending_actions'],memo['pending_actions'])
+        self.assertEqual(rec['memo']['limitations'],memo['limitations'])
+    def test_declared_limitations_do_not_bypass_missing_return_plan(self):
+        rec=progress.new_record('healthcare-missing-return-plan','Review','live',settings.model())
+        result=self.call(rec,'submit_memo',{'answer':'Ready','findings':[],'gaps':[],
+              'pending_actions':['Return plan can be supplied later'],'limitations':['Fixture only']})
+        self.assertEqual(result['status'],'needs_input')
+        self.assertIsNone(rec['memo'])
+    def test_actual_memo_gaps_still_block(self):
+        rec=self.simulate()
+        memo={k:rec['memo'][k] for k in ('answer','findings','gaps')}
+        memo['gaps']=['Required evidence remains unavailable']
+        result=self.call(rec,'submit_memo',memo)
+        self.assertEqual(result['status'],'needs_input')
+    def test_unchanged_evidence_followup_preserves_facts(self):
+        rec=self.simulate();rec.update(requested_mode='live',status='needs_input',memo=None)
+        saved_facts=copy.deepcopy(rec['facts']);progress.save(self.root,rec)
+        api=FakeAPI([('request_evidence',{'missing':['Human clarification']})])
+        out=resume_run(self.root,rec['run_id'],message='Clarify memo structure; source files are unchanged.',turns=1,api=api)
+        self.assertEqual(out['facts'],saved_facts)
+        self.assertEqual(out['verified_digest'],rec['verified_digest'])
+
     def test_followup_rechecks_updated_source(self):
         case='healthcare-missing-return-plan'
         api=FakeAPI([('request_evidence',{'missing':['Return Plan']})])
