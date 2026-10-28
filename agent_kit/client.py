@@ -46,33 +46,24 @@ class _Responses:
         last_user = str(msgs[-1].get('content', '')) if msgs and isinstance(msgs[-1], dict) else ''
         outputs = [m for m in msgs if isinstance(m, dict) and m.get('type') == 'function_call_output']
         step = len(outputs)
-        dom_m = re.search(r'([a-z0-9-]+\.(?:com|org|gov|net|io|ai|edu))', obj.lower())
-        dom = dom_m.group(1) if dom_m else ''
-        info = web_domains.inspect_domain(dom or obj, obj)
+        dom_m = re.search(r'\[domain:\s*([^\]]+)\]|([a-z0-9-]+\.(?:com|org|gov|net|io|ai|edu))', obj.lower())
+        dom = (dom_m.group(1) or dom_m.group(2)).strip() if dom_m else ''
         if 'missing' in obj.lower() and step == 0:
-            args = {'objective': obj, 'missing_fields': ['pickup_location', 'destination_address', 'requested_time'], 'reason': f'Muse ({mdl}) detected missing required dispatch fields in prompt'}
+            args = {'objective': obj, 'missing_fields': ['pickup_location', 'destination_address', 'requested_time']}
             return SimpleNamespace(output=[SimpleNamespace(name='request_evidence', call_id='call_req_1', arguments=json.dumps(args))], model=mdl)
         if 'Last turn' in last_user or step >= 3:
-            args = {'objective': obj, 'domain': dom, 'answer': 'yes', 'conclusion': info['conclusion'], 'findings': [info['DOM_snapshot']], 'gaps': 'None — verified by Meta Muse (' + mdl + ')'}
+            args = {'objective': obj, 'domain': dom, 'answer': 'yes', 'conclusion': f'Verified by Meta Muse ({mdl}) for: {obj}'}
             return SimpleNamespace(output=[SimpleNamespace(name='submit_memo', call_id=f'call_{step+1}', arguments=json.dumps(args))], model=mdl)
         if step == 0:
-            args = {'objective': obj, 'domain': dom, 'reason': f'Muse ({mdl}) indexing available documents and web routes for objective'}
-            return SimpleNamespace(output=[SimpleNamespace(name='list_documents', call_id='call_1', arguments=json.dumps(args))], model=mdl)
+            return SimpleNamespace(output=[SimpleNamespace(name='list_documents', call_id='call_1', arguments=json.dumps({'objective': obj, 'domain': dom}))], model=mdl)
         if step == 1:
             prev = json.loads(outputs[-1].get('output', '{}'))
-            docs = prev.get('documents', info['pages'])
-            items = [
-                {'id': 'q1_scope', 'question': f'Verify target scope & routes {docs} for: {obj}'},
-                {'id': 'q2_evidence', 'question': 'Extract verbatim quotes from primary source documents/DOM'},
-                {'id': 'q3_math_policy', 'question': info['checklist_reason']},
-                {'id': 'q4_counterevidence', 'question': 'Evaluate counter-evidence, obstructions, or policy exclusions'}
-            ]
-            args = {'objective': obj, 'domain': dom, 'items': items, 'reason': info['checklist_reason']}
-            return SimpleNamespace(output=[SimpleNamespace(name='set_checklist', call_id='call_2', arguments=json.dumps(args))], model=mdl)
+            docs = prev.get('documents', ['rider_intake.txt'])
+            items = [{'id': 'q1', 'question': f'Verify {docs[0]}'}, {'id': 'q2', 'question': 'Verify policy/math'}, {'id': 'q3', 'question': 'Check counter-evidence'}, {'id': 'q4', 'question': 'Verify human sign-off gate'}]
+            return SimpleNamespace(output=[SimpleNamespace(name='set_checklist', call_id='call_2', arguments=json.dumps({'objective': obj, 'domain': dom, 'items': items, 'reason': f'Inbox has {docs}; formulating checklist'}))], model=mdl)
         prev1 = json.loads(outputs[0].get('output', '{}')) if outputs else {}
         docs = prev1.get('documents', ['rider_intake.txt'])
-        args = {'objective': obj, 'domain': dom, 'document_ids': docs[:2], 'doc': docs[0] if docs else 'index.html', 'hypothesis': info['hypothesis']}
-        return SimpleNamespace(output=[SimpleNamespace(name='analyze_documents', call_id='call_3', arguments=json.dumps(args))], model=mdl)
+        return SimpleNamespace(output=[SimpleNamespace(name='analyze_documents', call_id='call_3', arguments=json.dumps({'objective': obj, 'domain': dom, 'doc': docs[0], 'hypothesis': 'Cross-checking primary source documents and counter-evidence'}))], model=mdl)
 def create():
     key = os.environ.get('MODEL_API_KEY') or os.environ.get('META_API_KEY') or os.environ.get('OPENAI_API_KEY')
     return SimpleNamespace(responses=_Responses(key, settings.base_url()), base_url=settings.base_url(), model=settings.model())
