@@ -368,3 +368,11 @@ assert.strictEqual(rfOut.status === 'running' && rfOut.note.includes('Fact F1 re
 assert.strictEqual(fs106.existsSync('workspace/case_records/r143.json'), true, 'Test 144');
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-workshop-run-bar') && fs106.readFileSync('index.html', 'utf8').includes('213,100'), true, 'Test 145');
 console.log('✓ 5/5 Exact Agent_Kit 5-Bullet Architecture (document_text.py, workspace/case_records/, analyze_document, RUN telemetry bar) Passed — 145/145 Total');
+
+const h150 = fs106.readFileSync('index.html', 'utf8');
+assert.strictEqual(h150.includes('norel-console-3col-grid') && h150.includes('renderWorkshopConsole'), true, 'Test 146');
+assert.strictEqual(h150.includes('PLAN') && h150.includes('ACT') && h150.includes('OBSERVE'), true, 'Test 147');
+assert.strictEqual(h150.includes('Internal knowledge defects') && h150.includes('Counterevidence'), true, 'Test 148');
+assert.strictEqual(h150.includes('Section 179 ADA Vehicle Deduction') && h150.includes('IRS Form 8826'), true, 'Test 149');
+assert.strictEqual(fs106.readFileSync('ui/index.html', 'utf8').includes('renderWorkshopConsole'), true, 'Test 150');
+console.log('✓ 5/5 Full-Width 3-Column Agent Console (PLAN/ACT/OBSERVE Badges & Dynamic Domain Switching) Passed — 150/150 Total');
