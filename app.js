@@ -52,10 +52,11 @@ function render() {
   }
   $('checklist').replaceChildren();
   for (const item of run.checklist) appendText($('checklist'),'div',item.question);
-  $('memo').textContent = run.memo ? `${run.memo.answer}\n\n` + run.memo.findings.map(f=>`${f.item}: ${f.finding} [${f.fact_ids.join(', ')}]`).join('\n\n') : 'A cited memo is required before sign-off.';
+  $('memo').textContent = run.memo ? `Memo prepared before demo acknowledgment. Pending actions below describe that review stage.\n\n${run.memo.answer}\n\n` + run.memo.findings.map(f=>`${f.item}: ${f.finding} [${f.fact_ids.join(', ')}]`).join('\n\n') : 'A cited memo is required before sign-off.';
   if (run.memo?.pending_actions?.length) $('memo').textContent += '\n\nPending actions (not completed):\n' + run.memo.pending_actions.join('\n');
   if (run.memo?.limitations?.length) $('memo').textContent += '\n\nPrototype limitations:\n' + run.memo.limitations.join('\n');
-  if (run.human_signoff_token) $('memo').textContent += `\n\nDemo acknowledgment: ${run.human_signoff_token}`;
+  if (run.human_signoff_token) $('memo').textContent += `\n\nCurrent status: demo acknowledgment recorded by ${run.human_signoff_token} at ${run.signed_at}. Original memo retained as submitted. This is not authenticated dispatcher authorization; dispatch remains disabled.`;
+  if (run.memo) $('memo').textContent += `\n\nRuntime provenance: ${run.inference_mode}; model invoked: ${Boolean(run.model_invoked_in_run)}; curb source: ${run.telemetry_source}.`;
   syncButtons();
 }
 async function perform(path, body) {

@@ -1,6 +1,7 @@
 """Model-callable tools. All evidence and terminal decisions are enforced here."""
 from __future__ import annotations
 import json
+import re
 from agent_kit import evidence
 
 
@@ -126,6 +127,11 @@ def run(client, root, run_id, call, record=None):
                     used.append(fact['document'])
             if not {'HANDBOOK.md', 'rider_intake.txt', 'sam3_curb_telemetry.json'}.issubset(used):
                 raise ValueError('Cite tariff, rider intake and curb evidence')
+            # Runtime provenance belongs to the application, never model interpretation.
+            prose = [args['answer']] + [x['finding'] for x in findings] + args.get('limitations', []) + args.get('pending_actions', [])
+            if any(re.search(r'\binference\b|\blive (?:model|meta)\b|\barchived receipts\b', text, re.I) for text in prose):
+                raise ValueError('Omit inference-mode claims from memo prose. The application records live versus simulation provenance separately; simulated curb data does not imply simulated reasoning.')
+            record['memo_provenance'] = {'inference_mode': record['inference_mode'], 'model_invoked_in_run': record.get('model_invoked_in_run', False), 'model': record['configured_model'], 'telemetry_source': record.get('telemetry_source'), 'receipt_count': len(record.get('receipts', []))}
             record['memo'] = {**args, 'pending_actions': args.get('pending_actions', []), 'limitations': args.get('limitations', []), 'notice': 'Model interpretation; cited quotations and independent checks are authoritative.'}
             record['run_integrity'] = {'passed': True, 'errors': []}
             return {'status': 'awaiting_signoff', 'memo': record['memo'], 'dispatch_enabled': False}

@@ -195,6 +195,23 @@ class AgentTests(AgentFixture):
 
 
 class AdditionalContracts(AgentFixture):
+    def test_inference_claim_cannot_override_runtime(self):
+        rec=self.simulate()
+        memo={k:rec['memo'][k] for k in ('answer','findings','gaps')}
+        memo['limitations']=['No live model inference claimed in this run; archived receipts only.']
+        result=self.call(rec,'submit_memo',memo)
+        self.assertIn('Omit inference-mode claims',result['error'])
+        self.assertEqual(rec['memo_provenance']['inference_mode'],rec['inference_mode'])
+    def test_acknowledgment_preserves_original_memo_and_clears_pause(self):
+        rec=self.simulate();original=copy.deepcopy(rec['memo'])
+        rec['pause_reason']='Turn batch exhausted; continue explicitly.'
+        progress.save(self.root,rec)
+        signed=approve_run(self.root,rec['run_id'],'Willie Harvey IV')
+        self.assertEqual(signed['memo'],original)
+        self.assertEqual(signed['pause_reason'],'')
+        self.assertEqual(signed['status'],'completed_after_human_signoff')
+        self.assertFalse(signed['dispatch_enabled'])
+
     def test_review_conditions_can_be_disclosed_without_false_completion(self):
         rec=self.simulate()
         memo={k:rec['memo'][k] for k in ('answer','findings','gaps')}

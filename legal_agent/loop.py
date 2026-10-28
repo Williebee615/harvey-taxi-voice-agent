@@ -62,7 +62,7 @@ def _advance(root, record, turns, api=None):
                 call = {'type': 'function_call', 'name': name, 'call_id': f'simulation_{turn}', 'arguments': json.dumps(args)}
                 output = [call]
             else:
-                response = api.responses.create(model=record['configured_model'], instructions=_instructions(),
+                response = api.responses.create(model=record['configured_model'], instructions=_instructions() + '\nRuntime context: ' + json.dumps({'requested_mode': record['requested_mode'], 'inference_mode': 'LIVE_META_API', 'telemetry_source': record.get('telemetry_source')}) + '\nDo not write inference-mode claims in memo prose: the application records provenance separately. Simulated curb data does not mean reasoning is simulated.',
                     input=record['messages'], tools=tools.definitions(root, record['run_id']))
                 record['model_invoked_in_run'] = True
                 record['inference_mode'] = 'LIVE_META_API'
@@ -159,6 +159,6 @@ def approve_run(root, run_id, signature):
     if not current['passed'] or current['evidence_digest'] != record.get('verified_digest') or not record.get('run_integrity', {}).get('passed') or not record.get('memo'):
         raise ValueError('Evidence failed or changed since verification. Start a new review.')
     record.update(status='completed_after_human_signoff', human_signoff_token=signature.strip(),
-                  authorization_mode='SIMULATED_DISPATCHER_SIGNOFF', signed_at=progress.now())
+                  authorization_mode='SIMULATED_DISPATCHER_SIGNOFF', signed_at=progress.now(), pause_reason='')
     record.setdefault('audit', []).append({'action': 'demo_signoff', 'timestamp': progress.now(), 'reviewer': signature.strip()})
     return progress.save(root, record)
