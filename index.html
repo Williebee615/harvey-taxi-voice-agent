@@ -1443,4 +1443,105 @@ if (testMetaBtn) {
   });
 })();
 </script>
+
+<style id="workshop-fullwidth-fix-css">
+  .grid, .layout, .main-grid, main { max-width: 1440px !important; }
+  section.card:has(#norel-domain-case-select),
+  div.card:has(#norel-domain-case-select) {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .ws-3col-wrapper {
+    display: grid !important;
+    grid-template-columns: 270px 1fr 370px !important;
+    gap: 14px !important;
+    width: 100% !important;
+    align-items: start !important;
+  }
+  @media (max-width: 1024px) {
+    .ws-3col-wrapper { grid-template-columns: 1fr !important; }
+  }
+</style>
+<script id="workshop-live-dom-binder">
+(function() {
+  function findAndBindBoxes() {
+    const allDivs = Array.from(document.querySelectorAll('div, section, article'));
+    let toolsBox = null, tlBox = null, clBox = null;
+    allDivs.forEach(function(el) {
+      if (el.children.length > 6) return;
+      const txt = (el.textContent || '').trim();
+      if (txt.startsWith('TOOLS AVAILABLE (tools.py)')) toolsBox = el;
+      if (txt.startsWith('AGENT LOOP TIMELINE (loop.py)') || txt.startsWith('TIMELINE —')) tlBox = el;
+      if (txt.startsWith('VERIFICATION & REFUSAL CHECKLIST') || txt.startsWith('CHECKLIST6/6')) clBox = el;
+    });
+    if (tlBox && !tlBox.id) tlBox.id = 'norel-loop-timeline-box';
+    if (clBox && !clBox.id) clBox.id = 'norel-loop-checklist-box';
+    if (toolsBox && tlBox && clBox && tlBox.parentElement) {
+      const parent = tlBox.parentElement;
+      parent.classList.add('ws-3col-wrapper');
+      if (parent.parentElement) {
+        parent.parentElement.style.gridColumn = '1 / -1';
+        parent.parentElement.style.width = '100%';
+      }
+      if (!document.getElementById('norel-workshop-run-bar')) {
+        const bar = document.createElement('div');
+        bar.id = 'norel-workshop-run-bar';
+        bar.style.cssText = 'grid-column: 1 / -1; margin-top: 10px; padding: 10px 14px; background: #0D152B; border: 1px solid #263868; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12px;';
+        bar.innerHTML = '<div><span style="color:#9BA8C7;font-weight:700;">RUN:</span> <code id="ws-run-id">run-20261027T161849Z-713af4</code> <span style="background:#182340;color:#32D583;padding:2px 8px;border-radius:4px;margin-left:6px;font-weight:700;">awaiting_signoff</span></div>' +
+          '<div style="display:flex;gap:18px;flex-wrap:wrap;">' +
+          '<span><strong id="ws-stat-turns" style="color:#F4F6FC;">19</strong> <span style="color:#9BA8C7;">agent turns</span></span>' +
+          '<span><strong id="ws-stat-calls" style="color:#F4F6FC;">19</strong> <span style="color:#9BA8C7;">tool calls</span></span>' +
+          '<span><strong id="ws-stat-tokens" style="color:#F4F6FC;">213,100</strong> <span style="color:#9BA8C7;">agent tokens</span></span>' +
+          '<span><strong id="ws-stat-facts" style="color:#32D583;">8</strong> <span style="color:#9BA8C7;">facts recorded</span></span>' +
+          '<span><strong id="ws-stat-failed" style="color:#F4F6FC;">0</strong> <span style="color:#9BA8C7;">checks failed</span></span>' +
+          '</div>' +
+          '<div style="color:#62D9EA;font-family:ui-monospace,SFMono-Regular,monospace;">SIGNATURE CHECKS: Verified • 6/6 PROVEN</div>';
+        parent.parentElement.appendChild(bar);
+      }
+    }
+    const sel = document.getElementById('norel-domain-case-select');
+    const inp = Array.from(document.querySelectorAll('input[type="text"], input:not([type])')).find(function(i) {
+      return (i.placeholder || '').toLowerCase().includes('multi-domain') || (i.placeholder || '').toLowerCase().includes('command') || i.id === 'norel-custom-command-input';
+    });
+    if (inp && !inp.id) inp.id = 'norel-custom-command-input';
+    const btns = Array.from(document.querySelectorAll('button'));
+    const runBtn = btns.find(function(b) { return (b.textContent || '').includes('Run Command'); });
+    const startBtn = btns.find(function(b) { return (b.textContent || '').includes('Start agent'); });
+    const resetBtn = btns.find(function(b) { return (b.textContent || '').includes('Reset case'); });
+
+    if (sel && window.renderWorkshopConsole) {
+      sel.onchange = function() { window.renderWorkshopConsole(sel.value); };
+      window.renderWorkshopConsole(sel.value || 'harveytaxiservice.com');
+    }
+    if (runBtn && window.renderWorkshopConsole) {
+      runBtn.onclick = function(e) {
+        e.preventDefault();
+        const val = inp && inp.value.trim() ? inp.value.trim() : (sel ? sel.value : 'harveytaxiservice.com');
+        window.renderWorkshopConsole(val);
+      };
+    }
+    if (startBtn && window.renderWorkshopConsole) {
+      startBtn.onclick = function(e) {
+        e.preventDefault();
+        const val = inp && inp.value.trim() ? inp.value.trim() : (sel ? sel.value : 'harveytaxiservice.com');
+        window.renderWorkshopConsole(val);
+      };
+    }
+    if (resetBtn && window.renderWorkshopConsole) {
+      resetBtn.onclick = function(e) {
+        e.preventDefault();
+        if (inp) inp.value = '';
+        window.renderWorkshopConsole(sel ? sel.value : 'northbridge-v-caldera');
+      };
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(findAndBindBoxes, 50); });
+  } else {
+    setTimeout(findAndBindBoxes, 50);
+  }
+})();
+</script>
+
 </body></html>

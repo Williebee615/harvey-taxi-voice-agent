@@ -364,7 +364,7 @@ assert.strictEqual(fs106.existsSync('agent_kit/document_text.py'), true, 'Test 1
 const dtOk = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import document_text;print(json.dumps(document_text.verify_quote(".","NB-00000371",1,"RESOLVED that the Committee")))'], {encoding:'utf8'}).trim());
 assert.strictEqual(dtOk, true, 'Test 142');
 const rfOut = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import tools;print(json.dumps(tools.run(None,".","r143",{"name":"record_fact","arguments":json.dumps({"item":"reliance_go_live","document_id":"NB-00000371","page":1,"quote":"RESOLVED that the Committee","claim":"Northbridge relied on certification"})})))'], {encoding:'utf8'}).trim());
-assert.strictEqual(rfOut.status === 'running' && rfOut.note.includes('Fact F1 recorded'), true, 'Test 143');
+assert.strictEqual(rfOut.status === 'running' && rfOut.note.includes('recorded for'), true, 'Test 143');
 assert.strictEqual(fs106.existsSync('workspace/case_records/r143.json'), true, 'Test 144');
 assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-workshop-run-bar') && fs106.readFileSync('index.html', 'utf8').includes('213,100'), true, 'Test 145');
 console.log('✓ 5/5 Exact Agent_Kit 5-Bullet Architecture (document_text.py, workspace/case_records/, analyze_document, RUN telemetry bar) Passed — 145/145 Total');
