@@ -1,0 +1,13 @@
+{
+  "run_id": "run_norel_oct27_001",
+  "model": "muse-spark-1.5",
+  "deployment": "accounts/williebee615/deployments/myxfl5zq",
+  "status": "awaiting_signoff",
+  "checklist": [
+    "ADA ramp van verified",
+    "$0.00 service dog fee verified",
+    "$11.50 fare verified",
+    "SAM 3.1 curb verified"
+  ],
+  "note": "Verified by Meta Muse & Fireworks Norel Ai deployment (myxfl5zq); awaiting human dispatcher sign-off."
+}
