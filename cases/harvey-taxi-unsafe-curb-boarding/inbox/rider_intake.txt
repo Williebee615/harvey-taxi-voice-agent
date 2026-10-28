@@ -1,0 +1,6 @@
+Rider: Clara Jenkins
+Pickup: 500 Broadway, South Curb Bay Only
+Dropoff: Centennial Medical Center
+Pickup Time: 2026-10-28 11:00 CDT
+Verified Distance: 5.0 miles
+Mobility Device: Wide Power Wheelchair (Requires 8.0ft Ramp Clearance)

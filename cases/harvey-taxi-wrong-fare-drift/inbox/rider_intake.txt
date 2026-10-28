@@ -1,0 +1,6 @@
+Rider: Robert Miller
+Pickup: 800 Rosa L Parks Blvd
+Dropoff: VA Tennessee Valley Healthcare Campus
+Pickup Time: 2026-10-28 14:15 CDT
+Verified Distance: 6.0 miles
+Quoted Fare: $26.50 (Includes unauthorized $15.00 wheelchair/dog surcharge)

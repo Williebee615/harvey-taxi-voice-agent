@@ -1,473 +1,200 @@
-const app = require("../app.js");
-const assert = require("node:assert");
-'use strict';
-const { PRICING, ADAPTER_CONFIG, META_MODEL_CONFIG, computeIdempotencyKey, evaluateFleet, verifyCurbsideClearance, buildAgentAuditTrace, calculateFare, extractBooking, extractBookingWithMemory, appendTurn, matchDriver, retrieveFact, HARVEY_TAXI_FACTS } = require('../app.js');
-let n = 0;
-const test = (name, fn) => { fn(); n++; console.log(`ok ${n} - ${name}`); };
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const cp = require('child_process');
 
-const DRIVERS = [
-  { id: 'close-ineligible', online: true,  accessibleVan: false, serviceAnimalOptIn: false, distanceMiles: 0.5 },
-  { id: 'far-eligible',     online: true,  accessibleVan: true,  serviceAnimalOptIn: true,  distanceMiles: 3.0 },
-  { id: 'mid-eligible',     online: true,  accessibleVan: true,  serviceAnimalOptIn: true,  distanceMiles: 1.5 },
-  { id: 'offline-nearest',  online: false, accessibleVan: true,  serviceAnimalOptIn: true,  distanceMiles: 0.1 }
-];
+const ROOT = path.resolve(__dirname, '..');
+let passed = 0;
 
-// Extraction (5)
-test('extracts pickup and dropoff', () => { const b = extractBooking('Book a ride from Home to Clinic'); assert.equal(b.pickup, 'Home'); assert.equal(b.dropoff, 'Clinic'); });
-test('detects wheelchair need', () => assert.equal(extractBooking('from Home to Clinic, I need a wheelchair van').needsWheelchair, true));
-test('detects service animal', () => assert.equal(extractBooking('from Home to Clinic with my service animal').hasServiceAnimal, true));
-test('no wheelchair flag when absent', () => assert.equal(extractBooking('from Home to Clinic').needsWheelchair, false));
-test('missing route yields null dropoff', () => assert.equal(extractBooking('book me a ride please').dropoff, null));
-
-// Pricing (8)
-test('10.0mi/20min standard = $23.00', () => assert.equal(calculateFare({ distanceMiles: 10, durationMinutes: 20 }).total, 23.00));
-test('1.0mi/2min standard = $8.60', () => assert.equal(calculateFare({ distanceMiles: 1, durationMinutes: 2 }).total, 8.60));
-test('0.5mi/1min clamps to $8.00 minimum', () => assert.equal(calculateFare({ distanceMiles: 0.5, durationMinutes: 1 }).total, 8.00));
-test('no valid distance -> no fare', () => assert.equal(calculateFare({ distanceMiles: 0, durationMinutes: 20 }), null));
-test('no valid duration -> no fare', () => assert.equal(calculateFare({ distanceMiles: 10, durationMinutes: 0 }), null));
-test('discount: 10mi/20min = $23.00 - $4.60 = $18.40', () => assert.equal(calculateFare({ distanceMiles: 10, durationMinutes: 20, discount: true }).total, 18.40));
-test('airport: 10mi/20min = $23.00 + $5.00 = $28.00', () => assert.equal(calculateFare({ distanceMiles: 10, durationMinutes: 20, airport: true }).total, 28.00));
-test('combined: $23.00 - $4.60 + $5.00 = $23.40', () => assert.equal(calculateFare({ distanceMiles: 10, durationMinutes: 20, discount: true, airport: true }).total, 23.40));
-
-// Matching (6)
-test('offline drivers excluded', () => assert.notEqual(matchDriver(DRIVERS, {}).id, 'offline-nearest'));
-test('non-accessible van excluded when wheelchair needed', () => assert.notEqual(matchDriver(DRIVERS, { needsWheelchair: true }).id, 'close-ineligible'));
-test('non-opted-in driver excluded for service animal', () => assert.notEqual(matchDriver(DRIVERS, { hasServiceAnimal: true }).id, 'close-ineligible'));
-test('farther eligible beats closer ineligible', () => assert.equal(matchDriver(DRIVERS, { needsWheelchair: true, hasServiceAnimal: true }).id, 'mid-eligible'));
-test('nearest eligible wins', () => assert.equal(matchDriver(DRIVERS, {}).id, 'close-ineligible'));
-test('honest no-match when no eligible driver', () => assert.equal(matchDriver([{ id: 'x', online: true, accessibleVan: false, serviceAnimalOptIn: false, distanceMiles: 1 }], { needsWheelchair: true }), null));
-
-// Guardrails / adapter (3)
-test('live dispatch hard-coded OFF', () => assert.equal(ADAPTER_CONFIG.liveDispatchEnabled, false));
-test('payments hard-coded OFF', () => assert.equal(ADAPTER_CONFIG.paymentsEnabled, false));
-test('single adapter seam: POST /api/rides/request', () => { assert.equal(ADAPTER_CONFIG.method, 'POST'); assert.equal(ADAPTER_CONFIG.endpoint, '/api/rides/request'); });
-
-
-// Memory & Grounded RAG (5)
-test('memory: rolling context window caps at 6 turns', () => {
-  let h = [];
-  for (let i = 1; i <= 8; i++) h = appendTurn(h, { role: 'user', text: 'turn ' + i }, 6);
-  assert.equal(h.length, 6);
-  assert.equal(h[0].text, 'turn 3');
-});
-test('memory: follow-up turn preserves pickup/dropoff and updates day to wednesday', () => {
-  const h = [{ role: 'user', text: 'Book a ride from Home to Clinic with a wheelchair van' }];
-  const res = extractBookingWithMemory(h, 'Actually change it to Wednesday and add my service dog');
-  assert.equal(res.pickup, 'Home');
-  assert.equal(res.dropoff, 'Clinic');
-  assert.equal(res.needsWheelchair, true);
-  assert.equal(res.hasServiceAnimal, true);
-  assert.equal(res.day, 'wednesday');
-});
-test('RAG: 11 verified Harvey Taxi facts loaded', () => assert.equal(HARVEY_TAXI_FACTS.length, 11));
-test('RAG: answers base fare question from verified facts', () => {
-  const r = retrieveFact('What is the base fare?');
-  assert.equal(r.matched, true);
-  assert.equal(r.id, 'base-fare');
-});
-test('RAG: refuses to hallucinate on unknown topic', () => {
-  const r = retrieveFact('Do you offer helicopter flights to Mars?');
-  assert.equal(r.matched, false);
-});
-
-test('Meta Hackathon model config uses meta-models/muse-spark-open-1026 & muse-voice-transcribe', () => {
-  assert.equal(META_MODEL_CONFIG.openWeightsModel, 'meta-models/muse-spark-open-1026');
-  assert.equal(META_MODEL_CONFIG.transcriptionModel, 'muse-voice-transcribe');
-});
-
-
-// Senior Architecture: Fleet Elimination Telemetry, SAM 3.1 Curbside Vision & Idempotency (7)
-test('Telemetry: evaluateFleet logs exact rejection reasons per driver', () => {
-  const res = evaluateFleet(DRIVERS, { needsWheelchair: true, hasServiceAnimal: true });
-  const close = res.auditMatrix.find(d => d.id === 'close-ineligible');
-  assert.equal(close.eligible, false);
-  assert.equal(close.status.includes('REJECTED_NO_WHEELCHAIR_RAMP'), true);
-});
-test('SAM 3.1 Curbside Tool: approves >= 8.0ft unobstructed ramp zone', () => {
-  const c = verifyCurbsideClearance({ clearanceFeet: 9.5, obstacles: [], needsWheelchair: true });
-  assert.equal(c.safeForRamp, true);
-  assert.equal(c.status, 'ADA_RAMP_VERIFIED');
-});
-test('SAM 3.1 Curbside Tool: rejects < 8.0ft clearance for wheelchair ramp', () => {
-  const c = verifyCurbsideClearance({ clearanceFeet: 5.5, obstacles: [], needsWheelchair: true });
-  assert.equal(c.safeForRamp, false);
-  assert.equal(c.status, 'CURB_BLOCKED_RELOCATE_PICKUP');
-});
-test('SAM 3.1 Curbside Tool: rejects zone blocked by fire hydrant even with 10ft width', () => {
-  const c = verifyCurbsideClearance({ clearanceFeet: 10.0, obstacles: ['fire hydrant'], needsWheelchair: true });
-  assert.equal(c.safeForRamp, false);
-});
-test('Idempotency: identical booking parameters produce identical deterministic key', () => {
-  const k1 = computeIdempotencyKey({ pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, day: 'wednesday' });
-  const k2 = computeIdempotencyKey({ pickup: ' home ', dropoff: 'CLINIC', needsWheelchair: true, day: 'Wednesday' });
-  assert.equal(k1, k2);
-});
-test('Idempotency: changing day or accessibility produces distinct key', () => {
-  const k1 = computeIdempotencyKey({ pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, day: 'wednesday' });
-  const k2 = computeIdempotencyKey({ pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, day: 'thursday' });
-  assert.notEqual(k1, k2);
-});
-test('Audit Trace: buildAgentAuditTrace bundles tools, idempotency key, and guardrails', () => {
-  const booking = { pickup: 'Home', dropoff: 'Clinic', needsWheelchair: true, hasServiceAnimal: false };
-  const fare = calculateFare({ distanceMiles: 10, durationMinutes: 20 });
-  const fleetEval = evaluateFleet(DRIVERS, booking);
-  const trace = buildAgentAuditTrace({ booking, fare, fleetEval });
-  assert.equal(trace.state, 'VERIFIED_SHADOW_READY');
-  assert.equal(trace.steps.length, 4);
-  assert.equal(trace.idempotencyKey.startsWith('idem_ht_'), true);
-});
-
-console.log(`\n${n}/35 checks passed`);
-console.log('PRICING constants:', PRICING);
-
-
-// === META S.A.I. FULL STACK VERIFICATION (Tests 36-40) ===
-if (typeof app.buildMuseGlimmerConfig === 'function') {
-  const glimmer = app.buildMuseGlimmerConfig('high');
-  assert.strictEqual(glimmer.model, 'meta-models/Muse-Glimmer-30B', 'Test 36: Muse Glimmer 30B identifier verified');
-  assert.strictEqual(glimmer.systemPromptHeader, 'Reasoning strength: high', 'Test 37: Muse Glimmer reasoning strength header verified');
-  assert.strictEqual(glimmer.speculativeDecoding, 'DFlash-16-token-block-diffusion', 'Test 38: Muse Glimmer DFlash speculative decoding verified');
-  const passSpec = app.generateMuseImageAdaPassSpec({ pickup: 'Home', dropoff: 'Clinic', clearanceFt: 9.5 });
-  assert.strictEqual(passSpec.model, 'muse-image', 'Test 39: Muse Image visual boarding pass model verified');
-  assert.strictEqual(passSpec.adaVerified, true, 'Test 40: Muse Image + SAM 3.1 ADA curb clearance verified');
-  console.log('✓ 5/5 Meta S.A.I. Full-Stack Checks Passed (Muse Wonder, Muse Spark 1.3, Muse Glimmer 30B, Muse Image, SAM 3.1) — 40/40 Total');
+function check(name, fn) {
+  try {
+    fn();
+    passed++;
+    console.log(`ok ${passed} - ${name}`);
+  } catch (err) {
+    console.error(`not ok ${passed + 1} - ${name}: ${err.message}`);
+    process.exit(1);
+  }
 }
 
-
-// === AUTONOMOUS SAM 3.1 RECOVERY & SSE WATERFALL TESTS (Tests 41-45) ===
-if (typeof app.autonomousCurbRecovery === 'function') {
-  const clearCheck = app.autonomousCurbRecovery(9.5, 'None', '1200 Broadway');
-  assert.strictEqual(clearCheck.relocated, false, 'Test 41: Clear curb does not relocate');
-  assert.strictEqual(clearCheck.status, 'ADA_RAMP_VERIFIED', 'Test 42: Clear curb status verified');
-  const blockedCheck = app.autonomousCurbRecovery(4.2, 'Delivery Van', '1200 Broadway');
-  assert.strictEqual(blockedCheck.relocated, true, 'Test 43: Blocked curb (<8.0ft) triggers autonomous relocation');
-  assert.strictEqual(blockedCheck.finalClearanceFt >= 8.0, true, 'Test 44: Relocated bay meets >=8.0ft ADA clearance');
-  const sse = app.buildDurableSseWaterfall(3, { model: 'meta-models/Muse-Glimmer-30B', transcript: 'Test', curbResult: blockedCheck, fareUsd: 20.4, idempotencyKey: 'idem_1' });
-  assert.strictEqual(sse.length, 5, 'Test 45: Durable 5-stage SSE waterfall trace verified');
-  console.log('✓ 5/5 Autonomous SAM 3.1 Recovery & Durable SSE Waterfall Checks Passed — 45/45 Total');
+function runPy(code) {
+  return cp.execFileSync('python3', ['-c', code], { cwd: ROOT, encoding: 'utf8' }).trim();
 }
 
-// === NOREL ACCESSIBLE RIDE INTELLIGENCE & HARVEY TAXI FORMULA TESTS (Tests 46-50) ===
-if (typeof app.calculateHarveyTaxiFare === 'function') {
-  assert.strictEqual(app.calculateHarveyTaxiFare(4).estimatedFareUsd, 8.50, 'Test 46: 4 miles = $8.50 ($2.50 + 4 * $1.50)');
-  assert.strictEqual(app.calculateHarveyTaxiFare(6).estimatedFareUsd, 11.50, 'Test 47: 6 miles = $11.50 ($2.50 + 6 * $1.50)');
-  assert.strictEqual(app.calculateHarveyTaxiFare(10).estimatedFareUsd, 17.50, 'Test 48: 10 miles = $17.50 ($2.50 + 10 * $1.50)');
-  assert.strictEqual(app.calculateHarveyTaxiFare(null).canCalculate, false, 'Test 49: Refuses to invent fare when distance is unverified');
-
-  const step1 = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me. I need to know how much it will cost.");
-  assert.strictEqual(step1.intent, 'request_ride', 'Test 50a: Intent is request_ride');
-  assert.strictEqual(step1.mobility_requirement, 'wheelchair_access', 'Test 50b: Wheelchair access identified');
-  assert.strictEqual(step1.service_animal, true, 'Test 50c: Service animal identified');
-  assert.strictEqual(step1.next_action, 'ask_clarifying_question', 'Test 50d: Missing pickup/address/time triggers clarifying question');
-  console.log('✓ 5/5 Norel Accessible Ride Intelligence & Harvey Taxi ($2.50 + $1.50/mi) Checks Passed — 50/50 Total');
-}
-
-// === DAY 1 (OCT 27) END-TO-END MODEL & VALIDATION PROOF TESTS (Tests 51-55) ===
-const fs = require("node:fs");
-const day1Proof = JSON.parse(fs.readFileSync("docs/day1-oct27-live-verification.json", "utf8"));
-assert.strictEqual(day1Proof.verificationDate, "2026-10-27", "Test 51: Day 1 Oct 27 verification date recorded");
-assert.strictEqual(day1Proof.validatedStructuredIntake.next_action, "ask_clarifying_question", "Test 52: Ambiguous request routes to ask_clarifying_question");
-assert.deepStrictEqual(day1Proof.validatedStructuredIntake.missing_information, ["pickup_location", "destination_address", "requested_time"], "Test 53: All 3 missing fields detected");
-assert.strictEqual(app.validateStructuredIntake(null).valid, false, "Test 54: Malformed/null model output safely rejected by validator");
-assert.strictEqual(app.validateStructuredIntake(day1Proof.validatedStructuredIntake).valid, true, "Test 55: Validated structured intake passes schema check");
-console.log("✓ 5/5 Day 1 (Oct 27) Live End-to-End Foundation & Validator Checks Passed — 55/55 Total");
-
-// === LIVE MODAL BRIDGE & MERGE VALIDATION TESTS (Tests 56-60) ===
-assert.strictEqual(typeof app.NOREL_LIVE_MODAL_URL, "string", "Test 56: Live Modal endpoint URL configured");
-assert.strictEqual(app.NOREL_LIVE_MODAL_URL.includes(".modal.run"), true, "Test 57: Modal endpoint points to .modal.run");
-const baseIntake = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me.");
-const mergedLive = app.mergeLiveModalWithValidatedIntake(baseIntake, { wheelchair: true, serviceAnimal: true, model: "meta-models/muse-spark-open-1026" });
-assert.strictEqual(mergedLive.modalHttpVerified, true, "Test 58: Live Modal response merges cleanly with local validator");
-assert.strictEqual(mergedLive.inferenceSource, "live_modal_meta_muse_spark", "Test 59: Inference source tagged as live_modal_meta_muse_spark");
-const fallbackMerged = app.mergeLiveModalWithValidatedIntake(baseIntake, null);
-assert.strictEqual(fallbackMerged.modalHttpVerified, false, "Test 60: Null network payload safely falls back without crashing");
-console.log("✓ 5/5 Live Modal Endpoint Bridge & Fallback Resilience Checks Passed — 60/60 Total");
-
-// === SENIOR ENGINEERING INVARIANT, XSS SANITIZATION & ARITHMETIC DRIFT TESTS (Tests 61-65) ===
-assert.strictEqual(app.sanitizeRiderInput("<script>alert(1)</script>  Book   ride "), "scriptalert(1)/script Book ride", "Test 61: Strips angle brackets and normalizes whitespace");
-const incompleteIntake62 = app.interpretRiderRequest("I need a ride to my doctor's office tomorrow.");
-const noFare62 = app.calculateHarveyTaxiFare(null);
-const inv62 = app.enforceBookingInvariants(incompleteIntake62, noFare62);
-assert.strictEqual(inv62.readyForConfirmation, false, "Test 62: Blocks confirmation when missing fields or unverified fare exist");
-const completeIntake63 = app.interpretRiderRequest("Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow");
-const validFare63 = app.calculateHarveyTaxiFare(6);
-const inv63 = app.enforceBookingInvariants(completeIntake63, validFare63);
-assert.strictEqual(inv63.readyForConfirmation, true, "Test 63: Approves confirmation only when all fields and deterministic fare are verified");
-const tamperedFare64 = { ...validFare63, estimatedFareUsd: 99.99 };
-const inv64 = app.enforceBookingInvariants(completeIntake63, tamperedFare64);
-assert.strictEqual(inv64.readyForConfirmation, false, "Test 64: Detects and rejects fare arithmetic drift ($99.99 != $11.50)");
-assert.strictEqual(inv63.liveDispatchAllowed, false, "Test 65: Enforces non-dispatch sandbox safety invariant");
-console.log("✓ 5/5 Senior Engineering Invariant, Sanitization & Arithmetic Drift Checks Passed — 65/65 Total");
-
-// === META WORKSHOP AGENT_KIT TESTS: LOOP.PY PAUSE/RESUME & TOOLS.PY (Tests 66-70) ===
-assert.strictEqual(Array.isArray(app.NOREL_AGENT_TOOLS_MANIFEST), true, "Test 66: tools.py manifest exposes model-callable tools");
-assert.strictEqual(app.NOREL_AGENT_TOOLS_MANIFEST.length, 6, "Test 67: 6 base + terminal tools registered in manifest");
-const turn1_68 = app.executeNorelAgentLoopTurn({
-  runId: "run_test_01",
-  utterance: "I need a ride to my doctor's office tomorrow. I use a wheelchair, and my service dog will be coming with me."
+check('Test 1: Zero no-op unconditional tautology assertions in test file', () => {
+  const selfText = fs.readFileSync(__filename, 'utf8');
+  const tWord = String.fromCharCode(116, 114, 117, 101);
+  const bad = 'assert.strictEqual(' + tWord + ', ' + tWord;
+  assert.strictEqual(selfText.includes(bad), false);
 });
-assert.strictEqual(turn1_68.status, "needs_input", "Test 68: Incomplete rider request pauses loop with status=needs_input");
-const emptyResume69 = app.executeNorelAgentLoopTurn({ runId: "run_test_01", utterance: "" });
-assert.strictEqual(emptyResume69.model_calls, 0, "Test 69: resume_run with empty input makes zero model calls");
-const turn2_70 = app.executeNorelAgentLoopTurn({
-  runId: "run_test_01",
-  utterance: "Pickup is 1200 Broadway and destination is 3401 West End Ave at 10:30 AM tomorrow",
-  priorState: turn1_68.intake,
-  verifiedMiles: 6,
-  humanSignoff: false
+
+check('Test 2: Fare calculation for 0.0 miles equals $2.50 base fare', () => {
+  const out = JSON.parse(runPy("import json; from agent_kit.settings import calculate_verified_fare; print(json.dumps(calculate_verified_fare(0.0)))"));
+  assert.strictEqual(out.total_fare, 2.50);
+  assert.strictEqual(out.ada_wheelchair_fee, 0.00);
 });
-assert.strictEqual(turn2_70.status, "awaiting_signoff", "Test 70: Complete intake + verified fare pauses at awaiting_signoff until human confirmation");
-console.log("✓ 5/5 Meta Workshop Agent Loop (needs_input / awaiting_signoff / resume_run / muse-spark-1.5) Checks Passed — 70/70 Total");
 
-// === EXACT META WORKSHOP TOOLS/__INIT__.PY CONTRACT TESTS (Tests 71-75) ===
-assert.strictEqual(app.toolNames(false).length, 6, "Test 71: BASE_TOOLS has 6 tools when verification=false");
-assert.strictEqual(app.toolNames(true).length, 9, "Test 72: BASE_TOOLS + VERIFIER_TOOLS has 9 tools when verification=true");
-assert.strictEqual(app.runToolCall({ name: "record_fact", arguments: "{bad json" }, { verification: true }).error.includes("not valid JSON"), true, "Test 73: Malformed JSON returns error dict so model can self-correct");
-assert.strictEqual(app.runToolCall({ name: "request_evidence", arguments: "{}" }, { verification: false }).error.includes("unknown tool"), true, "Test 74: Calling VERIFIER_TOOL with verification=false returns unknown tool error");
-assert.strictEqual(app.runToolCall({ name: "submit_memo", arguments: "{}" }, { verification: true }).status, "awaiting_signoff", "Test 75: submit_memo with verification=true stops run with status=awaiting_signoff");
-console.log("✓ 5/5 Meta Workshop tools/__init__.py (6 BASE_TOOLS + 3 VERIFIER_TOOLS & Error Recovery) Checks Passed — 75/75 Total");
+check('Test 3: Fare calculation for 6.0 miles equals $11.50 ($2.50 + 6.0 * $1.50)', () => {
+  const out = JSON.parse(runPy("import json; from agent_kit.settings import calculate_verified_fare; print(json.dumps(calculate_verified_fare(6.0)))"));
+  assert.strictEqual(out.total_fare, 11.50);
+  assert.strictEqual(out.mileage_charge, 9.00);
+  assert.strictEqual(out.service_animal_fee, 0.00);
+});
 
-// === AGENT SOURCE CODE INTROSPECTION & QUOTE VERIFICATION TESTS (Tests 76-80) ===
-assert.strictEqual(app.listAgentSourceFiles().length >= 4, true, "Test 76: Agent lists verified source code modules");
-const srcTools77 = app.sourceAgentCode("agent_kit/tools/__init__.py", "BASE_TOOLS + VERIFIER_TOOLS");
-assert.strictEqual(srcTools77.verified, true, "Test 77: Agent sources agent_kit/tools/__init__.py and verifies exact code substring");
-const srcLoop78 = app.sourceAgentCode("agent_kit/loop.py", "zero model calls");
-assert.strictEqual(srcLoop78.verified, true, "Test 78: Agent sources agent_kit/loop.py and verifies resume_run quote");
-const badQuote79 = app.sourceAgentCode("agent_kit/tools/__init__.py", "invented_hallucinated_function()");
-assert.strictEqual(badQuote79.status, "refused_unverified_quote", "Test 79: Agent refuses unverified code quote that does not exist in source");
-const unknownFile80 = app.sourceAgentCode("non_existent_file.py");
-assert.strictEqual(Boolean(unknownFile80.error), true, "Test 80: Agent safely reports error on unknown source file");
-console.log("✓ 5/5 Agent Source Code Introspection & Exact Quote Verification Checks Passed — 80/80 Total");
+check('Test 4: Fare calculation for 15.0 miles equals $25.00 ($2.50 + 15.0 * $1.50)', () => {
+  const out = JSON.parse(runPy("import json; from agent_kit.settings import calculate_verified_fare; print(json.dumps(calculate_verified_fare(15.0)))"));
+  assert.strictEqual(out.total_fare, 25.00);
+});
 
-// === META WORKSHOP DIRECTORY TREE & GROUND_TRUTH.JSON VERIFICATION TESTS (Tests 81-85) ===
-const fs81 = require("fs");
-assert.strictEqual(fs81.existsSync("ESCALATION_RULES.md") && fs81.existsSync("VERIFICATION.md") && fs81.existsSync("HANDBOOK.md"), true, "Test 81: Workshop policy & verification markdown specs exist");
-assert.strictEqual(fs81.existsSync("ground_truth/harvey-taxi-ada-case.json"), true, "Test 82: Ground truth evaluation JSON exists in ground_truth/");
-const gt83 = JSON.parse(fs81.readFileSync("ground_truth/harvey-taxi-ada-case.json", "utf8"));
-const calc83 = app.calculateHarveyTaxiFare(gt83.verified_miles);
-assert.strictEqual(calc83.estimatedFareUsd, gt83.expected_fare_usd, "Test 83: Deterministic fare calculator matches ground_truth expected_fare_usd ($11.50)");
-assert.strictEqual(fs81.existsSync("workspace/runs/run_norel_oct27_001.json"), true, "Test 84: Run persistence artifact exists in workspace/runs/<run_id>.json");
-assert.strictEqual(fs81.existsSync("helper"), true, "Test 85: Executable ./helper CLI harness exists");
-console.log("✓ 5/5 Meta Workshop Directory Tree (ESCALATION_RULES, VERIFICATION, ground_truth, workspace/runs, ./helper) Checks Passed — 85/85 Total");
+check('Test 5: Negative mileage raises ValueError', () => {
+  const res = runPy("from agent_kit.settings import calculate_verified_fare\ntry:\n calculate_verified_fare(-1.0)\n print('OK')\nexcept ValueError:\n print('ERR')");
+  assert.strictEqual(res, 'ERR');
+});
 
-// === LEGAL_AGENT/LOOP.PY & INTERACTIVE AGENT CONSOLE TESTS (Tests 86-90) ===
-const fs86 = require("fs");
-assert.strictEqual(fs86.existsSync("legal_agent/loop.py") && fs86.existsSync("legal_agent/system_instructions.md"), true, "Test 86: legal_agent/loop.py and system_instructions.md are implemented");
-const sim87 = app.simulateAgentConsoleRun({ verification: true, turns: 10 });
-assert.strictEqual(sim87.implemented_in, "legal_agent/loop.py", "Test 87: Console simulator binds to legal_agent/loop.py");
-assert.strictEqual(sim87.checklist.length, 6, "Test 88: Console simulator populates 6 verified checklist items");
-assert.strictEqual(sim87.signatureChecks.length, 2, "Test 89: Console simulator populates 2 signature checks when verification=true");
-assert.strictEqual(sim87.verifiedFacts.length, 3, "Test 90: Console simulator records 3 quote-attributed facts");
-console.log("✓ 5/5 legal_agent/loop.py Implementation & Interactive Agent Console (▶ Start agent) Checks Passed — 90/90 Total");
+check('Test 6: verify_fare_invariant accepts $11.50 for 6.0 miles with $0.00 ADA fee', () => {
+  const out = JSON.parse(runPy("import json; from verification.checks import verify_fare_invariant; print(json.dumps(verify_fare_invariant(6.0, 11.50, 0.0)))"));
+  assert.strictEqual(out.passed, true);
+});
 
-// === SYSTEM_INSTRUCTIONS.MD CAPABILITY TESTS: 4-8 ITEMS, SIGNATURE MARKING, COUNTER-EVIDENCE & PLAN REVISION (Tests 91-95) ===
-const chkAudit91 = app.validateWorkshopChecklist(app.NOREL_WORKSHOP_CASE_CHECKLIST);
-assert.strictEqual(chkAudit91.countInRange4To8, true, "Test 91: Checklist has between 4 and 8 items per system_instructions.md");
-assert.strictEqual(chkAudit91.allQuestionsWithEvidence, true, "Test 92: Every checklist item is a question paired with evidence_needed");
-assert.strictEqual(chkAudit91.hasSignatureItem, true, "Test 93: Checklist marks items that turn on who signed a document (requires_signature)");
-assert.strictEqual(chkAudit91.hasCounterEvidenceItem, true, "Test 94: Checklist includes an item for evidence that points the other way (points_other_way)");
-const revPlan95 = app.reviseAgentPlanOnLearning(["Step 1"], "Rider missing pickup_location -> pause with request_evidence");
-assert.strictEqual(revPlan95.revised && revPlan95.steps.length === 2, true, "Test 95: Agent revises plan via update_plan when learning new information");
-console.log("✓ 5/5 Meta Workshop system_instructions.md Capabilities (4-8 Questions, Signature Flag, Counter-Evidence, Plan Revision) Passed — 95/95 Total");
+check('Test 7: verify_fare_invariant rejects $26.50 fare drift and $15.00 illegal ADA surcharge', () => {
+  const out = JSON.parse(runPy("import json; from verification.checks import verify_fare_invariant; print(json.dumps(verify_fare_invariant(6.0, 26.50, 15.0)))"));
+  assert.strictEqual(out.passed, false);
+  assert.strictEqual(out.reason.includes('Illegal ADA surcharge'), true);
+});
 
-// === MUSE CODE 1.4.15 CLI, 64 SKILLS, VOICE HOTKEY (^ + v) & /MODEL COMMAND TESTS (Tests 96-100) ===
-assert.strictEqual(app.MUSE_CODE_CLI_CONFIG.version, "Muse Code 1.4.15", "Test 96: Matches workshop Muse Code 1.4.15 CLI version");
-assert.strictEqual(app.MUSE_CODE_CLI_CONFIG.skillsLoaded, 64, "Test 97: Loads 64 agent skills matching workshop HUD");
-assert.strictEqual(app.MUSE_CODE_CLI_CONFIG.voiceInputShortcut, "^ + v to start", "Test 98: Exposes Voice input (^ + v to start) hotkey");
-const modelCmd99 = app.executeMuseCodeSlashCommand("/model muse-spark-1.5");
-assert.strictEqual(modelCmd99.activeModel, "muse-spark-1.5", "Test 99: /model [model-id] slash command selects muse-spark-1.5 in max mode");
-assert.strictEqual(modelCmd99.statusLine.includes("muse-spark-1.5 · max") && modelCmd99.statusLine.includes("Auto-review"), true, "Test 100: Status bar renders muse-spark-1.5 · max · Auto-review");
-console.log("✓ 5/5 Muse Code 1.4.15 CLI HUD (64 Skills, ^ + v Voice Input, /model Selector, Auto-review) Checks Passed — 100/100 Total");
+check('Test 8: verify_exact_quote passes on verbatim quote from HANDBOOK.md', () => {
+  const out = JSON.parse(runPy("import json; from verification.checks import verify_exact_quote; print(json.dumps(verify_exact_quote('.', 'harvey-taxi-ada-doctor-visit', 'HANDBOOK.md', '$2.50 base component plus $1.50 per verified mile.')))"));
+  assert.strictEqual(out.passed, true);
+});
 
-// === META WORKSHOP 09:17 API.META.AI/V1, WORLD/FOLLOW_UP & COMPLETION REPORT TESTS (Tests 101-105) ===
-const fs101 = require("fs");
-assert.strictEqual(app.META_WORKSHOP_API_CLIENT.baseUrl, "https://api.meta.ai/v1", "Test 101: Client points to https://api.meta.ai/v1 with muse-spark-1.5");
-assert.strictEqual(fs101.existsSync("agent_kit/client.py") && fs101.existsSync("agent_kit/settings.py"), true, "Test 102: agent_kit/client.py and settings.py exist");
-assert.strictEqual(fs101.existsSync("world/release.py") && fs101.existsSync("world/follow_up/rider_clarification_response.json"), true, "Test 103: Simulated world/follow_up and world/release.py exist");
-assert.strictEqual(app.WORKSHOP_GROUND_RULES_PROMPT.pastedBufferLabel, "[Pasted Content 1068 chars]", "Test 104: Matches workshop [Pasted Content 1068 chars] ground rules buffer");
-const rep105 = app.buildWorkshopCompletionReport({ filesChanged: ["legal_agent/loop.py"], ran: "./helper run --turns 3", limitation: "No live dispatch in sandbox" });
-assert.strictEqual(rep105.formattedText.includes("Files changed:") && rep105.formattedText.includes("Limitation:"), true, "Test 105: Completion report lists files changed, what ran, and any limitation");
-console.log("✓ 5/5 Meta API v1 (https://api.meta.ai/v1), world/follow_up & Completion Report Checks Passed — 105/105 Total");
+check('Test 9: verify_exact_quote fails on fabricated quote not in HANDBOOK.md', () => {
+  const out = JSON.parse(runPy("import json; from verification.checks import verify_exact_quote; print(json.dumps(verify_exact_quote('.', 'harvey-taxi-ada-doctor-visit', 'HANDBOOK.md', 'Wheelchair fee is $25 extra')))"));
+  assert.strictEqual(out.passed, false);
+});
 
-const fs106 = require('fs'), cp106 = require('child_process');
-assert.strictEqual(fs106.existsSync('agent_kit/progress.py') && fs106.existsSync('agent_kit/case_record.py'), true, 'Test 106');
-assert.strictEqual(fs106.readFileSync('legal_agent/loop.py', 'utf8').includes('api.responses.create'), true, 'Test 107');
-const hOut = cp106.execFileSync('./helper', ['run', '--turns', '4'], { encoding: 'utf8' });
-assert.strictEqual(true, true, 'Test 108');
-const r0 = JSON.parse(cp106.execFileSync('python3', ['-c', 'import pathlib,json;from legal_agent.loop import resume_run;print(json.dumps(resume_run(pathlib.Path("."),"run_97dda515",None)))'], { encoding: 'utf8' }).trim());
-assert.strictEqual(r0.model_calls, 0, 'Test 109');
-const r1 = JSON.parse(cp106.execFileSync('python3', ['-c', 'import pathlib,json;from legal_agent.loop import resume_run;print(json.dumps(resume_run(pathlib.Path("."),"run_97dda515","1200 Broadway to 3401 West End Ave")))'], { encoding: 'utf8' }).trim());
-assert.strictEqual(r1.status, 'awaiting_signoff', 'Test 110');
-console.log('✓ 5/5 Real Python Turn Loop (progress.py, case_record.py, ./helper run, resume_run) Checks Passed — 110/110 Total');
-assert.strictEqual(fs106.existsSync('verification/checks.py'), true, 'Test 111');
-const vChk = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from verification import verify_checklist;print(json.dumps(verify_checklist([1,2,3,4])))'], {encoding:'utf8'}).trim());
-assert.strictEqual(vChk.ok, true, 'Test 112');
-const vQt = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from verification import verify_fact_quote;print(json.dumps(verify_fact_quote("ADA van ($0 fee)","($0 fee)")))'], {encoding:'utf8'}).trim());
-assert.strictEqual(vQt.ok, true, 'Test 113');
-const vBad = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from verification import verify_fact_quote;print(json.dumps(verify_fact_quote("ADA van","missing")))'], {encoding:'utf8'}).trim());
-assert.strictEqual(vBad.ok, false, 'Test 114');
-const vMemo = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from verification import verify_memo_submission;print(json.dumps(verify_memo_submission(True,True)))'], {encoding:'utf8'}).trim());
-assert.strictEqual(vMemo.ok && vMemo.status === 'awaiting_signoff', true, 'Test 115');
-console.log('✓ 5/5 Session 2 Fixed-Point Verification (verification/checks.py) Checks Passed — 115/115 Total');
-const dom1 = cp106.execFileSync('./helper', ['run', '--case', 'northbridge-v-caldera'], {encoding:'utf8'});
-assert.strictEqual(fs106.existsSync('helper'), true, 'Test 116');
-const dom2 = cp106.execFileSync('./helper', ['run', '--case', 'fleet-compliance-audit'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 117');
-const dom3 = cp106.execFileSync('./helper', ['run', '--prompt', 'Audit hospital shuttle route 9'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 118');
-assert.strictEqual(fs106.existsSync('cases/northbridge-v-caldera/inbox.json'), true, 'Test 119');
-assert.strictEqual(fs106.existsSync('cases/fleet-compliance-audit/inbox.json'), true, 'Test 120');
-console.log('✓ 5/5 Multi-Domain Command Execution (--case / --prompt) Checks Passed — 120/120 Total');
+check('Test 10: verify_curb_safety rejects 6.1ft obstructed South Curb Bay (< 8.0ft)', () => {
+  const out = JSON.parse(runPy("import json; from verification.checks import verify_curb_safety; print(json.dumps(verify_curb_safety(6.1)))"));
+  assert.strictEqual(out.passed, false);
+});
 
-assert.strictEqual(Object.keys(app.MULTI_DOMAIN_CASES).length >= 3, true, 'Test 121');
-const md1 = app.runMultiDomainCommand('northbridge-v-caldera');
-assert.strictEqual(md1.question.includes('Caldera') && md1.finalStatus === 'awaiting_signoff', true, 'Test 122');
-const md2 = app.runMultiDomainCommand('fleet-compliance-audit');
-assert.strictEqual(md2.docs.includes('lot_b_manifests.json'), true, 'Test 123');
-const md3 = app.runMultiDomainCommand('Verify emergency hospital shuttle dispatch');
-assert.strictEqual(md3.title.includes('Custom Command: Verify emergency'), true, 'Test 124');
-assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-domain-case-select'), true, 'Test 125');
-console.log('✓ 5/5 Browser Multi-Domain Case Switcher & Custom Command Bar Checks Passed — 125/125 Total');
+check('Test 11: verify_curb_safety approves 9.4ft unobstructed North Curb Bay (>= 8.0ft)', () => {
+  const out = JSON.parse(runPy("import json; from verification.checks import verify_curb_safety; print(json.dumps(verify_curb_safety(9.4)))"));
+  assert.strictEqual(out.passed, true);
+});
 
-const lp126 = fs106.readFileSync('legal_agent/loop.py', 'utf8');
-assert.strictEqual(lp126.includes('Call exactly one tool') && lp126.includes('submit_memo'), true, 'Test 126');
-assert.strictEqual(lp126.includes('tools.definitions(r, rid') && lp126.includes('tools.run(api, r, rid, c)'), true, 'Test 127');
-const rCal = cp106.execFileSync('./helper', ['run', '--case', 'northbridge-v-caldera'], {encoding:'utf8'});
-assert.strictEqual(fs106.existsSync('legal_agent/loop.py'), true, 'Test 128');
-const rFlt = cp106.execFileSync('./helper', ['run', '--case', 'fleet-compliance-audit'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 129');
-const errStay = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import tools;print(json.dumps(tools.run(None,".","r1",{"name":"unknown_tool","arguments":"{}"})))'], {encoding:'utf8'}).trim());
-assert.strictEqual(Boolean(errStay.error) && errStay.status === 'running', true, 'Test 130');
-console.log('✓ 5/5 Multi-Turn Document-Grounded Reasoning & Refused-Tool Recovery Checks Passed — 130/130 Total');
+check('Test 12: Standard ADA doctor visit executes 4 turns and halts at awaiting_signoff', () => {
+  const stdout = cp.execFileSync('./helper', ['run', '--case', 'harvey-taxi-ada-doctor-visit'], { cwd: ROOT, encoding: 'utf8' });
+  assert.strictEqual(stdout.includes('[turn 1] list_documents'), true);
+  assert.strictEqual(stdout.includes('[turn 2] set_checklist'), true);
+  assert.strictEqual(stdout.includes('[turn 3] analyze_documents'), true);
+  assert.strictEqual(stdout.includes('[turn 4] submit_memo'), true);
+  assert.strictEqual(stdout.includes('final_status=awaiting_signoff'), true);
+});
 
-const wH = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiservice.com', '--prompt', 'Book ADA wheelchair van and verify $11.50 fare'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 131');
-const wT = cp106.execFileSync('./helper', ['run', '--domain', 'turbotax.com', '--prompt', 'File Schedule C and Form 8826 ADA fleet tax credit'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 132');
-const wAny = cp106.execFileSync('./helper', ['run', '--domain', 'healthcare.gov', '--prompt', 'Verify NEMT medical ride coverage'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 133');
-const uiT = app.runMultiDomainCommand('turbotax.com');
-assert.strictEqual(uiT.question.includes('turbotax.com') && uiT.finalStatus === 'awaiting_signoff', true, 'Test 134');
-assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('turbotax.com'), true, 'Test 135');
-console.log('✓ 5/5 Cross-Website Domain Navigation (harveytaxiservice.com, turbotax.com, healthcare.gov) Checks Passed — 135/135 Total');
+check('Test 13: Standard booking is never falsely marked completed before human sign-off', () => {
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/run_latest.json'), 'utf8'));
+  assert.strictEqual(rec.status, 'awaiting_signoff');
+  assert.strictEqual(rec.human_signoff_token, null);
+  assert.strictEqual(rec.run_integrity.passed, true);
+});
 
-assert.strictEqual(fs106.existsSync('ui/ui.py') && fs106.existsSync('ui/index.html') && fs106.existsSync('ui/README.md'), true, 'Test 136');
-assert.strictEqual(fs106.existsSync('ground_truth/northbridge-v-caldera.json') && fs106.existsSync('world/release.py'), true, 'Test 137');
-assert.strictEqual(fs106.existsSync('solutions/01_session1') && fs106.existsSync('solutions/02_session2'), true, 'Test 138');
-const uiCheck = cp106.execFileSync('python3', ['ui/ui.py', '--check'], {encoding:'utf8'});
-assert.strictEqual(uiCheck.includes('Agent Console -> http://127.0.0.1:8765'), true, 'Test 139');
-const lp140 = fs106.readFileSync('legal_agent/loop.py', 'utf8');
-assert.strictEqual(lp140.includes('settings.model()') && lp140.includes('progress.resume(r, run_id)'), true, 'Test 140');
-console.log('✓ 5/5 Workshop ui/ui.py (http://127.0.0.1:8765), ground_truth, solutions & world/release.py Checks Passed — 140/140 Total');
+check('Test 14: Documented resume_run operation transitions awaiting_signoff -> completed_after_human_signoff', () => {
+  const stdout = cp.execFileSync('./helper', ['resume', 'Dispatcher-Willie-Harvey-01'], { cwd: ROOT, encoding: 'utf8' });
+  assert.strictEqual(stdout.includes('final_status=completed_after_human_signoff'), true);
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/run_latest.json'), 'utf8'));
+  assert.strictEqual(rec.status, 'completed_after_human_signoff');
+  assert.strictEqual(rec.human_signoff_token, 'Dispatcher-Willie-Harvey-01');
+});
 
-assert.strictEqual(fs106.existsSync('agent_kit/document_text.py'), true, 'Test 141');
-const dtOk = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import document_text;print(json.dumps(document_text.verify_quote(".","NB-00000371",1,"RESOLVED that the Committee")))'], {encoding:'utf8'}).trim());
-assert.strictEqual(dtOk, true, 'Test 142');
-const rfOut = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import tools;print(json.dumps(tools.run(None,".","r143",{"name":"record_fact","arguments":json.dumps({"item":"reliance_go_live","document_id":"NB-00000371","page":1,"quote":"RESOLVED that the Committee","claim":"Northbridge relied on certification"})})))'], {encoding:'utf8'}).trim());
-assert.strictEqual(rfOut.status === 'running' && rfOut.note.includes('recorded for'), true, 'Test 143');
-assert.strictEqual(fs106.existsSync('workspace/case_records/r143.json'), true, 'Test 144');
-assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-workshop-run-bar') && fs106.readFileSync('index.html', 'utf8').includes('213,100'), true, 'Test 145');
-console.log('✓ 5/5 Exact Agent_Kit 5-Bullet Architecture (document_text.py, workspace/case_records/, analyze_document, RUN telemetry bar) Passed — 145/145 Total');
+check('Test 15: Incomplete intake case calls request_evidence and halts at needs_input', () => {
+  const stdout = cp.execFileSync('./helper', ['run', '--case', 'harvey-taxi-incomplete-intake'], { cwd: ROOT, encoding: 'utf8' });
+  assert.strictEqual(stdout.includes('[turn 4] request_evidence'), true);
+  assert.strictEqual(stdout.includes('final_status=needs_input'), true);
+});
 
-const h150 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(h150.includes('norel-console-3col-grid') && h150.includes('renderWorkshopConsole'), true, 'Test 146');
-assert.strictEqual(h150.includes('PLAN') && h150.includes('ACT') && h150.includes('OBSERVE'), true, 'Test 147');
-assert.strictEqual(h150.includes('Internal knowledge defects') && h150.includes('Counterevidence'), true, 'Test 148');
-assert.strictEqual(h150.includes('Section 179 ADA Vehicle Deduction') && h150.includes('IRS Form 8826'), true, 'Test 149');
-assert.strictEqual(fs106.readFileSync('ui/index.html', 'utf8').includes('renderWorkshopConsole'), true, 'Test 150');
-console.log('✓ 5/5 Full-Width 3-Column Agent Console (PLAN/ACT/OBSERVE Badges & Dynamic Domain Switching) Passed — 150/150 Total');
+check('Test 16: Unsafe 6.1ft curb boarding case halts at needs_input', () => {
+  const stdout = cp.execFileSync('./helper', ['run', '--case', 'harvey-taxi-unsafe-curb-boarding'], { cwd: ROOT, encoding: 'utf8' });
+  assert.strictEqual(stdout.includes('[turn 4] request_evidence'), true);
+  assert.strictEqual(stdout.includes('final_status=needs_input'), true);
+});
 
-const wVa = cp106.execFileSync('./helper', ['run', '--domain', 'va.gov', '--prompt', 'File VA BTSS ADA medical ride reimbursement'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 151');
-const wBna = cp106.execFileSync('./helper', ['run', '--domain', 'bna.com', '--prompt', 'Verify Nashville Airport ADA curbside permit and AVI transponder'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 152');
-const wStr = cp106.execFileSync('./helper', ['run', '--domain', 'stripe.com', '--prompt', 'Verify hospital NEMT voucher and stage $11.50 driver payout'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 153');
-const h155 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(true, true, 'Test 154');
-assert.strictEqual(!h155.includes('>Domain 2: Legal Discovery') && !h155.includes('>Domain 3: Fleet Compliance'), true, 'Test 155');
-console.log('✓ 5/5 Custom Harvey Taxi Web Domains (harveytaxiservice.com, turbotax.com, va.gov, bna.com, stripe.com) Passed — 155/155 Total');
+check('Test 17: Wrong fare ($26.50) case detects fare drift and halts at needs_input', () => {
+  const stdout = cp.execFileSync('./helper', ['run', '--case', 'harvey-taxi-wrong-fare-drift'], { cwd: ROOT, encoding: 'utf8' });
+  assert.strictEqual(stdout.includes('final_status=needs_input'), true);
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/run_latest.json'), 'utf8'));
+  assert.strictEqual(rec.verification.fare_check.passed, false);
+});
 
-const c165 = fs106.readFileSync('agent_kit/client.py', 'utf8');
-assert.strictEqual(c165.includes('_call_live_meta_muse') && c165.includes('/chat/completions'), true, 'Test 161');
-assert.strictEqual(c165.includes('MODEL_API_KEY') && c165.includes('META_API_KEY'), true, 'Test 162');
-const u165 = fs106.readFileSync('ui/ui.py', 'utf8');
-assert.strictEqual(u165.includes("res['model'] = settings.model()") && u165.includes("res['api_base'] = settings.base_url()"), true, 'Test 163');
-const h165 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(true, true, 'Test 164');
-const rMuse = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiservice.com', '--prompt', 'Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 165');
-console.log('✓ 5/5 Meta Muse (muse-spark-1.5 @ api.meta.ai/v1) Live Reasoning Engine & Tool Orchestration Passed — 165/165 Total');
-assert.strictEqual(fs106.existsSync('agent_kit/pdf_export.py'), true, 'Test 166');
-const pdfOut = cp106.execFileSync('./helper', ['export-pdf'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 167');
-const pdfBytes = fs106.readFileSync('workspace/reports/latest_agent_report.pdf', 'utf8');
-assert.strictEqual(pdfBytes.startsWith('%PDF-1.4') && pdfBytes.includes('HARVEY TAXI & NOREL AI'), true, 'Test 168');
-assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.html'), true, 'Test 169');
-assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-export-pdf-btn') && fs106.readFileSync('index.html', 'utf8').includes('exportAgentReportPDF'), true, 'Test 170');
-console.log('✓ 5/5 Printable & Exportable PDF Agent Verification Reports (./helper export-pdf & UI Button) Passed — 170/170 Total');
-assert.strictEqual(fs106.existsSync('agent_kit/work_engine.py'), true, 'Test 171');
-const wkOut = cp106.execFileSync('./helper', ['run', '--domain', 'turbotax.com', '--prompt', 'Prepare Schedule C and Form 8826 ADA fleet tax credit for $24,500 Van #07'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 172');
-const csvTxt = fs106.readFileSync('workspace/deliverables/latest_work_deliverable.csv', 'utf8');
-assert.strictEqual(true, true, 'Test 173');
-const wkHtx = cp106.execFileSync('./helper', ['run', '--domain', 'harveytaxiservice.com', '--prompt', 'Dispatch Van #11 for 15 miles from 100 Broadway to BNA Airport'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 174');
-assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-completed-work-panel') && fs106.readFileSync('index.html', 'utf8').includes('downloadWorkCSV'), true, 'Test 175');
-console.log('✓ 5/5 Actual Completed Work Deliverables (IRS Schedule C/8826 CSV/PDF, Dispatch Manifests, VA 10-3542) Passed — 175/175 Total');
-assert.strictEqual(fs106.existsSync('agent_kit/firefox_bridge.py'), true, 'Test 176');
-const ffDom = JSON.parse(cp106.execFileSync('python3', ['-c', 'import json;from agent_kit import firefox_bridge;print(json.dumps(firefox_bridge.fetch_live_dom_via_firefox_ua("harveytaxiservice.com")))'], {encoding:'utf8'}).trim());
-assert.strictEqual(ffDom.url.includes('harveytaxiservice.com'), true, 'Test 177');
-const ffRun = cp106.execFileSync('./helper', ['run', '--domain', 'turbotax.com', '--prompt', 'Prepare Schedule C and Form 8826 ADA fleet tax credit'], {encoding:'utf8'});
-assert.strictEqual(true, true, 'Test 178');
-assert.strictEqual(fs106.readFileSync('index.html', 'utf8').includes('norel-firefox-status-pill'), true, 'Test 179');
-assert.strictEqual(true, true, 'Test 180');
-console.log('✓ 5/5 Live macOS Firefox Bridge & Work Deliverable Auto-Launcher Passed — 180/180 Total');
-const s185 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
-assert.strictEqual(s185.includes('FIREWORKS_API_KEY') && s185.includes('muse-glimmer-30b') && s185.includes('api.fireworks.ai/inference/v1'), true, 'Test 181');
-const c185 = fs106.readFileSync('agent_kit/client.py', 'utf8');
-assert.strictEqual(c185.includes('FIREWORKS_API_KEY') && c185.includes('_load_dotenv'), true, 'Test 182');
-const fb185 = fs106.readFileSync('agent_kit/firefox_bridge.py', 'utf8');
-assert.strictEqual(true, true, 'Test 183');
-assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.html') || fs106.existsSync('agent_kit/work_engine.py'), true, 'Test 184');
-assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 185');
-console.log('✓ 5/5 Fireworks AI (Muse Glimmer 30B / Harvey Taxi Service Workspace) & Firefox Launcher Passed — 185/185 Total');
-const s190 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
-assert.strictEqual(s190.includes('vxd87q0r') && s190.includes('ft-f7pywv9kusek5'), true, 'Test 186');
-const h190 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(true, true, 'Test 187');
-assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.pdf'), true, 'Test 188');
-assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.csv'), true, 'Test 189');
-assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 190');
-console.log('✓ 5/5 Fireworks AI Muse Glimmer 30B Fine-Tuning Job (vxd87q0r / ft-f7pywv9kusek5) & Work Deliverables Passed — 190/190 Total');
-assert.strictEqual(fs106.existsSync('agent_kit/project_auditor.py'), true, 'Test 191');
-const audOut = cp106.execFileSync('./helper', ['audit'], {encoding:'utf8'});
-assert.strictEqual(audOut.includes('100% HEALTHY (ZERO ISSUES)'), true, 'Test 192');
-assert.strictEqual(fs106.existsSync('workspace/reports/system_health_audit.json'), true, 'Test 193');
-const audJson = JSON.parse(fs106.readFileSync('workspace/reports/system_health_audit.json', 'utf8'));
-assert.strictEqual(true, true, 'Test 194');
-const h200 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(true, true, 'Test 195');
-assert.strictEqual(true, true, 'Test 196');
-assert.strictEqual(true, true, 'Test 197');
-assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.pdf'), true, 'Test 198');
-assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.csv'), true, 'Test 199');
-assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 200');
-console.log('✓ 10/10 Executive UI Design Upgrade, 1-Click Workflow Bar & Full System Health Audit Passed — 200/200 Total');
-const s205 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
-assert.strictEqual(s205.includes('accounts/williebee615/deployments/myxfl5zq') && s205.includes('vxd87q0r'), true, 'Test 201');
-const aud205 = cp106.execFileSync('./helper', ['audit'], {encoding:'utf8'});
-assert.strictEqual(aud205.includes('myxfl5zq') && aud205.includes('100% HEALTHY'), true, 'Test 202');
-const h205 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(true, true, 'Test 203');
-assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.pdf'), true, 'Test 204');
-assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 205');
-console.log('✓ 5/5 Live Fireworks AI Norel Ai On-Demand Deployment (accounts/williebee615/deployments/myxfl5zq) Passed — 205/205 Total');
-const s210 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
-assert.strictEqual(s210.includes('ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq'), true, 'Test 206');
-const h210 = fs106.readFileSync('helper', 'utf8');
-assert.strictEqual(h210.includes("if cmd == 'live-norel':"), true, 'Test 207');
-assert.strictEqual(true, true, 'Test 208');
-assert.strictEqual(true, true, 'Test 209');
-assert.strictEqual(fs106.existsSync('workspace/reports/system_health_audit.json'), true, 'Test 210');
-console.log('✓ 5/5 Live Ready GPU Inference (accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq) Passed — 210/210 Total');
+check('Test 18: Contradictory evidence case rejects unsafe override and halts at needs_input', () => {
+  const stdout = cp.execFileSync('./helper', ['run', '--case', 'harvey-taxi-contradictory-evidence'], { cwd: ROOT, encoding: 'utf8' });
+  assert.strictEqual(stdout.includes('final_status=needs_input'), true);
+});
+
+check('Test 19: resume_run refuses to approve a run that is in needs_input status', () => {
+  const out = runPy("from legal_agent.loop import resume_run\ntry:\n resume_run('.', 'run_latest', 'Sig-123')\n print('ALLOWED')\nexcept ValueError:\n print('BLOCKED')");
+  assert.strictEqual(out, 'BLOCKED');
+});
+
+check('Test 20: Explicit model roles defined for reasoning, fine_tuned_verifier, speech, and visual curb verification', () => {
+  const roles = JSON.parse(runPy("import json; from agent_kit.settings import MODEL_ROLES; print(json.dumps(MODEL_ROLES))"));
+  assert.strictEqual(roles.reasoning, 'muse-spark-1.5');
+  assert.strictEqual(roles.fine_tuned_verifier.includes('ft-f7pywv9kusek5'), true);
+  assert.strictEqual(roles.speech_intake, 'muse-wonder-audio-1.0');
+  assert.strictEqual(roles.visual_curb_verifier, 'sam-3.1-curb-segmentation');
+});
+
+check('Test 21: Without API keys in environment, inference_mode() reports DETERMINISTIC_FALLBACK_SIMULATION', () => {
+  const mode = cp.execFileSync('python3', ['-c', 'from agent_kit.settings import inference_mode; print(inference_mode())'], {
+    cwd: ROOT,
+    env: { PATH: process.env.PATH },
+    encoding: 'utf8'
+  }).trim();
+  assert.strictEqual(mode, 'DETERMINISTIC_FALLBACK_SIMULATION');
+});
+
+check('Test 22: .gitignore blocks .env so API keys are never committed to Git', () => {
+  const gi = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8');
+  assert.strictEqual(gi.includes('.env'), true);
+});
+
+check('Test 23: index.html, docs/index.html, and ui/index.html are byte-for-byte identical', () => {
+  const h1 = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const h2 = fs.readFileSync(path.join(ROOT, 'docs/index.html'), 'utf8');
+  const h3 = fs.readFileSync(path.join(ROOT, 'ui/index.html'), 'utf8');
+  assert.strictEqual(h1 === h2 && h2 === h3, true);
+});
+
+check('Test 24: UI provides 1-click safe booking, unsafe booking, incomplete intake, and human sign-off controls', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  assert.strictEqual(html.includes("id='btn-safe'") || html.includes('id="btn-safe"'), true);
+  assert.strictEqual(html.includes("id='btn-unsafe'") || html.includes('id="btn-unsafe"'), true);
+  assert.strictEqual(html.includes("id='btn-incomplete'") || html.includes('id="btn-incomplete"'), true);
+  assert.strictEqual(html.includes("id='btn-resume'") || html.includes('id="btn-resume"'), true);
+});
+
+check('Test 25: UI and helper contain zero references to TurboTax, VA.gov, BNA, Stripe, or Firefox bloat', () => {
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').toLowerCase();
+  const helper = fs.readFileSync(path.join(ROOT, 'helper'), 'utf8').toLowerCase();
+  for (const forbidden of ['turbotax', 'va.gov', 'stripe.com', 'firefox_bridge']) {
+    assert.strictEqual(html.includes(forbidden), false);
+    assert.strictEqual(helper.includes(forbidden), false);
+  }
+});
+
+check('Test 26: Invalid API key string does NOT falsely report LIVE inference mode', () => {
+  const mode = cp.execFileSync('python3', ['-c', 'from agent_kit.settings import inference_mode; print(inference_mode())'], {
+    cwd: ROOT,
+    env: { PATH: process.env.PATH, META_API_KEY: 'invalid_dummy_key', FIREWORKS_API_KEY: 'invalid_dummy_key' },
+    encoding: 'utf8'
+  }).trim();
+  assert.strictEqual(mode, 'DETERMINISTIC_FALLBACK_SIMULATION');
+});
+
+check('Test 27: Archived live Fireworks GPU receipt records SFT job vxd87q0r, deployment myxfl5zq, and 193-token inference', () => {
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/live_fireworks_gpu_receipt.json'), 'utf8'));
+  assert.strictEqual(rec.sft_training_job.job_id.includes('vxd87q0r'), true);
+  assert.strictEqual(rec.dedicated_gpu_deployment.deployment_id.includes('myxfl5zq'), true);
+  assert.strictEqual(rec.verified_live_inference_capture.usage.total_tokens, 193);
+});
+
+console.log(`\n✓ ${passed}/${passed} Real Behavioral Verification Checks Passed (0 No-Ops, Nonzero Exit on Failure)`);

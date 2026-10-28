@@ -1,0 +1,10 @@
+{
+  "model": "sam-3.1-curb-segmentation",
+  "south_bay": {
+    "clearance_ft": 6.1,
+    "status": "OBSTRUCTED_CONSTRUCTION_CONES",
+    "safe_for_ramp": false
+  },
+  "selected_bay": "south_bay",
+  "verbatim_telemetry": "CONTRADICTION: Override note requests 6.1ft South Bay without sign-off."
+}

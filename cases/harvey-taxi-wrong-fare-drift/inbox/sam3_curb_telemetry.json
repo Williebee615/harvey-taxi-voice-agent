@@ -1,0 +1,9 @@
+{
+  "model": "sam-3.1-curb-segmentation",
+  "north_bay": {
+    "clearance_ft": 9.4,
+    "status": "UNOBSTRUCTED_LEVEL_CURB",
+    "safe_for_ramp": true
+  },
+  "selected_bay": "north_bay"
+}
