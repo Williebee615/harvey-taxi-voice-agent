@@ -1,9 +1,0 @@
-{
-  "run_id": "run_norel_oct27_001",
-  "case_id": "harvey-taxi-ada-doctor-visit",
-  "verification": true,
-  "status": "awaiting_signoff",
-  "turn": 2,
-  "model": "meta-models/muse-spark-1.5",
-  "verified_fare_usd": 11.5
-}

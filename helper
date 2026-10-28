@@ -5,6 +5,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 cmd = sys.argv[1] if len(sys.argv) > 1 else 'run'
+if cmd == 'audit':
+    from agent_kit import project_auditor
+    rep = project_auditor.run_full_audit(ROOT)
+    print('=== HARVEY TAXI & NOREL AI — FULL PROJECT DIAGNOSTIC REPORT ===')
+    for item in rep['results']:
+        print(f"  [{item['status']}] {item['component']} -> {item['detail']}")
+    print(f"OVERALL HEALTH: {'100% HEALTHY (ZERO ISSUES)' if rep['all_passed'] else rep['issues']}")
+    sys.exit(0 if rep['all_passed'] else 1)
 if cmd == 'test':
     sys.exit(subprocess.call(['node', 'tests/run-tests.js'], cwd=ROOT))
 if cmd == 'export-pdf':
