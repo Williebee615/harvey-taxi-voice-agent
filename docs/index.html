@@ -1,90 +1,9 @@
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-<meta charset='UTF-8'/>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'/>
-<title>Harvey Taxi — Accessible Voice-Booking & Verification Agent</title>
-<style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#070d19;color:#f8fafc;padding:24px;line-height:1.5}
-.header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #1e293b;margin-bottom:18px}
-.badge{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid #38bdf8;background:rgba(56,189,248,0.12);color:#38bdf8}
-.sim-banner{background:rgba(245,158,11,0.12);border:1px solid #f59e0b;color:#fde68a;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:18px}
-.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
-button{background:#1e293b;color:#f8fafc;border:1px solid #334155;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer}
-button.primary{background:#0284c7;border-color:#38bdf8}
-button.danger{background:#7f1d1d;border-color:#ef4444}
-button.success{background:#14532d;border-color:#22c55e}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
-.card{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:16px}
-.card h3{margin-top:0;font-size:15px;color:#38bdf8;border-bottom:1px solid #1e293b;padding-bottom:8px}
-pre{background:#020617;padding:12px;border-radius:6px;overflow-x:auto;font-size:12px;border:1px solid #1e293b;white-space:pre-wrap}
-.status-pill{display:inline-block;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12px}
-</style>
-</head>
-<body>
-<div class='header'>
-  <div>
-    <h1 style='margin:0;font-size:22px;'>Harvey Taxi — Accessible Voice-Booking & Verification Agent</h1>
-    <div style='color:#94a3b8;font-size:13px;'>Meta Global AI Developer Hackathon • Startup Track • Strictly Scoped Verification Architecture</div>
-  </div>
-  <div style='display:flex;gap:8px;flex-wrap:wrap;'>
-    <span class='badge' id='mode-indicator'>Mode: Deterministic Browser Simulation (No Privileged Keys Required)</span>
-    <span class='badge'>Fare Rule: $2.50 Base + $1.50/mi ($0.00 ADA Fee)</span>
-  </div>
-</div>
-<div class='sim-banner'>
-  <strong>Transparency & Simulation Boundary:</strong> This browser console runs without privileged API keys and performs no real taxi dispatch or payment operations. For live GPU inference against our fine-tuned Fireworks AI <code>Muse Glimmer 30B</code> deployment (<code>myxfl5zq</code>), run <code>./helper validate-models</code> in the CLI.
-</div>
-<div class='controls'>
-  <button class='primary' id='btn-safe' onclick="loadScenario('safe')">▶ 1-Click Demo: Verified ADA Booking (awaiting_signoff)</button>
-  <button class='danger' id='btn-unsafe' onclick="loadScenario('unsafe')">⚠️ 1-Click Demo: Unsafe 6.1ft Curb & Wrong Fare (needs_input)</button>
-  <button id='btn-incomplete' onclick="loadScenario('incomplete')">📋 Demo: Incomplete Rider Intake (needs_input)</button>
-  <button class='success' id='btn-resume' onclick='approveSignoff()'>✍️ Human Dispatcher Sign-Off (resume_run)</button>
-</div>
-<div class='grid'>
-  <div class='card'><h3>1. Source Evidence & SAM 3.1 Curb Telemetry</h3><pre id='source-evidence-box'></pre></div>
-  <div class='card'><h3>2. Four-Turn Agent Trace (PLAN → ACT → OBSERVE)</h3><pre id='agent-trace-box'></pre></div>
-  <div class='card'><h3>3. Fixed-Point Verification & Escalation Decision</h3><div id='status-banner' style='margin-bottom:10px;'></div><pre id='verification-box'></pre></div>
-</div>
-<script>
-const SCENARIOS = {
-  safe: {
-    status: 'awaiting_signoff',
-    evidence: 'Rider: Evelyn Carter\nPickup: 1402 Jefferson St -> Vanderbilt Clinic (6.0 miles)\nHANDBOOK.md Quote: "$2.50 base component plus $1.50 per verified mile."\nSAM 3.1 Telemetry: South Bay = 6.1ft (OBSTRUCTED - REJECTED) | North Bay = 9.4ft (SAFE >= 8.0ft)',
-    trace: '[Turn 1 | PLAN] list_documents -> [HANDBOOK.md, rider_intake.txt, sam3_curb_telemetry.json]\n[Turn 2 | PLAN] set_checklist -> 5 verification items + counter-evidence probe\n[Turn 3 | ACT] analyze_documents -> Verified verbatim quote, fare ($2.50 + 6.0 * $1.50 = $11.50, $0.00 ADA fee), rejected 6.1ft South Bay, selected 9.4ft North Bay\n[Turn 4 | OBSERVE] submit_memo -> Staged at final_status=awaiting_signoff',
-    verification: { exact_quote_verified: true, counter_evidence_rejected: 'South Bay 6.1ft (< 8.0ft) rejected', fare_calculation: '$2.50 + (6.0 mi * $1.50/mi) + $0.00 ADA = $11.50', human_authorization: 'PENDING (awaiting_signoff)' }
-  },
-  unsafe: {
-    status: 'needs_input',
-    evidence: 'Rider: Clara Jenkins (Wide Power Wheelchair)\nRequested Zone: South Curb Bay (6.1ft clearance)\nClaimed Fare: $26.50 (Includes illegal $15.00 ADA surcharge)\nSAM 3.1 Counter-Evidence: South Bay = 6.1ft (< 8.0ft minimum)',
-    trace: '[Turn 1 | PLAN] list_documents\n[Turn 2 | PLAN] set_checklist\n[Turn 3 | ACT] analyze_documents -> FAILED curb safety (6.1ft < 8.0ft) & FAILED fare invariant ($26.50 != $11.50)\n[Turn 4 | OBSERVE] request_evidence -> Halted at final_status=needs_input',
-    verification: { curb_safety_passed: false, curb_reason: 'UNSAFE BOARDING: 6.1ft < 8.0ft minimum ADA ramp clearance', fare_invariant_passed: false, final_decision: 'HALTED (needs_input)' }
-  },
-  incomplete: {
-    status: 'needs_input',
-    evidence: 'Rider: Marcus Vance\nPickup: MISSING_PICKUP_ADDRESS\nPickup Time: MISSING_PICKUP_TIME',
-    trace: '[Turn 1 | PLAN] list_documents\n[Turn 2 | PLAN] set_checklist\n[Turn 3 | ACT] analyze_documents -> Missing pickup_address and pickup_time\n[Turn 4 | OBSERVE] request_evidence -> Halted at final_status=needs_input',
-    verification: { missing_fields: ['pickup_address', 'pickup_time'], premature_booking_blocked: true, final_decision: 'HALTED (needs_input)' }
-  }
-};
-let currentScenario = 'safe';
-function loadScenario(k) {
-  currentScenario = k;
-  const s = SCENARIOS[k];
-  document.getElementById('source-evidence-box').textContent = s.evidence;
-  document.getElementById('agent-trace-box').textContent = s.trace;
-  document.getElementById('verification-box').textContent = JSON.stringify(s.verification, null, 2);
-  document.getElementById('status-banner').innerHTML = s.status === 'awaiting_signoff'
-    ? "<span class='status-pill' style='background:#1e3a8a;color:#93c5fd;'>STATUS: awaiting_signoff (Blocked until Human Dispatcher Sign-Off)</span>"
-    : "<span class='status-pill' style='background:#7f1d1d;color:#fca5a5;'>STATUS: needs_input (Escalated & Blocked by Verification Harness)</span>";
-}
-function approveSignoff() {
-  if (currentScenario !== 'safe') { alert('Cannot sign off on a halted needs_input run.'); return; }
-  const v = Object.assign({}, SCENARIOS.safe.verification, { human_authorization: 'APPROVED by Dispatcher Willie Harvey (resume_run)', final_status: 'completed_after_human_signoff' });
-  document.getElementById('verification-box').textContent = JSON.stringify(v, null, 2);
-  document.getElementById('status-banner').innerHTML = "<span class='status-pill' style='background:#14532d;color:#86efac;'>STATUS: completed_after_human_signoff (Human Authorization Recorded)</span>";
-}
-loadScenario('safe');
-</script>
-</body>
-</html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Harvey Taxi | Accessible Care Transportation Review</title><link rel="stylesheet" href="console.css"></head>
+<body><main><header><strong>H / HARVEY TAXI</strong><span>Hackathon prototype</span></header>
+<p class="eyebrow">EVIDENCE BEFORE ACTION</p><h1>The journey to care.<br>Verified before pickup.</h1><p class="intro">A verifiable agent for accessible transportation around healthcare appointments. Inspect the evidence, check the fare, and keep a human reviewer in control.</p>
+<nav><a href="https://github.com/Williebee615/harvey-taxi-voice-agent#run-locally">Run the local application</a><a href="https://github.com/Williebee615/harvey-taxi-voice-agent">View source</a></nav>
+<section><h2>Two documented live Meta outcomes</h2><p>These are summaries of saved live runs using muse-spark-1.3, fictional case files and simulated curb evidence. This public page does not execute inference.</p><div class="grid"><article><small>CLINIC VISIT · 24 TOOL TURNS</small><h3>Evidence reviewed. Human acknowledgment recorded.</h3><p>The $11.50 fare, intake, return coordination plan and selected 9.4 ft north bay passed independent checks. A cited memo reached the human review gate; a demo acknowledgment was then recorded.</p></article><article><small>MISSING RETURN PLAN · 20 TOOL TURNS</small><h3>Missing evidence stops progress.</h3><p>The healthcare transport check found a missing Return Plan. The agent requested evidence and stopped at needs_input without recording sign-off.</p></article></div><p><a href="https://github.com/Williebee615/harvey-taxi-voice-agent/blob/main/docs/LIVE_ACCEPTANCE.md">Read the live-run acceptance record and audit fingerprints →</a></p></section>
+<section><h2>Try the application locally</h2><p>Clone the repository, use Python 3.10 or later, then run:</p><pre><code>./helper test
+./helper serve</code></pre><p>Open <code>http://127.0.0.1:8765</code>. Offline simulation is explicitly labeled. Live Meta mode requires your private API key in a local <code>.env</code> file; never enter a key on this public page.</p></section>
+<section><h2>Prototype boundaries</h2><p>Live Meta reasoning is integrated. Curb telemetry is a simulated fixture, and the 8 ft threshold is a demo fleet policy. Live speech transcription and SAM image measurement are not integrated. Demo acknowledgment does not authenticate a dispatcher or authorize a vehicle. No real dispatch, payments, clinical clearance or patient-record integration is performed.</p><p><a href="https://github.com/Williebee615/harvey-taxi-voice-agent/blob/main/docs/DEMO.md">Demonstration guide</a> · <a href="https://github.com/Williebee615/harvey-taxi-voice-agent/blob/main/SUBMISSION.md">Submission details</a></p></section><footer>HARVEY TAXI SERVICE LLC · Accessible care transportation review</footer></main></body></html>

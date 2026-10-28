@@ -1,6 +1,7 @@
-# Harvey Taxi Service — Accessible Transit Operating Handbook (`HANDBOOK.md`)
-
-* **Deterministic Pricing Rule:** `$2.50` Booking & Safety Fee + `$1.50` per verified mile. Zero surge pricing.
-* **ADA & Service Animal Policy:** `$0.00` fee for wheelchair-accessible side-entry/rear-entry ramp vans and `$0.00` fee for service animals.
-* **Curbside Safety Standard:** Requires `>= 8.0 ft` unobstructed curb width verified via Meta `sam-3.1` vision segmentation.
-* **Sandbox Safety Invariant:** During hackathon evaluation, `liveDispatchEnabled = false` and `paymentsEnabled = false`.
+# Harvey Taxi — Demo Fleet Transportation Policy
+This is a hackathon fixture, not legal guidance or a universal accessibility standard.
+- Fare tariff: "$2.50 base component plus $1.50 per verified mile."
+- Accessibility policy: "Wheelchair boarding and service animals incur a $0.00 additional fee."
+- Vehicle-specific demo clearance rule: "The demo side-entry ramp vehicle requires 8.0ft unobstructed lateral clearance."
+- Review gate: "All bookings must halt at awaiting_signoff until a human reviews the evidence."
+- Healthcare scope: "Transportation coordination only; no diagnosis, treatment, medical clearance, emergency response or real dispatch."

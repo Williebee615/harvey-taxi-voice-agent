@@ -2,6 +2,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 def _path(root: str | Path, run_id: str) -> Path:
+    from agent_kit.progress import run_path
+    run_path(root, run_id)
     d = Path(root) / 'workspace' / 'case_records'
     d.mkdir(parents=True, exist_ok=True)
     return d / f'{run_id}.json'

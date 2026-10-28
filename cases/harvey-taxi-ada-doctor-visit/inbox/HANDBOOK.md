@@ -1,5 +1,7 @@
-# Harvey Taxi Service — ADA Accessible Dispatch Policy
-- Standard Fare Formula: "$2.50 base component plus $1.50 per verified mile."
-- Zero Accessibility Surcharge: "Wheelchair boarding and certified service animals incur a $0.00 additional fee under 49 CFR Part 37."
-- Curb Clearance Rule: "ADA side-entry ramp deployment requires a minimum 8.0ft unobstructed lateral clearance."
-- Escalation Rule: "All ADA medical dispatches must halt at awaiting_signoff until human dispatcher authorization is recorded."
+# Harvey Taxi — Demo Fleet Transportation Policy
+This is a hackathon fixture, not legal guidance or a universal accessibility standard.
+- Fare tariff: "$2.50 base component plus $1.50 per verified mile."
+- Accessibility policy: "Wheelchair boarding and service animals incur a $0.00 additional fee."
+- Vehicle-specific demo clearance rule: "The demo side-entry ramp vehicle requires 8.0ft unobstructed lateral clearance."
+- Review gate: "All bookings must halt at awaiting_signoff until a human reviews the evidence."
+- Healthcare scope: "Transportation coordination only; no diagnosis, treatment, medical clearance, emergency response or real dispatch."
