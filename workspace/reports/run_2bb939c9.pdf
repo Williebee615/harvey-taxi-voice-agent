@@ -1,0 +1,49 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1428 >>
+stream
+BT
+/F1 11 Tf
+72 750 Td (HARVEY TAXI & NOREL AI  META MUSE \(MUSE-SPARK-1.5\) VERIFICATION REPORT) Tj
+0 -14 Td (Generated: 2026-10-27 21:24:31 | Run ID: run_2bb939c9 | Final Status: awaiting_signoff) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (Objective: [Domain: harveytaxiservice.com] Book ADA wheelchair van and verify $11.50 fare) Tj
+0 -14 Td (Final Summary: submit_memo [harveytaxiservice.com] -> awaiting_signoff  Conclusion: HARVEYTAXIS) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (CHECKLIST & VERIFIED FINDINGS:) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (TURN-BY-TURN TOOL TRACE:) Tj
+0 -14 Td (  * call_1: {"status": "running", "documents": ["/book-accessible-ride", "/ada-tariff-policy", ) Tj
+0 -14 Td (  * call_2: {"status": "running", "checklist_count": 4, "note": "set_checklist [harveytaxiservi) Tj
+0 -14 Td (  * call_3: {"status": "running", "note": "analyze_documents [harveytaxiservice.com] \\u2014 Re) Tj
+0 -14 Td (  * call_4: {"status": "awaiting_signoff", "note": "submit_memo [harveytaxiservice.com] -> awai) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (HUMAN SIGN-OFF GATE: ___________________________   DATE: ______________) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001721 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1791
+%%EOF

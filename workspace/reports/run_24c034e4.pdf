@@ -1,0 +1,55 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1763 >>
+stream
+BT
+/F1 11 Tf
+72 750 Td (HARVEY TAXI & NOREL AI  META MUSE \(MUSE-SPARK-1.5\) VERIFICATION REPORT) Tj
+0 -14 Td (Generated: 2026-10-27 21:25:47 | Run ID: run_24c034e4 | Final Status: awaiting_signoff) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (Objective: Audit hospital shuttle route 9) Tj
+0 -14 Td (Final Summary: submit_memo -> awaiting_signoff  Conclusion: yes) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (CHECKLIST & VERIFIED FINDINGS:) Tj
+0 -14 Td (  [1] PROVEN: Verify rider_intake.txt) Tj
+0 -14 Td (  [2] PROVEN: Verify policy/math) Tj
+0 -14 Td (  [3] PROVEN: Check counter-evidence) Tj
+0 -14 Td (  [4] PROVEN: Verify human sign-off gate) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (MEMO CONCLUSION: Verified by Meta Muse \(accounts/fireworks/models/muse-glimmer-30b\) for: Audi) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (TURN-BY-TURN TOOL TRACE:) Tj
+0 -14 Td (  * call_1: {"status": "running", "documents": ["rider_intake.txt", "HANDBOOK.md", "sam3_curb_t) Tj
+0 -14 Td (  * call_2: {"status": "running", "checklist_count": 4, "note": "set_checklist \(4 items\) \\u2) Tj
+0 -14 Td (  * call_3: {"status": "running", "excerpts": {"rider_intake.txt": "Rider requires ADA rear-ent) Tj
+0 -14 Td (  * call_4: {"status": "awaiting_signoff", "memo": {"objective": "Audit hospital shuttle route ) Tj
+0 -14 Td (-------------------------------------------------------------------------------------) Tj
+0 -14 Td (HUMAN SIGN-OFF GATE: ___________________________   DATE: ______________) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002056 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2126
+%%EOF
