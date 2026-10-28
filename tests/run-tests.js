@@ -433,10 +433,10 @@ assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_delivera
 assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 185');
 console.log('✓ 5/5 Fireworks AI (Muse Glimmer 30B / Harvey Taxi Service Workspace) & Firefox Launcher Passed — 185/185 Total');
 const s190 = fs106.readFileSync('agent_kit/settings.py', 'utf8');
-assert.strictEqual(s190.includes('fjm8oo1unjnqxun3') && s190.includes('ft-g936k5a'), true, 'Test 186');
+assert.strictEqual(s190.includes('vxd87q0r') && s190.includes('ft-f7pywv9'), true, 'Test 186');
 const h190 = fs106.readFileSync('index.html', 'utf8');
-assert.strictEqual(h190.includes('fjm8oo1unjnqxun3') && h190.includes('ft-g936k5a'), true, 'Test 187');
+assert.strictEqual(h190.includes('vxd87q0r') && h190.includes('ft-f7pywv9'), true, 'Test 187');
 assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.pdf'), true, 'Test 188');
 assert.strictEqual(fs106.existsSync('workspace/deliverables/latest_work_deliverable.csv'), true, 'Test 189');
 assert.strictEqual(fs106.existsSync('workspace/reports/latest_agent_report.pdf'), true, 'Test 190');
-console.log('✓ 5/5 Fireworks AI Muse Glimmer 30B Fine-Tuning Job (fjm8oo1unjnqxun3 / ft-g936k5a) & Work Deliverables Passed — 190/190 Total');
+console.log('✓ 5/5 Fireworks AI Muse Glimmer 30B Fine-Tuning Job (vxd87q0r / ft-f7pywv9) & Work Deliverables Passed — 190/190 Total');

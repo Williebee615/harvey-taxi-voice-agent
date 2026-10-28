@@ -92,6 +92,6 @@ Per **Section 4 (Hackathon Rules — Demo Requirements & New Work Only)**:
 
 
 ## Live Fireworks AI Fine-Tuning Telemetry (Harvey Taxi Service Workspace)
-- **Training Job ID:** `fjm8oo1unjnqxun3` (`Training / Preference / fjm8oo1unjnqxun3`)
+- **Training Job ID:** `vxd87q0r` (`Training / Supervised / vxd87q0r (Norel Ai — Loss: 0.57 -> 0.04)`)
 - **Base Model:** Meta `muse-glimmer-30b`
-- **Fine-Tuned Output Model:** `ft-g936k5a` (`onboarding-prompt-router`)
+- **Fine-Tuned Output Model:** `ft-f7pywv9` (`onboarding-prompt-router`)
