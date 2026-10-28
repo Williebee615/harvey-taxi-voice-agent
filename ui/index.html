@@ -1544,4 +1544,60 @@ if (testMetaBtn) {
 })();
 </script>
 
+
+<style id="workshop-true-3col-fix">
+  body, html, .app-shell, .container, main, .dashboard-grid, .main-layout {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  #norel-console-3col-grid, .ws-outer-3col {
+    display: grid !important;
+    grid-template-columns: 280px minmax(420px, 1fr) 380px !important;
+    gap: 16px !important;
+    width: 100% !important;
+    align-items: start !important;
+  }
+  #norel-loop-timeline-box, .ws-3col-wrapper {
+    display: block !important;
+    width: 100% !important;
+  }
+  @media (max-width: 1100px) {
+    #norel-console-3col-grid, .ws-outer-3col {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+<script id="workshop-hierarchy-fixer">
+(function() {
+  function fixColumns() {
+    document.querySelectorAll('.ws-3col-wrapper').forEach(function(el) {
+      el.classList.remove('ws-3col-wrapper');
+      el.style.display = 'block';
+    });
+    const tl = document.getElementById('norel-loop-timeline-box');
+    const cl = document.getElementById('norel-loop-checklist-box');
+    if (tl && cl) {
+      let tlCard = tl.closest('div[style*="border"], div.card, section') || tl;
+      let clCard = cl.closest('div[style*="border"], div.card, section') || cl;
+      if (tlCard.parentElement && tlCard.parentElement === clCard.parentElement) {
+        const gridParent = tlCard.parentElement;
+        gridParent.classList.add('ws-outer-3col');
+        let anc = gridParent.parentElement;
+        while (anc && anc !== document.body) {
+          anc.style.maxWidth = '100%';
+          anc.style.width = '100%';
+          anc.style.gridColumn = '1 / -1';
+          anc = anc.parentElement;
+        }
+      }
+    }
+  }
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(fixColumns, 80);
+    setTimeout(fixColumns, 300);
+  });
+  setTimeout(fixColumns, 80);
+})();
+</script>
+
 </body></html>
