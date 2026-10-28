@@ -197,4 +197,24 @@ check('Test 27: Archived live Fireworks GPU receipt records SFT job vxd87q0r, de
   assert.strictEqual(rec.verified_live_inference_capture.usage.total_tokens, 193);
 });
 
-console.log(`\n✓ ${passed}/${passed} Real Behavioral Verification Checks Passed (0 No-Ops, Nonzero Exit on Failure)`);
+check('Test 28: Every case uses deterministic mode rather than claiming a separately probed model ran', () => {
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/run_latest.json'), 'utf8'));
+  assert.strictEqual(rec.model_invoked_in_run, false);
+  assert.strictEqual(rec.telemetry_source, 'simulation_fixture');
+  assert.strictEqual(rec.inference_mode, 'DETERMINISTIC_FALLBACK_SIMULATION');
+});
+
+check('Test 29: Unknown case refuses fallback to a different rider', () => {
+  const out = runPy("from legal_agent.loop import run_agent\ntry:\n run_agent('.', case_name='nonexistent-rider-case')\n print('ALLOWED')\nexcept ValueError:\n print('BLOCKED')");
+  assert.strictEqual(out, 'BLOCKED');
+});
+
+check('Test 30: Verified booking uses the actual rider and selected clearance instead of canned values', () => {
+  cp.execFileSync('./helper', ['run', '--case', 'harvey-taxi-ada-doctor-visit'], { cwd: ROOT, encoding: 'utf8' });
+  const rec = JSON.parse(fs.readFileSync(path.join(ROOT, 'workspace/runs/run_latest.json'), 'utf8'));
+  assert.strictEqual(rec.turns[3].arguments.rider, 'Evelyn Carter');
+  assert.strictEqual(rec.turns[3].arguments.selected_curb_bay, 'north_bay (9.4ft >= 8.0ft)');
+  assert.strictEqual(rec.status, 'awaiting_signoff');
+});
+
+console.log(`\n✓ ${passed}/${passed} Behavioral Verification Checks Passed (Nonzero Exit on Failure)`);
