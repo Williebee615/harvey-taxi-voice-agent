@@ -1,0 +1,6 @@
+Rider: Marcus Vance
+Pickup: MISSING_PICKUP_ADDRESS
+Dropoff: St. Thomas Midtown Hospital
+Pickup Time: MISSING_PICKUP_TIME
+Verified Distance: 4.0 miles
+Mobility Device: Folding Wheelchair

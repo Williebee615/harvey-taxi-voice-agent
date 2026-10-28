@@ -1,0 +1,9 @@
+Rider: Evelyn Carter
+Pickup: 1402 Jefferson St, Nashville, TN
+Dropoff: Vanderbilt Medical Center Clinic, 1211 Medical Center Dr
+Pickup Time: 2026-10-28 09:30 CDT
+Verified Distance: 6.0 miles
+Mobility Device: Motorized ADA Wheelchair (Side-Entry Ramp Required)
+Assistance Animal: Certified Service Dog
+Quoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)
+Human Dispatcher Signoff: PENDING_HUMAN_SIGNATURE

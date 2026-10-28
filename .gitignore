@@ -1,2 +1,10 @@
-.venv/
+*.pem
+*.pyc
+.DS_Store
 .env
+.env.*
+.venv/
+__pycache__/
+workspace/case_records/run_[0-9a-f]*.json
+workspace/reports/run_[0-9a-f]*.pdf
+workspace/runs/run_[0-9a-f]*.json
