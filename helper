@@ -19,7 +19,9 @@ def main():
     run.add_argument('--mode', choices=['simulation', 'live'], default='simulation')
     run.add_argument('--turns', type=int, default=20)
     run.add_argument('--prompt')
-    run.add_argument('--spoken-request', help='Rider request transcript, added to the run as untrusted evidence')
+    spoken = run.add_mutually_exclusive_group()
+    spoken.add_argument('--spoken-request', help='Rider request transcript, added to the run as untrusted evidence')
+    spoken.add_argument('--spoken-audio', help='WAV recording transcribed by Meta Muse Voice Transcribe (one paid call), then added as untrusted evidence')
     resume = subs.add_parser('resume', help='Continue a paused run or supply a follow-up')
     resume.add_argument('--run-id', default='run_latest')
     resume.add_argument('--message', default='')
@@ -46,7 +48,13 @@ def main():
             serve_console(args.port)
             return 0
         if args.command == 'run':
-            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode, spoken_request=args.spoken_request)
+            spoken, source = args.spoken_request, None
+            if args.spoken_audio:
+                from agent_kit import speech
+                heard = speech.transcribe(Path(args.spoken_audio).read_bytes())
+                spoken = heard['transcript']
+                source = {k: heard[k] for k in ('model', 'session_id', 'audio_duration_ms', 'latency_ms', 'billed_seconds_estimate', 'cost_usd_estimate')}
+            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode, spoken_request=spoken, speech_source=source)
         elif args.command == 'resume':
             result = resume_run(ROOT, args.run_id, message=args.message, turns=args.turns)
         elif args.command == 'approve':
