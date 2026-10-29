@@ -7,13 +7,37 @@ This file records what has actually run against Meta's API. Configuration, a con
 | Capability | Status | Evidence |
 |---|---|---|
 | Muse Spark tool calling (Responses API) | **Verified by entrant exports, 2026-10-28**, on earlier code | Two runs in [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) |
-| Muse Spark image input (appointment card) | **Built, not yet tested live** | Run step 1 below |
+| Muse Spark image input (appointment card) | **Verified live, 2026-10-29** (one probe call, fictional card) | Probe result below; full card runs (steps 2–3) not yet run |
 | Card cross-check, receipts panel, spoken request | **Built and tested offline** (fake Meta transport) | `./helper test` |
 | Browser speech recognition | **Not Meta.** Runs in the reviewer's browser | Labeled in the console and docs |
-| SAM 3.1 segmentation | **Not integrated.** Availability unknown | Step 1 checks the model list only |
-| Meta speech-to-text | **Not integrated.** Availability unknown | Step 1 checks the model list only |
+| SAM 3.1 segmentation | **Not integrated.** `sam-3.1` is listed for this account; no request sent | Model list, 2026-10-29 |
+| Meta speech-to-text | **Not integrated.** `muse-voice-transcribe-1.0` is listed for this account; no request sent | Model list, 2026-10-29 |
 
-The cloud development session used on 2026-10-29 could not reach `api.meta.ai` (blocked by its network policy) and had no key. Run these steps on the entrant's machine, or in a session where that host is allowed and the key is stored as a secret.
+## Probe result: image input (2026-10-29)
+
+Run with owner approval in a cloud session where the key is injected by the network proxy (the key was never in the container). Exactly one paid call.
+
+| Item | Value |
+|---|---|
+| Time (UTC) | 2026-10-29T08:16:04Z |
+| Command | `./helper probe` |
+| Model (from response) | `muse-spark-1.3` (Standard mode) |
+| Response ID | `resp_6ae300cae614f43acf314310` |
+| Result | `PASSED`: all four fields matched |
+| Tokens | 388 input (0 cached), 674 output (618 of them reasoning), 1,062 total |
+| Estimated cost | about $0.0034 at the published Standard-mode Muse Spark rates ($1.25 / $4.25 per 1M input / output tokens, [pricing page](https://dev.meta.ai/docs/pricing-rate-limits), read 2026-10-29). Assumes reasoning tokens are billed as output. Not checked against the account's billing page. |
+| Latency | Not recorded: the probe does not time the call |
+
+| Field (fictional card) | Expected | Extracted | Match |
+|---|---|---|---|
+| appointment_date | 2026-11-02 | 2026-11-02 | Yes |
+| appointment_time | 10:00 | 10:00 | Yes |
+| arrive_by | 09:45 | 09:45 | Yes |
+| destination | Demo Community Clinic | Demo Community Clinic, Suite 200, Nashville, TN | Yes (contains the expected name; the model also returned the suite and city printed on the card) |
+
+Models listed for this account on 2026-10-29: `muse-image-1.0`, `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-voice-transcribe-1.0`, `muse-wonder-1.0`, `sam-3.1`.
+
+An earlier cloud session the same day was blocked: first by network policy, then by an invalid key (401). The owner replaced the key before this run.
 
 ## Live test plan (owner approval needed for each paid step)
 
