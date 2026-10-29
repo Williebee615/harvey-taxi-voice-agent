@@ -11,7 +11,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 from agent_kit import client, document_text, evidence, progress, settings, tools
-from legal_agent.loop import run_agent, resume_run, approve_run, _simulation_calls
+from harvey_agent.loop import run_agent, resume_run, approve_run, _simulation_calls
 from verification import checks
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -96,17 +96,33 @@ class AgentTests(AgentFixture):
     def test_all_negative_fixtures(self):
         for case in ['harvey-taxi-incomplete-intake','harvey-taxi-unsafe-curb-boarding','harvey-taxi-wrong-fare-drift','harvey-taxi-contradictory-evidence']:
             with self.subTest(case=case):self.assertEqual(self.simulate(case)['status'],'needs_input')
+    def test_each_negative_fixture_fails_only_its_intended_checks(self):
+        expected={'harvey-taxi-incomplete-intake':{'intake_check'},
+                  'harvey-taxi-unsafe-curb-boarding':{'curb_check'},
+                  'harvey-taxi-wrong-fare-drift':{'fare_check'},
+                  'harvey-taxi-contradictory-evidence':{'curb_check','counter_evidence_check'},
+                  'healthcare-missing-return-plan':{'healthcare_transport_check'},
+                  'healthcare-clinical-support':{'healthcare_transport_check'}}
+        for case,failing in expected.items():
+            with self.subTest(case=case):
+                checks_out=evidence.inspect(self.root,case)['checks']
+                self.assertEqual({k for k,v in checks_out.items() if not v['passed']},failing)
+    def test_fixtures_do_not_claim_a_model_ran(self):
+        for path in (self.root/'cases').glob('*/inbox/curb_telemetry.json'):
+            data=json.loads(path.read_text())
+            with self.subTest(case=path.parent.parent.name):
+                self.assertNotIn('model',data);self.assertIs(data['model_executed'],False);self.assertEqual(data['source'],'simulation_fixture')
     def test_missing_distance_not_defaulted(self):
         self.write('rider_intake.txt','Rider: Changed rider\nPickup: Here\nDropoff: There\nPickup Time: Tomorrow\nQuoted Fare: $11.50')
         rec=self.simulate();self.assertEqual(rec['status'],'needs_input');self.assertFalse(rec['verification']['fare_check']['passed'])
     def test_missing_telemetry_not_defaulted(self):
-        self.write('sam3_curb_telemetry.json','{}');self.assertEqual(self.simulate()['status'],'needs_input')
+        self.write('curb_telemetry.json','{}');self.assertEqual(self.simulate()['status'],'needs_input')
     def test_invalid_telemetry(self):
         for data in ['not json','[]','{"north_bay": {"clearance_ft": NaN}}','{"selected_bay":"north_bay","north_bay":null}']:
-            self.write('sam3_curb_telemetry.json',data);self.assertEqual(self.simulate()['status'],'needs_input')
+            self.write('curb_telemetry.json',data);self.assertEqual(self.simulate()['status'],'needs_input')
     def test_false_safety_flag_rejected(self):
-        data=json.loads(evidence.documents(self.root,SAFE)['sam3_curb_telemetry.json']);data['north_bay']['safe_for_ramp']=False
-        self.write('sam3_curb_telemetry.json',json.dumps(data));self.assertEqual(self.simulate()['status'],'needs_input')
+        data=json.loads(evidence.documents(self.root,SAFE)['curb_telemetry.json']);data['north_bay']['safe_for_ramp']=False
+        self.write('curb_telemetry.json',json.dumps(data));self.assertEqual(self.simulate()['status'],'needs_input')
     def test_missing_policy(self):
         self.write('HANDBOOK.md','Different policy');self.assertEqual(self.simulate()['status'],'needs_input')
     def test_actual_rider_used(self):

@@ -1,6 +1,6 @@
-Rider: Robert Miller
-Pickup: 800 Rosa L Parks Blvd
-Dropoff: VA Tennessee Valley Healthcare Campus
-Pickup Time: 2026-10-28 14:15 CDT
+Rider: Robert Miller (fictional demo rider)
+Pickup: Demo Residence, Nashville, TN
+Dropoff: Demo Veterans Clinic (fictional), Nashville, TN
+Pickup Time: 2026-11-03 14:15 America/Chicago
 Verified Distance: 6.0 miles
 Quoted Fare: $26.50 (Includes unauthorized $15.00 wheelchair/dog surcharge)

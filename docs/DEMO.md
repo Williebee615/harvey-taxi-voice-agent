@@ -1,34 +1,47 @@
-# Three-minute contest video
+# Three-minute demonstration
 
-## Record these two outcomes
+## Before recording
 
-Use the clinic visit and missing-return cases already verified in [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md). This is a product demonstration, not another test campaign. Keep the app running locally and close unrelated browser tabs. Do not show `.env`, keys, account billing pages or personal files.
+1. Start the console in a terminal where your Meta key is set: `./helper serve`, then open http://127.0.0.1:8765 in Chrome. Allow the microphone when asked.
+2. Close unrelated tabs. Never show `.env`, keys, billing pages, saved passwords or personal files.
+3. Choose **Live Meta** in the console. A full live review costs about $0.10–$0.30; the transcription costs less than a cent.
+4. Do one quiet rehearsal of the spoken request so the microphone level is right.
+5. Uncheck **Step through one tool at a time** so each review runs straight through (about 20–45 seconds).
 
-Use real app interaction. If displaying an existing saved review, label it **Saved live Meta run** and say so. If cutting API waiting time from a newly recorded run, label the cut **Waiting shortened**. Never present a saved or edited run as an uninterrupted live execution. Do not record offline simulation and call it live Meta inference.
+**Budget:** recording this demo needs new paid calls (two live reviews and one transcription, about $0.30–$0.60). Get the owner's approval for that spend first. If live recording isn't possible, use the saved live runs from 2026-10-29 and label them (see "Labeling rules").
 
-On Mac, press **Shift + Command + 5**, choose **Record Selected Portion**, select the app window area, and choose your microphone under Options. Record narration and screen together. Stop through the menu-bar recording control. Aim for 2:50–2:58 so the final file stays below three minutes. Check the exported duration and listen to the audio before uploading.
+## Labeling rules
 
-## Timed narration and screen actions
+- A new live run can be shown as live. If you cut waiting time, add the caption **Waiting shortened**.
+- A reopened saved run must carry the caption **Saved live Meta run (2026-10-29)**.
+- Never show offline simulation as Meta inference. The receipts panel says "Offline simulation" for those runs; keep it visible.
+- Keep under three minutes. Aim for 2:50.
 
-Read naturally and leave room to point at the interface. Rehearse once; do not try to read all JSON aloud.
+## Script
 
-| Time | Screen action | Narration |
+| Time | On screen | Say |
 |---|---|---|
-| 0:00–0:20 | Show the healthcare console and clinic case. | “I'm Willie Harvey, founder of Harvey Taxi. Getting someone to a healthcare appointment takes more than an address. A wheelchair user needs a suitable vehicle, a pickup plan, a clear fare, and a plan for getting home. This project makes that transportation evidence reviewable.” |
-| 0:20–0:45 | Select Live Meta and show a real run beginning, or open the saved clinic review with a visible saved-run label. | “Our agent uses Meta Muse Spark to choose its tools. It reads the request and policy, builds a checklist, and records source quotations. These tool choices come from the model. The interface lets a reviewer inspect what each tool actually returned.” |
-| 0:45–1:15 | Expand one `record_fact`, then the corresponding verification result. Show a receipt's model and response ID briefly. | “Here is an exact quotation linked to a checklist question. Code checks that it exists in the source file. Separate checks validate required transport details, fare arithmetic, the selected pickup bay, and conflicting evidence. This receipt identifies a real Muse Spark API response. The supplied curb measurements are simulated fixtures.” |
-| 1:15–1:45 | Show the accepted clinic memo, all passing checks, pending actions and limitations. Do not invent an unsigned state for a signed saved run. | “For this clinic case, the quoted fare matches the supplied tariff, the selected bay meets the demo vehicle policy, and a return coordination plan is documented. The memo cites its evidence and holds for human review. It does not claim the return pickup is already confirmed.” |
-| 1:45–2:15 | Switch to the saved missing-return review, labeled Saved live Meta run. Show failed healthcare check and `request_evidence`. | “Now the return plan is missing. The live agent's review ends at needs input. This healthcare transport check identifies the missing plan, and sign-off remains blocked. A plausible-looking request is not enough when required evidence is absent.” |
-| 2:15–2:40 | Return to the signed clinic audit; show reviewer acknowledgment and JSON export. | “Human acknowledgment is recorded separately. The audit preserves tool results, citations, verification and the review state. A typed demo acknowledgment never dispatches a vehicle. The successful case and the blocked case both have inspected live-run audits.” |
-| 2:40–2:58 | Show repository branch and PR contribution diff, then return to the product. | “During the event, we developed the live model loop, verification gates, healthcare cases and connected console. This is transportation coordination, not medical advice. There is no live SAM measurement or real dispatch. Our goal is to give coordinators and dispatchers a clearer, evidence-backed handoff.” |
+| 0:00–0:15 | Console home. | "I'm Willie Harvey, founder of Harvey Taxi in Nashville. For a wheelchair user, getting to the doctor depends on details that are easy to get wrong: the day, the arrival time, a ramp, a fair price. Here's how we check them before anyone is booked." |
+| 0:15–0:40 | Click **Appointment card**; the card appears. Click **Record with Meta speech-to-text**; the red recording indicator shows. Say: *"I need a wheelchair-accessible ride with my service dog to Demo Community Clinic on Monday, November second. I need to arrive by nine forty-five."* Click **Stop and transcribe**. | "The rider just says what they need. Nothing is recorded until they press the button. The audio goes through our server to Meta's speech-to-text model, so the key never touches the browser." |
+| 0:40–0:55 | The transcript appears with "Transcribed by Meta muse-voice-transcribe-1.0". Tick **This Meta transcript matches what I said**. | "Meta transcribed it in about three seconds. The rider confirms it, and if they edit it, it's labeled as typed text, not Meta." |
+| 0:55–1:30 | Click **Start review**. Point at the activity list, then expand **analyze documents** and **record document fields**. Point at the receipts panel. | "Now Meta's Muse Spark runs the review and chooses every step itself. Here it looks at the appointment card and records the date, the times and the clinic. Every step has a real Meta response ID and token count." |
+| 1:30–2:00 | Independent verification panel: card check, spoken request check, fare check. Point at the fare policy box. | "Then code, not the model, decides. The card has to agree with the booking. The wheelchair and service dog the rider mentioned have to be on the intake. The fare is computed: two fifty plus a dollar fifty a mile, and zero dollars for accessibility. Always." |
+| 2:00–2:15 | Memo with citations; type a reviewer name; click **Record demo sign-off**. | "The memo cites its sources and stops for a person. Sign-off is a human decision; nothing is dispatched or charged." |
+| 2:15–2:45 | Click **Card contradiction**, start a live review (or open the saved run, captioned). Show the failed card check and **needs input**. | "Now the booking says Tuesday, but the card says Monday. That's exactly how someone misses an appointment. The card check fails, the review stops at needs input, and sign-off is blocked until a person fixes it." |
+| 2:45–2:58 | Receipts panel, then the repository's evidence folder. | "Meta listens and reads. Our code verifies. A person decides. Every case here is fictional, and every live result is published with its Meta receipts." |
 
-## Final recording checks
+## If something fails during recording
 
-- Duration is at most three minutes; screen and narration are understandable.
-- New event work is distinguished from the existing business and starter code.
-- Live model inference, saved replay and simulated curb evidence are correctly labeled.
-- Both the valid review and missing-return block are shown.
-- The video URL works in a signed-out/private browser and can be viewed without requesting access.
-- Paste the final video URL into `SUBMISSION.md` and the official event submission form. Do not submit the old GitHub Pages simulation as the live Python application.
+- **Microphone or transcription error:** type the request instead and say "typed request" on camera. Don't present typed text as Meta speech.
+- **A live review pauses on an API error:** stop. Use the saved live runs, captioned. Don't retry repeatedly without budget approval.
+- **The live card run doesn't reach `awaiting_signoff`:** keep it on camera if it is still honest and clear, or use the saved run, captioned.
 
-No patient-outcome, live-dispatch, clinical-clearance, HIPAA or production-readiness claim is demonstrated by this video.
+## Final checks
+
+- Under three minutes; narration clear.
+- Live, saved and typed segments captioned correctly.
+- Both the successful review and the blocked contradiction are shown.
+- No keys, billing pages, saved passwords or personal data on screen.
+- The video link opens in a signed-out browser. Paste it into `SUBMISSION.md` and the event form.
+
+No clinical, dispatch, HIPAA or production-readiness claim is made in this video.

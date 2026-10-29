@@ -1,8 +1,0 @@
-{
-  "domain": "accessible_transit",
-  "docs": [
-    "rider_intake.txt",
-    "HANDBOOK.md",
-    "sam3_curb_telemetry.json"
-  ]
-}

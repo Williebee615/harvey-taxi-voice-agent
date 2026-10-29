@@ -1,59 +1,77 @@
-# Harvey Taxi — Accessible Care Transportation Review
+# Harvey Taxi — Accessible Voice-Booking & Verification Agent
 
-## Submission status
+## Submission status (2026-10-29)
 
-The project and two live outcome audits have been reviewed. The required three-minute video is not recorded/linked yet, and the final form has not been submitted. Confirm the participant/team list and track in the event platform before submission. No paid hosting is required by the participant guide supplied to the project.
-
-- Public source: https://github.com/Williebee615/harvey-taxi-voice-agent/tree/main
-- Upgrade/contribution diff: https://github.com/Williebee615/harvey-taxi-voice-agent/pull/3
-- Demo video: **PENDING — add the accessible recording URL before submission**
-- Representative: Willie Harvey IV
-- Additional contributors and track: confirm against the entrant's event registration; do not infer them from company ownership or AI assistance.
+| Item | Status |
+|---|---|
+| Source | https://github.com/Williebee615/harvey-taxi-voice-agent (pull request from `ccr-8e968c23-dzfwiy` into `main`, awaiting owner review) |
+| Live Meta evidence | Complete: [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md), [docs/evidence/live-batch-2026-10-29/](docs/evidence/live-batch-2026-10-29/README.md) |
+| Three-minute video | **Not recorded yet.** Script: [docs/DEMO.md](docs/DEMO.md) |
+| Event form | **Not submitted yet** |
+| Track and theme | Startup track · Build for Your World. Confirm in the event platform |
+| Representative | Willie Harvey IV, Harvey Taxi Service LLC. Confirm team members against the registration |
+| Deadline | November 4, 2026, 9 PM Eastern, per the participant guide supplied. Check organizer announcements |
 
 ## Short description
 
-Harvey Taxi uses Meta Muse Spark to investigate accessible healthcare transportation requests, cite source evidence, check fares and pickup conditions, and prepare a memo for human review. Missing return plans are escalated instead of silently accepted.
+Harvey Taxi turns a spoken ride request and a photo of an appointment card into a verified, human-approved booking for an accessible trip to a healthcare appointment. Meta's speech-to-text transcribes the rider, Muse Spark reads the card and investigates the booking, and deterministic checks validate the fare, the accessibility rules and every cited fact. Contradictions are blocked, and nothing proceeds without a person's sign-off.
 
-## Problem and impact
+## Problem and impact (Impact, 30%)
 
-A ride request needs more than a destination. For a wheelchair user traveling to a clinic, the coordinator must establish pickup and appointment details, a suitable vehicle, a fare and a return coordination plan. Harvey Taxi brings firsthand transportation experience to an agent that makes those questions and their supporting evidence visible before human review.
+For a wheelchair user, getting to a clinic depends on details that are easy to get wrong: the date, the arrival time, a vehicle with a ramp, a fair price, a way home. A booking for the wrong day is as bad as no booking. Harvey Taxi Service operates in Nashville and sees these failures firsthand.
 
-The prototype's demonstrated impact is catching incomplete or contradictory transport evidence in fictional cases. Reduced coordinator effort, better rider experience and fewer missed appointments are future evaluation goals, not measured results.
+This prototype lets the rider simply say what they need, reads the appointment card they already have, and refuses to move forward when the evidence disagrees. That is the right default when the alternative is a missed appointment.
 
-## How Meta is used
+Demonstrated: fictional cases where the system books a consistent trip and blocks a contradictory one. **Not yet measured:** reduced coordinator time, better rider experience and fewer missed appointments. Those are goals for a future clinic pilot.
 
-In live mode, `muse-spark-1.3` chooses function tools through Meta's Responses API. It lists and reads case files, creates an investigation checklist, records exact quotations, requests independent verification and submits a cited memo. Tool observations feed back into the same conversation. Run records expose actual provider response IDs, model identifiers and usage metadata.
+## How Meta's models are used (Meta AI tooling, 25%)
 
-Code independently verifies intake, the supplied fare tariff, zero accessibility surcharge, selected-bay fixture evidence, counter-evidence and healthcare transport coordination fields. Every memo finding must cite current, case-scoped facts. The model cannot authorize dispatch or manufacture a human signature.
+| Meta model | Role | Verified live |
+|---|---|---|
+| `muse-voice-transcribe-1.0` | Transcribes the rider's spoken request (file endpoint) | Yes: probe and one full spoken-request run; all key facts preserved |
+| `muse-spark-1.3`, image understanding | Reads the appointment card image: date, appointment time, arrive-by time, clinic | Yes: probe and two full card runs, all fields correct |
+| `muse-spark-1.3`, agentic tool calling | Chooses each investigation step, records exact quotations, requests evidence and writes the cited memo | Yes: 65 live turns, a response ID for each |
 
-## Verified demo outcomes
+Models available but **not** used: `sam-3.1` (curb segmentation is future work), `muse-wonder-1.0`, and the contributor-mode variants.
 
-1. Clinic visit: a live run reached `awaiting_signoff` after 24 tool turns with no recorded tool refusal or retry. Its final citations and source digest matched the files; a separate demo acknowledgment produced `completed_after_human_signoff`.
-2. Missing return plan: a live run ended in `needs_input`; the healthcare check identified `Return Plan` as missing. No human signoff was recorded and dispatch remained disabled.
+## Engineering (Technical execution, 20%)
 
-See [the acceptance record](docs/LIVE_ACCEPTANCE.md). The public audit omits conversation messages, so it does not independently prove the absence of follow-up messages.
+- **The model interprets; code decides.** The model reads and cites. Independent checks it cannot override decide the outcome: intake, tariff quote, fare arithmetic, a $0 accessibility fee, curb bay, counter-evidence, healthcare transport fields, card fields against the booking, and spoken needs against the intake.
+- **Four review stages, enforced.** List documents, set the checklist, analyze documents, submit a memo. A memo is accepted only after independent verification of the current evidence, with an exact-quote citation for every checklist item.
+- **Contradictions force `needs_input`.** Success stops at `awaiting_signoff`, and only a named human can acknowledge it. Acknowledgment never dispatches.
+- **Honest provenance.** A run is labeled live only after Meta answers. The Meta transcript is held on the server, so the browser cannot relabel edited text as Meta. Every turn keeps its response ID, token usage and latency.
+- **Security.** The API key stays on the server and is sent only to `api.meta.ai`. Remote error bodies are hidden. The console checks host, origin, token, content type and size.
+- **Testing.** 129 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; and the spending cap.
+
+## Verified live results (Demo, 25%)
+
+Owner-approved batch, 2026-10-29, $5 cap checked before every call:
+
+| Scenario | Final state | Checks | Meta calls |
+|---|---|---|---|
+| Appointment card | `awaiting_signoff` | All independent checks pass; the memo cites the card image | 22 |
+| Card contradiction | `needs_input` | Only the card check fails, on the date difference; approval refused | 24 |
+| Spoken request (Meta speech-to-text) | `awaiting_signoff` | Spoken-request and all other checks pass; the memo quotes the transcript | 1 + 19 |
+| Authentication failure | paused, no network | Never labeled live; no receipts | 0 |
+
+Total: 66 paid calls, about $0.20 at cached-input prices ($0.59 on a deliberately high basis). Every record was independently re-verified against the case files, and the audit fingerprints are published.
 
 ## Work developed for this entry
 
-The upgrade replaces the earlier canned browser trace and fixed scripted booking path with live Meta orchestration, exact source verification, run-bound citations, independent memo gates, resumable audits, a connected local console and healthcare transportation fixtures. The PR and dated commits identify the changed files and contribution boundary.
+During the event: live Meta orchestration and verification gates, exact citations, resumable audits, the connected console and healthcare cases (October 27–28); then the appointment-card image evidence, Meta speech-to-text intake, the inference receipts panel, the capped live batch and the preserved evidence (October 29). The pull request and dated commits show the contribution boundary. The earlier Harvey Taxi business, workshop starter concepts and a historical Fireworks receipt are not presented as new work.
 
-The earlier Harvey Taxi business, workshop starter concepts and historical Fireworks receipts are not presented as newly created integrations. Confirm build dates and eligibility against the accepted event rules; do not describe all preexisting repository content as new work.
+## Boundaries
 
-## Demonstration boundaries
-
-- Real model inference: Meta Muse Spark through the API.
-- Simulated input: fictional rider cases and curb measurements. No live SAM segmentation or physical measurement is implemented.
-- Human acknowledgment: a typed demo reviewer name, not authenticated operational authority.
-- Not implemented: clinical advice, medical clearance, live speech transcription, EHR integration, real dispatch or payments.
-- The 8ft clearance threshold and fare are the supplied demo fleet policy, not universal legal standards.
+- Fictional riders, clinics and appointments; simulated curb measurements; a demo fleet clearance rule that is not a legal standard.
+- No clinical advice, medical clearance, emergency service, dispatch, payment, EHR integration or production deployment. No HIPAA compliance is claimed.
+- The browser Record button is tested end to end with a simulated microphone; live use with a real microphone is pending the demo recording.
+- Spoken dates and times are not yet cross-checked by code (accessibility needs are).
 
 ## How judges can run it
-
-Use Python 3.10+. From the contest branch:
 
 ```bash
 ./helper test
 ./helper serve
 ```
 
-Open http://127.0.0.1:8765. Offline simulation needs no key. For live mode, configure a private local `MODEL_API_KEY` from the judge's own Meta account; never commit or share a key. The repository and video must be accessible without relying on the submitter's Mac or private API credentials. GitHub Pages is not the live Python agent.
+Open http://127.0.0.1:8765. Offline simulation needs no key. Live Meta needs the judge's own `MODEL_API_KEY` in a local `.env`. The published evidence can be checked without any key; see [docs/evidence/live-batch-2026-10-29/README.md](docs/evidence/live-batch-2026-10-29/README.md).

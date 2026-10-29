@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-echo "Muse Code 1.4.15"
-echo "Skills: 64 loaded · 1 warning (ctrl+o to expand)"
-echo ""
-echo "  Voice input (^ + v to start)"
-echo "❯ /model [model-id]"
-echo "  /model   Choose model"
-echo ""
-echo "muse-spark-1.5 · max · ~/harvey-taxi-voice-agent/agent · Auto-review"

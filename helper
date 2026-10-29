@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from agent_kit import progress, settings
-from legal_agent.loop import approve_run, resume_run, run_agent
+from harvey_agent.loop import approve_run, resume_run, run_agent
 
 
 def main():
@@ -19,6 +19,9 @@ def main():
     run.add_argument('--mode', choices=['simulation', 'live'], default='simulation')
     run.add_argument('--turns', type=int, default=20)
     run.add_argument('--prompt')
+    spoken = run.add_mutually_exclusive_group()
+    spoken.add_argument('--spoken-request', help='Rider request transcript, added to the run as untrusted evidence')
+    spoken.add_argument('--spoken-audio', help='WAV recording transcribed by Meta Muse Voice Transcribe (one paid call), then added as untrusted evidence')
     resume = subs.add_parser('resume', help='Continue a paused run or supply a follow-up')
     resume.add_argument('--run-id', default='run_latest')
     resume.add_argument('--message', default='')
@@ -29,6 +32,12 @@ def main():
     show = subs.add_parser('show', help='Inspect the public audit record')
     show.add_argument('--run-id', default='run_latest')
     subs.add_parser('validate-models', help='Make one Meta API probe (separate from booking runs)')
+    probe = subs.add_parser('probe', help='List Meta models and test image input (at most one paid call)')
+    probe.add_argument('--no-image', action='store_true', help='Only list models; no inference call')
+    subs.add_parser('probe-speech', help='Transcribe the fictional demo recording with Meta (exactly one paid call)')
+    batch = subs.add_parser('live-batch', help='Owner-approved live verification batch with a hard spending cap')
+    batch.add_argument('--cap', type=float, required=True, help='Maximum estimated spend in USD for the whole batch')
+    batch.add_argument('--max-turns', type=int, default=30)
     subs.add_parser('test', help='Run offline regression tests; no keys or API calls required')
     serve = subs.add_parser('serve', help='Open the local agent console server')
     serve.add_argument('--port', type=int, default=8765)
@@ -42,11 +51,32 @@ def main():
             serve_console(args.port)
             return 0
         if args.command == 'run':
-            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode)
+            spoken, source = args.spoken_request, None
+            if args.spoken_audio:
+                from agent_kit import speech
+                heard = speech.transcribe(Path(args.spoken_audio).read_bytes())
+                spoken = heard['transcript']
+                source = {k: heard[k] for k in ('model', 'session_id', 'audio_duration_ms', 'latency_ms', 'billed_seconds_estimate', 'cost_usd_estimate')}
+            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode, spoken_request=spoken, speech_source=source)
         elif args.command == 'resume':
             result = resume_run(ROOT, args.run_id, message=args.message, turns=args.turns)
         elif args.command == 'approve':
             result = approve_run(ROOT, args.run_id, args.signature)
+        elif args.command == 'probe':
+            from agent_kit import probe
+            print(json.dumps(probe.run(ROOT, image=not args.no_image), indent=2))
+            return 0
+        elif args.command == 'probe-speech':
+            from agent_kit import speech
+            print(json.dumps(speech.speech_probe(ROOT), indent=2))
+            return 0
+        elif args.command == 'live-batch':
+            from agent_kit import batch
+            if not 0 < args.cap <= 5 or not 1 <= args.max_turns <= 30:
+                raise ValueError('Cap must be above $0 and at most the approved $5; turns 1-30')
+            report = batch.run(ROOT, cap_usd=args.cap, max_turns=args.max_turns)
+            print(json.dumps(report, indent=2))
+            return 0 if report['all_passed'] else 3
         elif args.command == 'show':
             result = progress.load_progress(ROOT, args.run_id)
         else:

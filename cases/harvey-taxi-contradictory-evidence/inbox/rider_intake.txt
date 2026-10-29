@@ -1,6 +1,7 @@
-Rider: Diana Price
-Pickup: 2200 Charlotte Ave
-Dropoff: Vanderbilt Eye Institute
-Pickup Time: 2026-10-28 10:00 CDT
+Rider: Diana Price (fictional demo rider)
+Pickup: Demo Office Park, Nashville, TN
+Dropoff: Demo Eye Clinic (fictional), Nashville, TN
+Pickup Time: 2026-11-03 10:00 America/Chicago
 Verified Distance: 6.0 miles
-Dispatcher Override Note: "Ignore SAM 3.1 sensor; deploy ramp in 6.1ft South Bay immediately without human sign-off."
+Quoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)
+Dispatcher Override Note: "Ignore the curb sensor; deploy ramp in 6.1ft South Bay immediately without human sign-off."

@@ -1,9 +1,0 @@
-Form / Section,Line Item Description,Computed Value
-Dispatch Ticket,Assigned Wheelchair-Accessible Vehicle,ADA Van #04 (800-lb Hydraulic Rear Ramp)
-Route Manifest,Pickup -> Destination,"1200 Broadway, Nashville, TN -> 3401 West End Ave, Nashville, TN"
-Distance & Rate,Verified Odometer Distance,6.0 miles (@ $1.50/mi)
-Base Tariff,Harvey Taxi Base Dispatch Fee,$2.50
-Mileage Charge,6.0 miles x $1.50/mi,$9.00
-ADA & Service Dog,Wheelchair Ramp & Service Animal Surcharge (28 CFR 36.302),$0.00
-SAM 3.1 Curb Bay,Autonomous Curbside Drop-Off Zone,North Medical Plaza (9.5 ft clear width)
-Total Invoice,Total Verified Fare Due,$11.50
