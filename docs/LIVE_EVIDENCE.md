@@ -7,11 +7,11 @@ This file records what has actually run against Meta's API. Configuration, a con
 | Capability | Status | Evidence |
 |---|---|---|
 | Muse Spark tool calling (Responses API) | **Verified by entrant exports, 2026-10-28**, on earlier code | Two runs in [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) |
-| Muse Spark image input (appointment card) | **Verified live, 2026-10-29** (one probe call, fictional card) | Probe result below; full card runs (steps 2–3) not yet run |
+| Muse Spark image input (appointment card) | **Verified live, 2026-10-29**: probe, plus full card and contradiction runs | Probe result and live batch below |
 | Card cross-check, receipts panel, spoken request | **Built and tested offline** (fake Meta transport) | `./helper test` |
 | Browser speech recognition | **Not Meta.** Runs in the reviewer's browser | Labeled in the console and docs |
 | SAM 3.1 segmentation | **Not integrated.** `sam-3.1` is listed for this account; no request sent | Model list, 2026-10-29 |
-| Meta speech-to-text (file transcription) | **Verified live, 2026-10-29** (one probe call, fictional synthetic clip). Not yet wired into a full agent run | Speech probe result below |
+| Meta speech-to-text (file transcription) | **Verified live, 2026-10-29**: probe, plus one full spoken-request run (fictional synthetic clip) | Speech probe result and live batch below |
 
 ## Probe result: image input (2026-10-29)
 
@@ -69,6 +69,86 @@ Most of the word error rate comes from number formatting ("2nd" for "second", "9
 | destination (Demo Community Clinic) | Yes |
 | date (Monday, November 2) | Yes |
 | arrive by (9:45 a.m.) | Yes |
+
+## Live batch (2026-10-29)
+
+Owner-approved batch (spending cap $5, at most 30 model turns per scenario), run once with `./helper live-batch --cap 5 --max-turns 30`. The key was injected by the network proxy and never entered the container. Nothing was rerun, resumed or retried, and no run was approved: human sign-off stays with the owner. No dispatch, no payments.
+
+| Batch total | Value |
+|---|---|
+| Started (UTC) | 2026-10-29T08:33:19Z |
+| Result | All 4 scenarios passed acceptance; stopped early: no |
+| Paid calls | 66 (65 Muse Spark turns + 1 Meta transcription) |
+| Tokens | 408,875 input (354,398 cached), 17,962 output |
+| Estimated cost (cap basis) | $0.5881. Deliberately high: cached input charged at the full input rate, and reasoning tokens charged as output |
+| Estimated cost (with cache pricing) | about $0.20, if Meta bills cached tokens at the published $0.15 per 1M. Not checked against the account's billing page |
+
+| Scenario | Run ID | Final status | Receipts | First / last response ID | Input (cached) / output tokens | Est. cost | Failed independent checks | Audit SHA-256 |
+|---|---|---|---|---|---|---|---|---|
+| authentication failure (no key) | `run_183e40e119234a9c867e86877b39a493` | `paused` | 0 | — | 0 (0) / 0 | $0.0000 | none | `315a1c37bcb8515ebd644d1ed1ac48e4d8d7bd94c307324f0b399b68ba098829` |
+| appointment card | `run_12a2f40929a7424aa9a70b9b391f4217` | `awaiting_signoff` | 22 | `resp_6ae3045bc34fd456c9cb480a` / `resp_6ae30487d0c18a2718b543c5` | 148,336 (125,524) / 5,971 | $0.2108 | none | `703b06fe83af4881ae18cfa74276cd9ab983ff196f50ac78f41d536b5abec1bc` |
+| card contradiction | `run_bc6f128432534209b34bd08d0f29a8ac` | `needs_input` | 24 | `resp_6ae30488144599e26c164958` / `resp_6ae304b3a02f70027bb74c1d` | 156,120 (137,639) / 7,053 | $0.2251 | `appointment_card_check` | `9f711014533391ece5c0a0540480b3fc967712c683bac1f2e47f601725d71937` |
+| spoken request (Meta speech-to-text) | `run_1f9f09924a9c46ea9f6e2f3fe1319216` | `awaiting_signoff` | 19 | `resp_6ae304b70a32bfd982f44009` / `resp_6ae304cfcbb0721915a44280` | 104,419 (91,235) / 4,938 | $0.1522 | none | `3f6f0ead040fd8d498b0e40c5d23f49e154b732b9b5e4ab1303d08610887e1c5` |
+
+Audit SHA-256 is computed over each run's public record (sorted-key JSON) at the end of the batch.
+
+Spoken-request transcription: `muse-voice-transcribe-1.0`, session `harvey-9872c5b35b85`, 13.2 s audio, 2,746 ms latency, about 13 s billed (est. $0.00065). Same fictional clip as the speech probe.
+
+The authentication-failure scenario tests a **missing** key with the network blocked (zero network calls, zero cost). A real Meta 401 could not be produced in this session, because the proxy injects the valid key.
+
+The card-contradiction scenario's "human approval refused" check calls the approval function with a test signature and confirms that it is refused. No run was approved.
+
+### authentication failure (no key): acceptance checks
+
+| Check | Result |
+|---|---|
+| run paused on the API error | Pass |
+| never labeled live | Pass |
+| no receipts, no memo | Pass |
+| zero network calls | Pass |
+
+### appointment card: acceptance checks
+
+| Check | Result |
+|---|---|
+| labeled live only after Meta answered | Pass |
+| one receipt per model turn | Pass |
+| no API error | Pass |
+| dispatch disabled, no authorization | Pass |
+| final status awaiting_signoff | Pass |
+| card fields recorded by the live model | Pass |
+| all independent checks pass | Pass |
+| card check present and passed | Pass |
+| memo cites the card image | Pass |
+
+### card contradiction: acceptance checks
+
+| Check | Result |
+|---|---|
+| labeled live only after Meta answered | Pass |
+| one receipt per model turn | Pass |
+| no API error | Pass |
+| dispatch disabled, no authorization | Pass |
+| final status needs_input | Pass |
+| card fields recorded by the live model | Pass |
+| only the card check fails | Pass |
+| card check cites the date difference | Pass |
+| no memo accepted | Pass |
+| human approval refused | Pass |
+
+### spoken request (Meta speech-to-text): acceptance checks
+
+| Check | Result |
+|---|---|
+| labeled live only after Meta answered | Pass |
+| one receipt per model turn | Pass |
+| no API error | Pass |
+| dispatch disabled, no authorization | Pass |
+| final status awaiting_signoff | Pass |
+| transcript produced by Meta speech-to-text | Pass |
+| spoken request check passed | Pass |
+| all independent checks pass | Pass |
+| memo quotes the spoken request | Pass |
 
 ## Live test plan (owner approval needed for each paid step)
 
