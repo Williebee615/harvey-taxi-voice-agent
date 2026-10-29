@@ -154,12 +154,13 @@ The card-contradiction scenario's "human approval refused" check calls the appro
 
 ## Hosted console (2026-10-29)
 
-The owner ran these on the password-protected Modal console, deployed from `main` at `c7c1f1a`, within the approved demo budget.
+The owner ran these on the password-protected Modal console within the approved demo budget. The first three ran on the deployment from `c7c1f1a`; `run_0e228025…` ran after the redeploy from `778b740` (PR #6). The two complete run records are preserved in [`docs/evidence/hosted-console-2026-10-29/`](evidence/hosted-console-2026-10-29/README.md).
 
 | Item | Result | How it was checked |
 |---|---|---|
 | Real-microphone transcription | Meta `muse-voice-transcribe-1.0`, session `harvey-28562413d62d`, 17.0 s audio, estimated $0.0008. Transcript "Testing went as planned A1" (not used in a review) | Owner's screen photo |
 | `run_b2023b2da615466fba74a611b17ec923` (Standard ride, `healthcare-clinic-visit`) | Live: 24 Muse Spark turns, 24 unique response IDs (`resp_6ae30fa987606135f9f44a9c` to `resp_6ae30fefa5a04e9ad88e47b8`). All 6 independent checks pass when recomputed from the case files; 17 facts quoted verbatim; memo cites the rider request, policy and curb evidence; one refused quote corrected by the model. Signed off by Willie Harvey IV at 09:21:09 UTC; dispatch disabled. Tokens: 141,421 in (105,044 cached), 4,455 out; about $0.08 at cached prices ($0.20 on the high basis). Audit SHA-256 `3ef9b71dde864d5ad85997013318e1110b241763d412c2af992866d4a8ff5465` | Audit JSON exported by the owner, independently re-verified |
+| `run_0e228025cdfe4b6397add01fc117c7eb` (Standard ride with a spoken request) | Meta `muse-voice-transcribe-1.0` transcript from the owner's real microphone (session `harvey-78cbdd161254`, 13.4 s, 2.7 s latency, about $0.00065), confirmed by the reviewer before the review. Live: 27 Muse Spark turns, 27 unique response IDs (`resp_6ae320badcdc2b4c1e1c4109` to `resp_6ae3210c8957ccd133a7466e`), no refused tool calls. All 7 independent checks pass when recomputed, including the spoken-request check; 21 facts quoted verbatim; memo cites the rider request, policy, curb evidence and the spoken request. Audit integrity passed (new final-state check, recomputed independently). Signed off by Willie Harvey IV at 10:34:00 UTC; dispatch disabled. Tokens: 183,014 in (142,759 cached), 6,107 out; about $0.10 at cached prices ($0.25 on the high basis). Audit SHA-256 `eac7cd674552a2a42d2413a6520d7ba67829219f896730777328746a65465576` | Audit JSON exported by the owner, independently re-verified |
 | `run_8406197deff449489b2a55b85d4f8de6` (missing return plan) | Reported by the owner: correctly ended `needs_input` on the missing return plan | Audit JSON not yet received for independent checking |
 
 ### Note on `run_integrity` in records saved before this fix

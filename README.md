@@ -38,11 +38,12 @@ Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your
 | Meta speech-to-text (`muse-voice-transcribe-1.0`) | All 5 key facts survived; word error rate 2.9% with numbers spelled out (14.7% raw), 2.7–3.2 s per 13 s clip | [Speech probe](docs/LIVE_EVIDENCE.md#probe-result-speech-to-text-2026-10-29) |
 | Spoken request through the full review | Ended `awaiting_signoff`; the memo quotes Meta's transcript | `run_1f9f0992…` |
 | Console **Record** button with a real microphone | Meta transcribed the owner's voice on the hosted console (session `harvey-28562413d62d`, 17.0 s, about $0.0008) | [Hosted console](docs/LIVE_EVIDENCE.md#hosted-console-2026-10-29) |
+| Spoken request with a real microphone through a full review | Hosted console: Meta transcript confirmed by the reviewer; 27 live turns; all 7 checks pass; memo quotes the transcript; signed off | [`run_0e228025…`](docs/evidence/hosted-console-2026-10-29/README.md) |
 | Spending | 66 paid batch calls; about $0.20 at cached-input prices ($0.59 on a deliberately high basis), against a $5 cap enforced before every call | [Batch report](docs/evidence/live-batch-2026-10-29/batch_report.json) |
 
 The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/evidence/live-batch-2026-10-29/README.md). They contain every receipt, tool call, observation, fact, check and memo, along with audit fingerprints that can be recomputed.
 
-**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `c7c1f1a` on 2026-10-29, according to the owner's deploy output. Changes merged after that need a redeploy before they appear there.
+**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `778b740` (PR #6) on 2026-10-29, according to the owner's deploy output. Changes merged after that need a redeploy before they appear there.
 
 ## How it meets the judging criteria
 

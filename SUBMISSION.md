@@ -5,7 +5,7 @@
 | Item | Status |
 |---|---|
 | Source | https://github.com/Williebee615/harvey-taxi-voice-agent, branch `main`. PRs #4 and #5 merged 2026-10-29; later fixes arrive by pull request with owner approval |
-| Hosted console | https://williebee615--harvey-healthcare-review-console.us-east.modal.run. Password-protected (username `reviewer`; password shared privately). Deployed from `main` at `c7c1f1a` on 2026-10-29, per the owner's deploy output |
+| Hosted console | https://williebee615--harvey-healthcare-review-console.us-east.modal.run. Password-protected (username `reviewer`; password shared privately). Deployed from `main` at `778b740` (PR #6) on 2026-10-29, per the owner's deploy output |
 | Live Meta evidence | Complete: [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md), [docs/evidence/live-batch-2026-10-29/](docs/evidence/live-batch-2026-10-29/README.md) |
 | Three-minute video | **Not recorded yet.** Script: [docs/DEMO.md](docs/DEMO.md) |
 | Event form | **Not submitted yet** |

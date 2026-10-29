@@ -16,7 +16,7 @@ Source of requirements: the Meta Global AI Developer Hackathon participant guide
 
 ## Scope boundaries
 
-No Render purchase, domain cutover, real patient integration or removal of offline development tools is needed to complete the requirements listed above. A password-protected hosted console now runs on Modal (deployed from `main` at `c7c1f1a`, 2026-10-29). It is useful for judges but not a mandatory entry condition, and it needs a redeploy after each approved merge.
+No Render purchase, domain cutover, real patient integration or removal of offline development tools is needed to complete the requirements listed above. A password-protected hosted console now runs on Modal (deployed from `main` at `778b740`, 2026-10-29). It is useful for judges but not a mandatory entry condition, and it needs a redeploy after each approved merge.
 
 The old GitHub Pages page is not the live agent. Use source plus an accessible demonstration video as submission artifacts; accurately describe the local execution requirement wherever the form asks about a live product.
 
