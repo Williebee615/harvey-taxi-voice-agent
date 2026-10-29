@@ -32,6 +32,7 @@ def main():
     subs.add_parser('validate-models', help='Make one Meta API probe (separate from booking runs)')
     probe = subs.add_parser('probe', help='List Meta models and test image input (at most one paid call)')
     probe.add_argument('--no-image', action='store_true', help='Only list models; no inference call')
+    subs.add_parser('probe-speech', help='Transcribe the fictional demo recording with Meta (exactly one paid call)')
     subs.add_parser('test', help='Run offline regression tests; no keys or API calls required')
     serve = subs.add_parser('serve', help='Open the local agent console server')
     serve.add_argument('--port', type=int, default=8765)
@@ -53,6 +54,10 @@ def main():
         elif args.command == 'probe':
             from agent_kit import probe
             print(json.dumps(probe.run(ROOT, image=not args.no_image), indent=2))
+            return 0
+        elif args.command == 'probe-speech':
+            from agent_kit import speech
+            print(json.dumps(speech.speech_probe(ROOT), indent=2))
             return 0
         elif args.command == 'show':
             result = progress.load_progress(ROOT, args.run_id)
