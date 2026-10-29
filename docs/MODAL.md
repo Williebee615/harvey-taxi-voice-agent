@@ -14,7 +14,7 @@ python3 -m modal setup
 python3 -m modal deploy modal_console.py
 ```
 
-To change the key or password later, replace the whole secret from a Terminal where the values are loaded privately (for example with `read -s`): `python3 -m modal secret create harvey-healthcare-demo MODEL_API_KEY="$NEWKEY" MODEL_API_MODEL=muse-spark-1.3 HARVEY_DEMO_PASSWORD="$CONSOLEPW" --force`, then redeploy. Current deployment: https://williebee615--harvey-healthcare-review-console.us-east.modal.run, from `main` at `778b740` (2026-10-29).
+To change the key or password later, replace the whole secret from a Terminal where the values are loaded privately (for example with `read -s`): `python3 -m modal secret create harvey-healthcare-demo MODEL_API_KEY="$NEWKEY" MODEL_API_MODEL=muse-spark-1.3 HARVEY_DEMO_PASSWORD="$CONSOLEPW" --force`, then redeploy. Current deployment: https://williebee615--harvey-healthcare-review-console.us-east.modal.run, from `main` at `fc49119` (PR #8, 2026-10-29).
 
 Open the URL printed by deploy. Browser sign-in username: `reviewer`; password: the value you stored in Modal Secrets. Share reviewer access privately with authorized testers. Never put a Meta key into a browser field, public repository, video or submission description.
 

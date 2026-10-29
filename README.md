@@ -43,7 +43,7 @@ Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your
 
 The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/evidence/live-batch-2026-10-29/README.md). They contain every receipt, tool call, observation, fact, check and memo, along with audit fingerprints that can be recomputed.
 
-**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `778b740` (PR #6) on 2026-10-29, according to the owner's deploy output. Changes merged after that need a redeploy before they appear there.
+**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `fc49119` (PR #8, the live/simulation, curb and sign-off labels) on 2026-10-29, according to the owner's deploy output; 143 tests passed on the deploying machine at that commit. Changes merged after that need a redeploy before they appear there.
 
 ## How it meets the judging criteria
 
