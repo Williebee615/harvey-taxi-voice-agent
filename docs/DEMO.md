@@ -1,34 +1,44 @@
 # Three-minute contest video
 
-## Record these two outcomes
+## Before recording
 
-Use the clinic visit and missing-return cases already verified in [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md). This is a product demonstration, not another test campaign. Keep the app running locally and close unrelated browser tabs. Do not show `.env`, keys, account billing pages or personal files.
+1. Complete [the live test plan](LIVE_EVIDENCE.md). The card segment may be shown as live Meta reading **only if** the image probe passed and the live card runs behaved as expected. If not, see "If image input is not verified" below.
+2. Start the console: `./helper serve`, then open http://127.0.0.1:8765 in Chrome (the browser speech recognition used here works there).
+3. Close unrelated tabs. Never show `.env`, keys, billing pages or personal files.
 
-Use real app interaction. If displaying an existing saved review, label it **Saved live Meta run** and say so. If cutting API waiting time from a newly recorded run, label the cut **Waiting shortened**. Never present a saved or edited run as an uninterrupted live execution. Do not record offline simulation and call it live Meta inference.
+## Labeling rules
 
-On Mac, press **Shift + Command + 5**, choose **Record Selected Portion**, select the app window area, and choose your microphone under Options. Record narration and screen together. Stop through the menu-bar recording control. Aim for 2:50–2:58 so the final file stays below three minutes. Check the exported duration and listen to the audio before uploading.
+- A newly recorded live run may be shown as live. If you cut waiting time, label the cut **Waiting shortened**.
+- A reopened saved run must be labeled **Saved live Meta run**.
+- Never show an offline simulation and call it Meta inference. The receipts panel says "Offline simulation" for those runs; keep it visible.
+- Say that speech recognition is the browser's, not Meta's.
 
-## Timed narration and screen actions
+Aim for 2:50–2:58 so the exported file stays under three minutes.
 
-Read naturally and leave room to point at the interface. Rehearse once; do not try to read all JSON aloud.
+## Timed script
 
-| Time | Screen action | Narration |
+| Time | Screen | Narration |
 |---|---|---|
-| 0:00–0:20 | Show the healthcare console and clinic case. | “I'm Willie Harvey, founder of Harvey Taxi. Getting someone to a healthcare appointment takes more than an address. A wheelchair user needs a suitable vehicle, a pickup plan, a clear fare, and a plan for getting home. This project makes that transportation evidence reviewable.” |
-| 0:20–0:45 | Select Live Meta and show a real run beginning, or open the saved clinic review with a visible saved-run label. | “Our agent uses Meta Muse Spark to choose its tools. It reads the request and policy, builds a checklist, and records source quotations. These tool choices come from the model. The interface lets a reviewer inspect what each tool actually returned.” |
-| 0:45–1:15 | Expand one `record_fact`, then the corresponding verification result. Show a receipt's model and response ID briefly. | “Here is an exact quotation linked to a checklist question. Code checks that it exists in the source file. Separate checks validate required transport details, fare arithmetic, the selected pickup bay, and conflicting evidence. This receipt identifies a real Muse Spark API response. The supplied curb measurements are simulated fixtures.” |
-| 1:15–1:45 | Show the accepted clinic memo, all passing checks, pending actions and limitations. Do not invent an unsigned state for a signed saved run. | “For this clinic case, the quoted fare matches the supplied tariff, the selected bay meets the demo vehicle policy, and a return coordination plan is documented. The memo cites its evidence and holds for human review. It does not claim the return pickup is already confirmed.” |
-| 1:45–2:15 | Switch to the saved missing-return review, labeled Saved live Meta run. Show failed healthcare check and `request_evidence`. | “Now the return plan is missing. The live agent's review ends at needs input. This healthcare transport check identifies the missing plan, and sign-off remains blocked. A plausible-looking request is not enough when required evidence is absent.” |
-| 2:15–2:40 | Return to the signed clinic audit; show reviewer acknowledgment and JSON export. | “Human acknowledgment is recorded separately. The audit preserves tool results, citations, verification and the review state. A typed demo acknowledgment never dispatches a vehicle. The successful case and the blocked case both have inspected live-run audits.” |
-| 2:40–2:58 | Show repository branch and PR contribution diff, then return to the product. | “During the event, we developed the live model loop, verification gates, healthcare cases and connected console. This is transportation coordination, not medical advice. There is no live SAM measurement or real dispatch. Our goal is to give coordinators and dispatchers a clearer, evidence-backed handoff.” |
+| 0:00–0:20 | Console home, Appointment card case selected, card visible. | "I'm Willie Harvey, founder of Harvey Taxi. For a wheelchair user, a ride to the doctor depends on details that are easy to get wrong: the date, the arrival time, the right vehicle, a fair price. Harvey Taxi checks those details before anyone is booked." |
+| 0:20–0:40 | Click **Speak request** and say: "I need a wheelchair-accessible ride with my service dog to my clinic appointment on Monday." Choose **Live Meta**, start the review. | "The rider can simply say what they need. Speech-to-text here is the browser's own recognition, not Meta. The transcript becomes evidence, not an instruction." |
+| 0:40–1:15 | Expand the **analyze documents** step, then **record document fields**. Point at the receipts panel. | "Meta's Muse Spark runs the review. It chooses each step itself: it reads the policy and the request, then looks at the appointment card image and records the date, the appointment time, the arrive-by time and the clinic. Every step here has a real Meta response ID and token count." |
+| 1:15–1:45 | Verification panel: card check, spoken request check, fare check. Fare rule box. | "Then code, not the model, checks the work. The card must agree with the booking. The service dog and wheelchair the rider mentioned must be on the intake. The fare is computed: two fifty plus a dollar fifty a mile, and zero dollars for accessibility, always." |
+| 1:45–2:05 | Memo with citations; enter reviewer name; record demo sign-off. | "The memo cites its sources, exact quotes and the card fields, and stops for a human. Sign-off is a demo acknowledgment; nothing is dispatched or charged." |
+| 2:05–2:40 | Select **Card contradiction**, run live (or open the saved run, labeled). Show the failed card check and `needs input`. | "Now the written booking says Tuesday, but the card says Monday. A plausible booking for the wrong day is exactly how someone misses an appointment. The card check fails, the review stops at needs input, and sign-off is blocked until a person resolves it." |
+| 2:40–2:58 | Return to the receipts panel, then the repository. | "Meta reads the evidence; deterministic checks decide what is safe to book; a human stays in control. This is transportation coordination, not medical advice, and every case here is fictional." |
 
-## Final recording checks
+## If image input is not verified
 
-- Duration is at most three minutes; screen and narration are understandable.
-- New event work is distinguished from the existing business and starter code.
-- Live model inference, saved replay and simulated curb evidence are correctly labeled.
-- Both the valid review and missing-return block are shown.
-- The video URL works in a signed-out/private browser and can be viewed without requesting access.
-- Paste the final video URL into `SUBMISSION.md` and the official event submission form. Do not submit the old GitHub Pages simulation as the live Python application.
+Do not narrate 0:40–1:15 as Meta reading the card. Either:
+- leave the card out and run the spoken-request clinic case live, showing the contradiction with the **Missing return plan** case instead; or
+- show the card cases in **offline simulation**, with the receipts panel visible, and say: "In this offline simulation the card values are scripted; live image reading is still being verified."
 
-No patient-outcome, live-dispatch, clinical-clearance, HIPAA or production-readiness claim is demonstrated by this video.
+## Final checks
+
+- Duration at most three minutes; narration audible.
+- Live, saved and simulated segments correctly labeled; browser speech identified as not Meta.
+- Both the successful review and the blocked contradiction are shown.
+- The video link opens in a signed-out browser.
+- Paste the final link into `SUBMISSION.md` and the official submission form.
+
+No patient-outcome, live-dispatch, clinical-clearance, HIPAA or production-readiness claim is made by this video.

@@ -19,6 +19,7 @@ def main():
     run.add_argument('--mode', choices=['simulation', 'live'], default='simulation')
     run.add_argument('--turns', type=int, default=20)
     run.add_argument('--prompt')
+    run.add_argument('--spoken-request', help='Rider request transcript, added to the run as untrusted evidence')
     resume = subs.add_parser('resume', help='Continue a paused run or supply a follow-up')
     resume.add_argument('--run-id', default='run_latest')
     resume.add_argument('--message', default='')
@@ -44,7 +45,7 @@ def main():
             serve_console(args.port)
             return 0
         if args.command == 'run':
-            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode)
+            result = run_agent(ROOT, args.turns, args.prompt, args.case, args.mode, spoken_request=args.spoken_request)
         elif args.command == 'resume':
             result = resume_run(ROOT, args.run_id, message=args.message, turns=args.turns)
         elif args.command == 'approve':

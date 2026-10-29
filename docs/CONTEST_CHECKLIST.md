@@ -22,7 +22,7 @@ The old GitHub Pages page is not the live agent. Use source plus an accessible d
 
 ## Current acceptance
 
-- Automated regression: 67 offline tests passed at commit `80876be` (historical record in LIVE_ACCEPTANCE.md). After the 2026-10-29 cleanup, 78 offline tests pass with the optional Modal dependencies installed (76 pass and 2 skip without them).
+- Automated regression: 67 offline tests passed at commit `80876be` (historical record in LIVE_ACCEPTANCE.md). On 2026-10-29, after the cleanup and the card, speech and receipts work, 106 offline tests pass with the optional Modal dependencies installed (104 pass and 2 skip without them).
 - Positive live case: cited memo accepted, independent checks passed, separate demo acknowledgment recorded.
 - Negative live case: missing return plan detected; no acknowledgment or dispatch.
 - Full source and hash checks are recorded in LIVE_ACCEPTANCE.md.

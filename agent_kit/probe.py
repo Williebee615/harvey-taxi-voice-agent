@@ -16,7 +16,7 @@ import urllib.request
 from pathlib import Path
 from agent_kit import client, progress, settings
 
-CARD = Path('cases/demo-appointment-card/appointment_card.png')
+CARD = Path('cases/healthcare-appointment-card/inbox/appointment_card.png')
 EXPECTED = {'appointment_date': '2026-11-02', 'appointment_time': '10:00',
             'arrive_by': '09:45', 'destination': 'Demo Community Clinic'}
 PROMPT = ('This is a fictional demo appointment card. Extract transportation details. Reply with only a JSON '

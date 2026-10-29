@@ -35,7 +35,7 @@ Existing `META_MODEL` and `META_BASE_URL` aliases are supported. Explicit `MODEL
 ./helper run --case healthcare-clinic-visit --mode live --turns 20
 ```
 
-`./helper probe` answers three questions and saves only metadata (response ID, model, token usage, extracted fields) to `workspace/probes/`. It lists the model IDs the account can use, sends the fictional [appointment card](cases/demo-appointment-card/appointment_card.png) to Muse Spark once to test image input, and reports whether SAM or speech models appear in the list. It sends nothing to SAM or speech models, because their request formats are not yet verified. `--no-image` skips the paid call. See [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md).
+`./helper probe` answers three questions and saves only metadata (response ID, model, token usage, extracted fields) to `workspace/probes/`. It lists the model IDs the account can use, sends the fictional [appointment card](cases/healthcare-appointment-card/inbox/appointment_card.png) to Muse Spark once to test image input, and reports whether SAM or speech models appear in the list. It sends nothing to SAM or speech models, because their request formats are not yet verified. `--no-image` skips the paid call. See [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md).
 
 A probe is separate from a booking. `LIVE_META_API` is recorded only after a successful model response within that booking run. Live mode sends case evidence to Meta and incurs API usage; use fictional demo data. API errors pause the run; there is no silent simulation or provider fallback. The live tool-calling workflow must be tested on the user's configured machine before recording a live demo.
 
@@ -46,11 +46,23 @@ A probe is separate from a booking. `LIVE_META_API` is recorded only after a suc
 | Simulation | Explicitly scripted offline demonstration | None | Labeled fixture data |
 | Live | Meta selects one tool each turn | Meta Responses API | Same labeled fixture data |
 
+The console's **Meta inference receipts** panel lists every successful Meta response in the run (turn, status, model, response ID, input/output tokens, time) and every failed call. A simulation run shows no receipts and says so. Each activity step is labeled "chosen by Meta model" only if a Meta response produced it.
+
+The review has four stages: **list documents → set checklist → analyze documents → submit memo**. Independent checks sit between them: `verify_booking` must pass against the current evidence, and each checklist item needs facts recorded with exact quotes (or, for an image, fields that code cross-checks). The shortest passing path is therefore 9 tool turns, or 10 with an appointment card. These steps are not reduced to speed up the demo.
+
 The loop loads instructions and the objective, exposes tool schemas, executes the chosen tool and returns its observation to the model. It saves the transcript after every turn. Stateless Responses replay retains encrypted reasoning items locally for continuation; the UI exposes public tool records, not private reasoning. The model cannot approve or dispatch a ride.
 
-Tools: `list_documents`, `set_checklist`, `update_plan`, `analyze_documents`, `record_fact`, `verify_booking`, `request_evidence`, `submit_memo`.
+Tools: `list_documents`, `set_checklist`, `update_plan`, `analyze_documents`, `record_fact`, `record_document_fields`, `verify_booking`, `request_evidence`, `submit_memo`.
 
-`submit_memo` independently enforces current intake, tariff, quoted fare, zero accessibility surcharge, selected-bay safety and counter-evidence checks. Every checklist item needs a finding with valid case-scoped fact citations; citations must collectively cover intake, policy and telemetry. Facts are exact source quotations; model interpretations are not certified as true merely because a quotation exists. The human must review the memo's conclusions.
+### Appointment card (image evidence)
+
+In live mode, `analyze_documents` on `appointment_card.png` attaches the image to the conversation, and Muse Spark records what it reads with `record_document_fields` (date, appointment time, arrive-by time, location). The model is told to omit anything it cannot read rather than guess. Code then checks these fields against the written rider request: date and time must match, the arrive-by time must not be after the appointment, pickup must come before the arrive-by time, and the location must match the dropoff. Any contradiction, missing field or unreadable field fails `appointment_card_check` and the run ends at `needs_input`. Changing the image after extraction invalidates it. Whether Meta's API accepts this image input is **not yet verified live** (see [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md)). In simulation, the card's known fixture values are recorded by the script and labeled as scripted.
+
+### Spoken ride request
+
+The console's **Speak request** button uses the browser's built-in speech recognition. **It is not a Meta model**; in Chrome, audio is sent to Google for recognition. The transcript (or typed text) is added to that run only, as `spoken_request.txt`, and is treated as untrusted evidence. `spoken_request_check` requires that accessibility needs it mentions (wheelchair or ramp, service animal) are recorded in the rider intake, and fails if the transcript tries to instruct the review (for example "skip the check" or "approve without sign-off"). The memo must quote it. CLI: `./helper run --case healthcare-clinic-visit --spoken-request "..."`.
+
+`submit_memo` independently enforces current intake, tariff, quoted fare, zero accessibility surcharge, selected-bay safety, counter-evidence, appointment card and spoken request checks. Every checklist item needs a finding with valid case-scoped fact citations; citations must collectively cover intake, policy and telemetry, plus the card and spoken request when present. Facts are exact source quotations; model interpretations are not certified as true merely because a quotation exists. The human must review the memo's conclusions.
 
 ## Healthcare demonstration
 
@@ -63,8 +75,10 @@ Tools: `list_documents`, `set_checklist`, `update_plan`, `analyze_documents`, `r
 | `harvey-taxi-wrong-fare-drift` | `needs_input` | Quoted fare violates supplied tariff |
 | `harvey-taxi-contradictory-evidence` | `needs_input` | Override conflicts with evidence |
 | `harvey-taxi-incomplete-intake` | `needs_input` | Required rider details absent |
+| `healthcare-appointment-card` | `awaiting_signoff` | Card date, times and location agree with the rider request |
+| `healthcare-card-contradiction` | `needs_input` | Card shows November 2; the written request books November 3 |
 
-The 8ft clearance threshold is the **demo fleet's vehicle-specific policy**, not a universal legal accessibility standard. No live SAM segmentation, calibrated physical measurement, speech model, EHR connection or hospital authorization is implemented. A `model` label inside a fixture does not mean that model ran.
+The 8ft clearance threshold is the **demo fleet's vehicle-specific policy**, not a universal legal accessibility standard. No SAM segmentation, calibrated physical measurement, Meta speech model, EHR connection or hospital authorization is implemented. Curb fixtures state that no model was run.
 
 ## Pause, continue, review
 

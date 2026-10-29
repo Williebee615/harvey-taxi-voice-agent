@@ -54,8 +54,17 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, (ROOT / path).read_bytes(), kind)
         try:
             if parsed.path == '/api/config':
-                cases = [p.name for p in (self.server.root / 'cases').iterdir() if not p.is_symlink() and (p / 'inbox').is_dir()]
-                return self.send(200, {'token': self.server.token, 'model': settings.model(), 'key_configured': bool(settings.api_key()), 'cases': sorted(cases), 'dispatch_enabled': False})
+                cases = sorted(p.name for p in (self.server.root / 'cases').iterdir() if not p.is_symlink() and (p / 'inbox').is_dir())
+                case_images = {c: list(evidence.images(self.server.root, c)) for c in cases}
+                return self.send(200, {'token': self.server.token, 'model': settings.model(), 'key_configured': bool(settings.api_key()), 'cases': cases,
+                                       'case_images': {c: names for c, names in case_images.items() if names}, 'dispatch_enabled': False})
+            if parsed.path == '/api/case-image':
+                query = parse_qs(parsed.query)
+                case, name = query.get('case', [''])[0], query.get('name', [''])[0]
+                image = evidence.images(self.server.root, case).get(name)
+                if image is None:
+                    raise ValueError('Unknown image')
+                return self.send(200, image, evidence.IMAGE_TYPES[Path(name).suffix.lower()])
             if parsed.path == '/api/run':
                 rid = parse_qs(parsed.query).get('id', ['run_latest'])[0]
                 return self.send(200, progress.public_record(progress.load_progress(self.server.root, rid)))
@@ -97,7 +106,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             root = self.server.root
             if self.path == '/api/run':
-                result = run_agent(root, turns=1, objective=body.get('objective'), case_name=body.get('case'), mode=body.get('mode', 'simulation'))
+                result = run_agent(root, turns=1, objective=body.get('objective'), case_name=body.get('case'), mode=body.get('mode', 'simulation'),
+                                   spoken_request=body.get('spoken_request') or None)
             elif self.path == '/api/continue':
                 message = body.get('message', '')
                 if not isinstance(message, str):

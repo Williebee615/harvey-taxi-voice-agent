@@ -22,9 +22,11 @@ The prototype's demonstrated impact is catching incomplete or contradictory tran
 
 ## How Meta is used
 
-In live mode, `muse-spark-1.3` chooses function tools through Meta's Responses API. It lists and reads case files, creates an investigation checklist, records exact quotations, requests independent verification and submits a cited memo. Tool observations feed back into the same conversation. Run records expose actual provider response IDs, model identifiers and usage metadata.
+In live mode, `muse-spark-1.3` chooses function tools through Meta's Responses API. It lists and reads case files, creates an investigation checklist, records exact quotations, requests independent verification and submits a cited memo. Tool observations feed back into the same conversation. Run records expose actual provider response IDs, model identifiers and usage metadata, and the console shows them in a Meta inference receipts panel.
 
-Code independently verifies intake, the supplied fare tariff, zero accessibility surcharge, selected-bay fixture evidence, counter-evidence and healthcare transport coordination fields. Every memo finding must cite current, case-scoped facts. The model cannot authorize dispatch or manufacture a human signature.
+**Appointment card (built; live image input not yet verified).** In live mode the fictional appointment card image is attached for Muse Spark, which records the date, times and location it reads. Code cross-checks those fields against the written ride request; any contradiction or unreadable field ends the review at `needs_input`. This section must be updated with live results before submission, or the claim removed if Meta's API does not accept the image.
+
+Code independently verifies intake, the supplied fare tariff, zero accessibility surcharge, selected-bay fixture evidence, counter-evidence, healthcare transport coordination fields, the appointment card fields and the spoken request. Every memo finding must cite current, case-scoped facts. The model cannot authorize dispatch or manufacture a human signature.
 
 ## Verified demo outcomes
 
@@ -44,7 +46,8 @@ The earlier Harvey Taxi business, workshop starter concepts and historical Firew
 - Real model inference: Meta Muse Spark through the API.
 - Simulated input: fictional rider cases and curb measurements. No live SAM segmentation or physical measurement is implemented.
 - Human acknowledgment: a typed demo reviewer name, not authenticated operational authority.
-- Not implemented: clinical advice, medical clearance, live speech transcription, EHR integration, real dispatch or payments.
+- Speech: the rider's spoken request is transcribed by the browser's built-in speech recognition, **not a Meta model**. The transcript is untrusted evidence checked against the intake.
+- Not implemented: clinical advice, medical clearance, Meta speech recognition, SAM image analysis, EHR integration, real dispatch or payments.
 - The 8ft clearance threshold and fare are the supplied demo fleet policy, not universal legal standards.
 
 ## How judges can run it
