@@ -1,0 +1,44 @@
+{
+  "authorization_mode": "NONE",
+  "case": "healthcare-appointment-card",
+  "checklist": [],
+  "configured_model": "muse-spark-1.3",
+  "dispatch_enabled": false,
+  "facts": [],
+  "human_signoff_token": null,
+  "inference_mode": "NOT_INVOKED",
+  "memo": null,
+  "model_invoked_in_run": false,
+  "objective": "Investigate accessible booking evidence for healthcare-appointment-card. Verify fare, intake, curb evidence and counter-evidence; hold for dispatcher signoff.",
+  "pause_reason": "Meta key missing or placeholder. Set MODEL_API_KEY locally.",
+  "plan": [],
+  "read_documents": [],
+  "receipts": [],
+  "requested_mode": "live",
+  "run_id": "run_183e40e119234a9c867e86877b39a493",
+  "run_integrity": {
+    "errors": [
+      "Not verified yet"
+    ],
+    "passed": false
+  },
+  "schema_version": 2,
+  "status": "paused",
+  "telemetry_source": "simulation_fixture",
+  "timestamp": "2026-10-29T08:31:17.693746+00:00",
+  "turn": 1,
+  "turns": [
+    {
+      "arguments": {},
+      "observation": {
+        "error": "Meta key missing or placeholder. Set MODEL_API_KEY locally."
+      },
+      "phase": "ACT",
+      "timestamp": "2026-10-29T08:31:17.694804+00:00",
+      "tool": "api_error",
+      "turn": 1
+    }
+  ],
+  "updated_at": "2026-10-29T08:31:17.695501+00:00",
+  "verification": {}
+}

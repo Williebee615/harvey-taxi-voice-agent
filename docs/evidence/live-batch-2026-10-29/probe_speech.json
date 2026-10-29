@@ -1,0 +1,29 @@
+{
+  "probe_version": 1,
+  "kind": "speech",
+  "timestamp": "2026-10-29T08:25:09.019980+00:00",
+  "endpoint": "https://api.meta.ai/v1/asr/transcribe",
+  "model": "muse-voice-transcribe-1.0",
+  "audio": "cases/demo-spoken-request/spoken_request.wav",
+  "audio_source": "synthetic voice (espeak-ng) reading a fictional script",
+  "keywords_sent": false,
+  "paid_inference_calls": 1,
+  "transcript": "Hi, this is is Jordan Ellis. I need a wheelchair accessible ride with my service dog to Demo Community Clinic on Monday, November 2nd. I need to arrive by 9:45 in the morning.",
+  "session_id": "harvey-d1ca30a59fce",
+  "audio_duration_ms": 13200,
+  "local_audio_seconds": 13.134,
+  "latency_ms": 3221,
+  "billed_seconds_estimate": 13,
+  "cost_usd_estimate": 0.00065,
+  "status": "PASSED",
+  "inference_succeeded": true,
+  "reference_script": "Hi, this is Jordan Ellis. I need a wheelchair accessible ride with my service dog to Demo Community Clinic on Monday, November second. I need to arrive by nine forty-five in the morning.",
+  "word_error_rate": 0.147,
+  "key_fact_checks": {
+    "wheelchair": true,
+    "service dog": true,
+    "destination": true,
+    "date": true,
+    "arrive by": true
+  }
+}

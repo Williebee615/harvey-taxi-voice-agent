@@ -1,0 +1,1795 @@
+{
+  "authorization_mode": "NONE",
+  "booking": {
+    "evidence_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182",
+    "policy_scope": "Demo fleet policy; not a universal legal clearance standard",
+    "rider": "Jordan Ellis (fictional demo rider)",
+    "selected_bay": "north_bay",
+    "telemetry_source": "simulation_fixture"
+  },
+  "card_extraction": {
+    "document": "appointment_card.png",
+    "extracted_by": "LIVE_META_API",
+    "fact_id": "F1",
+    "fields": {
+      "appointment_date": "2026-11-02",
+      "appointment_time": "10:00",
+      "arrive_by": "09:45",
+      "destination": "Demo Community Clinic, Suite 200, Nashville, TN"
+    },
+    "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182",
+    "turn": 6
+  },
+  "case": "healthcare-card-contradiction",
+  "checklist": [
+    {
+      "id": "intake",
+      "question": "What are rider's requested time, destination, accessibility needs per intake?"
+    },
+    {
+      "id": "fare",
+      "question": "Does quoted fare match fleet tariff policy?"
+    },
+    {
+      "id": "curb",
+      "question": "Does selected curb bay meet 8ft clearance per telemetry?"
+    },
+    {
+      "id": "card",
+      "question": "Does appointment card match intake time and destination?"
+    },
+    {
+      "id": "counter",
+      "question": "Is there contradictory evidence blocking booking?"
+    },
+    {
+      "id": "review",
+      "question": "Has human dispatcher signoff been obtained?"
+    }
+  ],
+  "configured_model": "muse-spark-1.3",
+  "dispatch_enabled": false,
+  "evidence_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182",
+  "evidence_requests": [
+    "Clarification of appointment date contradiction: intake states 2026-11-03 10:00 America/Chicago vs appointment card shows 2026-11-02 10:00 AM - need corrected date or updated card/intake before dispatch"
+  ],
+  "facts": [
+    {
+      "claim": "Fields read from the image by the Meta model",
+      "document": "appointment_card.png",
+      "fields": {
+        "appointment_date": "2026-11-02",
+        "appointment_time": "10:00",
+        "arrive_by": "09:45",
+        "destination": "Demo Community Clinic, Suite 200, Nashville, TN"
+      },
+      "id": "F1",
+      "item": "card",
+      "kind": "image_fields",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Rider pickup and appointment times from intake",
+      "document": "rider_intake.txt",
+      "id": "F2",
+      "item": "intake",
+      "quote": "Pickup Time: 2026-11-03 09:00 America/Chicago",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Rider dropoff location",
+      "document": "rider_intake.txt",
+      "id": "F3",
+      "item": "intake",
+      "quote": "Dropoff: Demo Community Clinic, Nashville, TN",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Rider mobility device need",
+      "document": "rider_intake.txt",
+      "id": "F4",
+      "item": "intake",
+      "quote": "Mobility Device: Wheelchair requiring side-entry ramp",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Quoted fare from intake",
+      "document": "rider_intake.txt",
+      "id": "F5",
+      "item": "fare",
+      "quote": "Quoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Fleet fare tariff policy",
+      "document": "HANDBOOK.md",
+      "id": "F6",
+      "item": "fare",
+      "quote": "Fare tariff: \"$2.50 base component plus $1.50 per verified mile.\"",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Accessibility fee policy is zero",
+      "document": "HANDBOOK.md",
+      "id": "F7",
+      "item": "fare",
+      "quote": "Accessibility policy: \"Wheelchair boarding and service animals incur a $0.00 additional fee.\"",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Curb clearance requirement 8ft",
+      "document": "HANDBOOK.md",
+      "id": "F8",
+      "item": "curb",
+      "quote": "Vehicle-specific demo clearance rule: \"The demo side-entry ramp vehicle requires 8.0ft unobstructed lateral clearance.\"",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Selected bay and clearance telemetry",
+      "document": "curb_telemetry.json",
+      "id": "F9",
+      "item": "curb",
+      "quote": "South curb bay measures 6.1ft (OBSTRUCTED); North medical bay measures 9.4ft (SAFE >= 8.0ft requirement).",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Intake appointment time for contradiction",
+      "document": "rider_intake.txt",
+      "id": "F10",
+      "item": "counter",
+      "quote": "Appointment Time: 2026-11-03 10:00 America/Chicago",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Human review gate required",
+      "document": "HANDBOOK.md",
+      "id": "F11",
+      "item": "review",
+      "quote": "Review gate: \"All bookings must halt at awaiting_signoff until a human reviews the evidence.\"",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Return coordination plan exists pending confirmation",
+      "document": "rider_intake.txt",
+      "id": "F12",
+      "item": "counter",
+      "quote": "Return Plan: Coordinator to confirm return pickup after appointment; rider will wait inside with clinic staff",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Assistance animal in intake",
+      "document": "rider_intake.txt",
+      "id": "F13",
+      "item": "intake",
+      "quote": "Assistance Animal: Service dog",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Verified distance for fare calc",
+      "document": "rider_intake.txt",
+      "id": "F14",
+      "item": "fare",
+      "quote": "Verified Distance: 6.0 miles",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Curb fixture note simulated",
+      "document": "curb_telemetry.json",
+      "id": "F15",
+      "item": "curb",
+      "quote": "Simulated curb measurement for the demo; no image or segmentation model was run.",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    },
+    {
+      "claim": "Trip purpose transportation only",
+      "document": "rider_intake.txt",
+      "id": "F16",
+      "item": "intake",
+      "quote": "Trip Purpose: Scheduled clinic appointment (transportation only)",
+      "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+    }
+  ],
+  "human_signoff_token": null,
+  "inference_mode": "LIVE_META_API",
+  "memo": null,
+  "model_invoked_in_run": true,
+  "objective": "Investigate accessible booking evidence for healthcare-card-contradiction. Verify fare, intake, curb evidence and counter-evidence; hold for dispatcher signoff.",
+  "plan": [
+    "Read rider_intake.txt for intake facts",
+    "Read HANDBOOK.md for fare policy quote",
+    "Read curb_telemetry.json for curb evidence",
+    "View appointment_card.png then record_document_fields",
+    "Record facts with exact quotes per checklist ID",
+    "Run verify_booking and fix refusals",
+    "Submit memo with one finding per item"
+  ],
+  "read_documents": [
+    "HANDBOOK.md",
+    "appointment_card.png",
+    "curb_telemetry.json",
+    "rider_intake.txt"
+  ],
+  "receipts": [
+    {
+      "latency_ms": 745,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae30488144599e26c164958",
+      "status": "completed",
+      "turn": 1,
+      "usage": {
+        "input_tokens": 2281,
+        "input_tokens_details": {
+          "cached_tokens": 2161
+        },
+        "output_tokens": 74,
+        "output_tokens_details": {
+          "reasoning_tokens": 18
+        },
+        "total_tokens": 2355
+      }
+    },
+    {
+      "latency_ms": 1604,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3048a9d35fcc9ccdc4f27",
+      "status": "completed",
+      "turn": 2,
+      "usage": {
+        "input_tokens": 2422,
+        "input_tokens_details": {
+          "cached_tokens": 2161
+        },
+        "output_tokens": 209,
+        "output_tokens_details": {
+          "reasoning_tokens": 32
+        },
+        "total_tokens": 2631
+      }
+    },
+    {
+      "latency_ms": 827,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3048ad2fec43cdf8f435d",
+      "status": "completed",
+      "turn": 3,
+      "usage": {
+        "input_tokens": 2793,
+        "input_tokens_details": {
+          "cached_tokens": 2417
+        },
+        "output_tokens": 125,
+        "output_tokens_details": {
+          "reasoning_tokens": 7
+        },
+        "total_tokens": 2918
+      }
+    },
+    {
+      "latency_ms": 783,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3048be5996e4210724231",
+      "status": "completed",
+      "turn": 4,
+      "usage": {
+        "input_tokens": 3019,
+        "input_tokens_details": {
+          "cached_tokens": 2673
+        },
+        "output_tokens": 75,
+        "output_tokens_details": {
+          "reasoning_tokens": 4
+        },
+        "total_tokens": 3094
+      }
+    },
+    {
+      "latency_ms": 576,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3048cb3d0799c67e84b98",
+      "status": "completed",
+      "turn": 5,
+      "usage": {
+        "input_tokens": 3705,
+        "input_tokens_details": {
+          "cached_tokens": 2929
+        },
+        "output_tokens": 61,
+        "output_tokens_details": {
+          "reasoning_tokens": 5
+        },
+        "total_tokens": 3766
+      }
+    },
+    {
+      "latency_ms": 2233,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3048e22ad9e133d90444c",
+      "status": "completed",
+      "turn": 6,
+      "usage": {
+        "input_tokens": 4174,
+        "input_tokens_details": {
+          "cached_tokens": 0
+        },
+        "output_tokens": 525,
+        "output_tokens_details": {
+          "reasoning_tokens": 354
+        },
+        "total_tokens": 4699
+      }
+    },
+    {
+      "latency_ms": 3608,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae30492c5eb618e547048f6",
+      "status": "completed",
+      "turn": 7,
+      "usage": {
+        "input_tokens": 4897,
+        "input_tokens_details": {
+          "cached_tokens": 3697
+        },
+        "output_tokens": 253,
+        "output_tokens_details": {
+          "reasoning_tokens": 133
+        },
+        "total_tokens": 5150
+      }
+    },
+    {
+      "latency_ms": 1050,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae30493bf3f4b84578f4afa",
+      "status": "completed",
+      "turn": 8,
+      "usage": {
+        "input_tokens": 5287,
+        "input_tokens_details": {
+          "cached_tokens": 4849
+        },
+        "output_tokens": 147,
+        "output_tokens_details": {
+          "reasoning_tokens": 17
+        },
+        "total_tokens": 5434
+      }
+    },
+    {
+      "latency_ms": 967,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae30494815126b4504e42a8",
+      "status": "completed",
+      "turn": 9,
+      "usage": {
+        "input_tokens": 5480,
+        "input_tokens_details": {
+          "cached_tokens": 5233
+        },
+        "output_tokens": 145,
+        "output_tokens_details": {
+          "reasoning_tokens": 33
+        },
+        "total_tokens": 5625
+      }
+    },
+    {
+      "latency_ms": 1079,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304956f81266d8f7747d1",
+      "status": "completed",
+      "turn": 10,
+      "usage": {
+        "input_tokens": 5754,
+        "input_tokens_details": {
+          "cached_tokens": 5361
+        },
+        "output_tokens": 149,
+        "output_tokens_details": {
+          "reasoning_tokens": 39
+        },
+        "total_tokens": 5903
+      }
+    },
+    {
+      "latency_ms": 1173,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3049697af57d9913042cf",
+      "status": "completed",
+      "turn": 11,
+      "usage": {
+        "input_tokens": 6030,
+        "input_tokens_details": {
+          "cached_tokens": 5745
+        },
+        "output_tokens": 177,
+        "output_tokens_details": {
+          "reasoning_tokens": 23
+        },
+        "total_tokens": 6207
+      }
+    },
+    {
+      "latency_ms": 930,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae30497d1f5acc1e1394b94",
+      "status": "completed",
+      "turn": 12,
+      "usage": {
+        "input_tokens": 6355,
+        "input_tokens_details": {
+          "cached_tokens": 6001
+        },
+        "output_tokens": 119,
+        "output_tokens_details": {
+          "reasoning_tokens": 5
+        },
+        "total_tokens": 6474
+      }
+    },
+    {
+      "latency_ms": 1045,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3049805b9e0f889c74dcf",
+      "status": "completed",
+      "turn": 13,
+      "usage": {
+        "input_tokens": 6606,
+        "input_tokens_details": {
+          "cached_tokens": 4081
+        },
+        "output_tokens": 124,
+        "output_tokens_details": {
+          "reasoning_tokens": 8
+        },
+        "total_tokens": 6730
+      }
+    },
+    {
+      "latency_ms": 939,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae30499313d1b1d374646b1",
+      "status": "completed",
+      "turn": 14,
+      "usage": {
+        "input_tokens": 6864,
+        "input_tokens_details": {
+          "cached_tokens": 6257
+        },
+        "output_tokens": 130,
+        "output_tokens_details": {
+          "reasoning_tokens": 4
+        },
+        "total_tokens": 6994
+      }
+    },
+    {
+      "latency_ms": 806,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3049a121d14b594ed4ac6",
+      "status": "completed",
+      "turn": 15,
+      "usage": {
+        "input_tokens": 7138,
+        "input_tokens_details": {
+          "cached_tokens": 6769
+        },
+        "output_tokens": 137,
+        "output_tokens_details": {
+          "reasoning_tokens": 5
+        },
+        "total_tokens": 7275
+      }
+    },
+    {
+      "latency_ms": 1402,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3049b0597e82830ed4346",
+      "status": "completed",
+      "turn": 16,
+      "usage": {
+        "input_tokens": 7425,
+        "input_tokens_details": {
+          "cached_tokens": 7025
+        },
+        "output_tokens": 257,
+        "output_tokens_details": {
+          "reasoning_tokens": 120
+        },
+        "total_tokens": 7682
+      }
+    },
+    {
+      "latency_ms": 2377,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae3049dc15218d5221a4e33",
+      "status": "completed",
+      "turn": 17,
+      "usage": {
+        "input_tokens": 7816,
+        "input_tokens_details": {
+          "cached_tokens": 7409
+        },
+        "output_tokens": 414,
+        "output_tokens_details": {
+          "reasoning_tokens": 299
+        },
+        "total_tokens": 8230
+      }
+    },
+    {
+      "latency_ms": 3996,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304a1d8e7ea9d78a34ced",
+      "status": "completed",
+      "turn": 18,
+      "usage": {
+        "input_tokens": 8363,
+        "input_tokens_details": {
+          "cached_tokens": 6513
+        },
+        "output_tokens": 745,
+        "output_tokens_details": {
+          "reasoning_tokens": 627
+        },
+        "total_tokens": 9108
+      }
+    },
+    {
+      "latency_ms": 1050,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304a386d37abc12ea4d5a",
+      "status": "completed",
+      "turn": 19,
+      "usage": {
+        "input_tokens": 9243,
+        "input_tokens_details": {
+          "cached_tokens": 7793
+        },
+        "output_tokens": 126,
+        "output_tokens_details": {
+          "reasoning_tokens": 20
+        },
+        "total_tokens": 9369
+      }
+    },
+    {
+      "latency_ms": 948,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304a30c9bb825f55e4851",
+      "status": "completed",
+      "turn": 20,
+      "usage": {
+        "input_tokens": 9492,
+        "input_tokens_details": {
+          "cached_tokens": 9201
+        },
+        "output_tokens": 137,
+        "output_tokens_details": {
+          "reasoning_tokens": 30
+        },
+        "total_tokens": 9629
+      }
+    },
+    {
+      "latency_ms": 1151,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304a5ac8f8fae01524664",
+      "status": "completed",
+      "turn": 21,
+      "usage": {
+        "input_tokens": 9753,
+        "input_tokens_details": {
+          "cached_tokens": 9457
+        },
+        "output_tokens": 141,
+        "output_tokens_details": {
+          "reasoning_tokens": 6
+        },
+        "total_tokens": 9894
+      }
+    },
+    {
+      "latency_ms": 1002,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304a6b4a7cff4cc6147dc",
+      "status": "completed",
+      "turn": 22,
+      "usage": {
+        "input_tokens": 10026,
+        "input_tokens_details": {
+          "cached_tokens": 9713
+        },
+        "output_tokens": 129,
+        "output_tokens_details": {
+          "reasoning_tokens": 20
+        },
+        "total_tokens": 10155
+      }
+    },
+    {
+      "latency_ms": 650,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304a61d688fe50233436b",
+      "status": "completed",
+      "turn": 23,
+      "usage": {
+        "input_tokens": 10281,
+        "input_tokens_details": {
+          "cached_tokens": 9969
+        },
+        "output_tokens": 41,
+        "output_tokens_details": {
+          "reasoning_tokens": 5
+        },
+        "total_tokens": 10322
+      }
+    },
+    {
+      "latency_ms": 13163,
+      "model": "muse-spark-1.3",
+      "response_id": "resp_6ae304b3a02f70027bb74c1d",
+      "status": "completed",
+      "turn": 24,
+      "usage": {
+        "input_tokens": 10916,
+        "input_tokens_details": {
+          "cached_tokens": 10225
+        },
+        "output_tokens": 2613,
+        "output_tokens_details": {
+          "reasoning_tokens": 2510
+        },
+        "total_tokens": 13529
+      }
+    }
+  ],
+  "requested_mode": "live",
+  "run_id": "run_bc6f128432534209b34bd08d0f29a8ac",
+  "run_integrity": {
+    "errors": [
+      "Not verified yet"
+    ],
+    "passed": false
+  },
+  "schema_version": 2,
+  "status": "needs_input",
+  "telemetry_source": "simulation_fixture",
+  "timestamp": "2026-10-29T08:32:07.819296+00:00",
+  "turn": 24,
+  "turns": [
+    {
+      "arguments": {},
+      "observation": {
+        "documents": [
+          "HANDBOOK.md",
+          "curb_telemetry.json",
+          "rider_intake.txt"
+        ],
+        "images": [
+          "appointment_card.png"
+        ],
+        "source": "case_files",
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 745,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae30488144599e26c164958",
+        "status": "completed",
+        "turn": 1,
+        "usage": {
+          "input_tokens": 2281,
+          "input_tokens_details": {
+            "cached_tokens": 2161
+          },
+          "output_tokens": 74,
+          "output_tokens_details": {
+            "reasoning_tokens": 18
+          },
+          "total_tokens": 2355
+        }
+      },
+      "timestamp": "2026-10-29T08:32:07.819973+00:00",
+      "tool": "list_documents",
+      "turn": 1
+    },
+    {
+      "arguments": {
+        "items": [
+          {
+            "id": "intake",
+            "question": "What are rider's requested time, destination, accessibility needs per intake?"
+          },
+          {
+            "id": "fare",
+            "question": "Does quoted fare match fleet tariff policy?"
+          },
+          {
+            "id": "curb",
+            "question": "Does selected curb bay meet 8ft clearance per telemetry?"
+          },
+          {
+            "id": "card",
+            "question": "Does appointment card match intake time and destination?"
+          },
+          {
+            "id": "counter",
+            "question": "Is there contradictory evidence blocking booking?"
+          },
+          {
+            "id": "review",
+            "question": "Has human dispatcher signoff been obtained?"
+          }
+        ]
+      },
+      "observation": {
+        "checklist": [
+          {
+            "id": "intake",
+            "question": "What are rider's requested time, destination, accessibility needs per intake?"
+          },
+          {
+            "id": "fare",
+            "question": "Does quoted fare match fleet tariff policy?"
+          },
+          {
+            "id": "curb",
+            "question": "Does selected curb bay meet 8ft clearance per telemetry?"
+          },
+          {
+            "id": "card",
+            "question": "Does appointment card match intake time and destination?"
+          },
+          {
+            "id": "counter",
+            "question": "Is there contradictory evidence blocking booking?"
+          },
+          {
+            "id": "review",
+            "question": "Has human dispatcher signoff been obtained?"
+          }
+        ],
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1604,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3048a9d35fcc9ccdc4f27",
+        "status": "completed",
+        "turn": 2,
+        "usage": {
+          "input_tokens": 2422,
+          "input_tokens_details": {
+            "cached_tokens": 2161
+          },
+          "output_tokens": 209,
+          "output_tokens_details": {
+            "reasoning_tokens": 32
+          },
+          "total_tokens": 2631
+        }
+      },
+      "timestamp": "2026-10-29T08:32:08.566947+00:00",
+      "tool": "set_checklist",
+      "turn": 2
+    },
+    {
+      "arguments": {
+        "plan": [
+          "Read rider_intake.txt for intake facts",
+          "Read HANDBOOK.md for fare policy quote",
+          "Read curb_telemetry.json for curb evidence",
+          "View appointment_card.png then record_document_fields",
+          "Record facts with exact quotes per checklist ID",
+          "Run verify_booking and fix refusals",
+          "Submit memo with one finding per item"
+        ]
+      },
+      "observation": {
+        "plan": [
+          "Read rider_intake.txt for intake facts",
+          "Read HANDBOOK.md for fare policy quote",
+          "Read curb_telemetry.json for curb evidence",
+          "View appointment_card.png then record_document_fields",
+          "Record facts with exact quotes per checklist ID",
+          "Run verify_booking and fix refusals",
+          "Submit memo with one finding per item"
+        ],
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 827,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3048ad2fec43cdf8f435d",
+        "status": "completed",
+        "turn": 3,
+        "usage": {
+          "input_tokens": 2793,
+          "input_tokens_details": {
+            "cached_tokens": 2417
+          },
+          "output_tokens": 125,
+          "output_tokens_details": {
+            "reasoning_tokens": 7
+          },
+          "total_tokens": 2918
+        }
+      },
+      "timestamp": "2026-10-29T08:32:10.173509+00:00",
+      "tool": "update_plan",
+      "turn": 3
+    },
+    {
+      "arguments": {
+        "documents": [
+          "rider_intake.txt",
+          "HANDBOOK.md",
+          "curb_telemetry.json"
+        ]
+      },
+      "observation": {
+        "documents": {
+          "HANDBOOK.md": "# Harvey Taxi \u2014 Demo Fleet Transportation Policy\nThis is a hackathon fixture, not legal guidance or a universal accessibility standard.\n- Fare tariff: \"$2.50 base component plus $1.50 per verified mile.\"\n- Accessibility policy: \"Wheelchair boarding and service animals incur a $0.00 additional fee.\"\n- Vehicle-specific demo clearance rule: \"The demo side-entry ramp vehicle requires 8.0ft unobstructed lateral clearance.\"\n- Review gate: \"All bookings must halt at awaiting_signoff until a human reviews the evidence.\"\n- Healthcare scope: \"Transportation coordination only; no diagnosis, treatment, medical clearance, emergency response or real dispatch.\"\n",
+          "curb_telemetry.json": "{\n  \"fixture_note\": \"Simulated curb measurement for the demo; no image or segmentation model was run.\",\n  \"south_bay\": {\n    \"clearance_ft\": 6.1,\n    \"status\": \"OBSTRUCTED_CONSTRUCTION_CONES\",\n    \"safe_for_ramp\": false\n  },\n  \"north_bay\": {\n    \"clearance_ft\": 9.4,\n    \"status\": \"UNOBSTRUCTED_LEVEL_CURB\",\n    \"safe_for_ramp\": true\n  },\n  \"selected_bay\": \"north_bay\",\n  \"verbatim_telemetry\": \"South curb bay measures 6.1ft (OBSTRUCTED); North medical bay measures 9.4ft (SAFE >= 8.0ft requirement).\",\n  \"source\": \"simulation_fixture\",\n  \"model_executed\": false\n}\n",
+          "rider_intake.txt": "Rider: Jordan Ellis (fictional demo rider)\nPickup: Demo Residence, Nashville, TN\nDropoff: Demo Community Clinic, Nashville, TN\nPickup Time: 2026-11-03 09:00 America/Chicago\nVerified Distance: 6.0 miles\nMobility Device: Wheelchair requiring side-entry ramp\nAssistance Animal: Service dog\nQuoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)\nTrip Purpose: Scheduled clinic appointment (transportation only)\nCoordinator Contact: Demo Clinic transportation desk (fictional contact)\nAppointment Time: 2026-11-03 10:00 America/Chicago\nReturn Plan: Coordinator to confirm return pickup after appointment; rider will wait inside with clinic staff\nVehicle Capability: CONFIRMED in demo fixture: wheelchair securement and side-entry ramp vehicle\nClinical Support Required: no\n"
+        },
+        "source": "case_files",
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 783,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3048be5996e4210724231",
+        "status": "completed",
+        "turn": 4,
+        "usage": {
+          "input_tokens": 3019,
+          "input_tokens_details": {
+            "cached_tokens": 2673
+          },
+          "output_tokens": 75,
+          "output_tokens_details": {
+            "reasoning_tokens": 4
+          },
+          "total_tokens": 3094
+        }
+      },
+      "timestamp": "2026-10-29T08:32:11.015316+00:00",
+      "tool": "analyze_documents",
+      "turn": 4
+    },
+    {
+      "arguments": {
+        "documents": [
+          "appointment_card.png"
+        ]
+      },
+      "observation": {
+        "documents": {
+          "appointment_card.png": {
+            "bytes": 43714,
+            "delivery": "attached to the next message as an image",
+            "type": "image"
+          }
+        },
+        "source": "case_files",
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 576,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3048cb3d0799c67e84b98",
+        "status": "completed",
+        "turn": 5,
+        "usage": {
+          "input_tokens": 3705,
+          "input_tokens_details": {
+            "cached_tokens": 2929
+          },
+          "output_tokens": 61,
+          "output_tokens_details": {
+            "reasoning_tokens": 5
+          },
+          "total_tokens": 3766
+        }
+      },
+      "timestamp": "2026-10-29T08:32:11.801324+00:00",
+      "tool": "analyze_documents",
+      "turn": 5
+    },
+    {
+      "arguments": {
+        "appointment_date": "2026-11-02",
+        "appointment_time": "10:00",
+        "arrive_by": "09:45",
+        "destination": "Demo Community Clinic, Suite 200, Nashville, TN",
+        "document": "appointment_card.png",
+        "item": "card"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Fields read from the image by the Meta model",
+          "document": "appointment_card.png",
+          "fields": {
+            "appointment_date": "2026-11-02",
+            "appointment_time": "10:00",
+            "arrive_by": "09:45",
+            "destination": "Demo Community Clinic, Suite 200, Nashville, TN"
+          },
+          "id": "F1",
+          "item": "card",
+          "kind": "image_fields",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "note": "Call verify_booking: code cross-checks these fields against the rider request.",
+        "status": "running",
+        "unreadable_fields": []
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 2233,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3048e22ad9e133d90444c",
+        "status": "completed",
+        "turn": 6,
+        "usage": {
+          "input_tokens": 4174,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 525,
+          "output_tokens_details": {
+            "reasoning_tokens": 354
+          },
+          "total_tokens": 4699
+        }
+      },
+      "timestamp": "2026-10-29T08:32:12.382366+00:00",
+      "tool": "record_document_fields",
+      "turn": 6
+    },
+    {
+      "arguments": {
+        "claim": "Rider pickup and appointment times from intake",
+        "document": "rider_intake.txt",
+        "item": "intake",
+        "quote": "Pickup Time: 2026-11-03 09:00 America/Chicago"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Rider pickup and appointment times from intake",
+          "document": "rider_intake.txt",
+          "id": "F2",
+          "item": "intake",
+          "quote": "Pickup Time: 2026-11-03 09:00 America/Chicago",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 3608,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae30492c5eb618e547048f6",
+        "status": "completed",
+        "turn": 7,
+        "usage": {
+          "input_tokens": 4897,
+          "input_tokens_details": {
+            "cached_tokens": 3697
+          },
+          "output_tokens": 253,
+          "output_tokens_details": {
+            "reasoning_tokens": 133
+          },
+          "total_tokens": 5150
+        }
+      },
+      "timestamp": "2026-10-29T08:32:14.620281+00:00",
+      "tool": "record_fact",
+      "turn": 7
+    },
+    {
+      "arguments": {
+        "claim": "Rider destination and accessibility needs",
+        "document": "rider_intake.txt",
+        "item": "intake",
+        "quote": "Dropoff: Demo Community Clinic, Nashville, TN\nMobility Device: Wheelchair requiring side-entry ramp\nAssistance Animal: Service dog"
+      },
+      "observation": {
+        "error": "Quote must occur exactly in a source document read in this run",
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1050,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae30493bf3f4b84578f4afa",
+        "status": "completed",
+        "turn": 8,
+        "usage": {
+          "input_tokens": 5287,
+          "input_tokens_details": {
+            "cached_tokens": 4849
+          },
+          "output_tokens": 147,
+          "output_tokens_details": {
+            "reasoning_tokens": 17
+          },
+          "total_tokens": 5434
+        }
+      },
+      "timestamp": "2026-10-29T08:32:18.232052+00:00",
+      "tool": "record_fact",
+      "turn": 8
+    },
+    {
+      "arguments": {
+        "claim": "Rider dropoff location",
+        "document": "rider_intake.txt",
+        "item": "intake",
+        "quote": "Dropoff: Demo Community Clinic, Nashville, TN"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Rider dropoff location",
+          "document": "rider_intake.txt",
+          "id": "F3",
+          "item": "intake",
+          "quote": "Dropoff: Demo Community Clinic, Nashville, TN",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 967,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae30494815126b4504e42a8",
+        "status": "completed",
+        "turn": 9,
+        "usage": {
+          "input_tokens": 5480,
+          "input_tokens_details": {
+            "cached_tokens": 5233
+          },
+          "output_tokens": 145,
+          "output_tokens_details": {
+            "reasoning_tokens": 33
+          },
+          "total_tokens": 5625
+        }
+      },
+      "timestamp": "2026-10-29T08:32:19.288161+00:00",
+      "tool": "record_fact",
+      "turn": 9
+    },
+    {
+      "arguments": {
+        "claim": "Rider mobility device need",
+        "document": "rider_intake.txt",
+        "item": "intake",
+        "quote": "Mobility Device: Wheelchair requiring side-entry ramp"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Rider mobility device need",
+          "document": "rider_intake.txt",
+          "id": "F4",
+          "item": "intake",
+          "quote": "Mobility Device: Wheelchair requiring side-entry ramp",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1079,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304956f81266d8f7747d1",
+        "status": "completed",
+        "turn": 10,
+        "usage": {
+          "input_tokens": 5754,
+          "input_tokens_details": {
+            "cached_tokens": 5361
+          },
+          "output_tokens": 149,
+          "output_tokens_details": {
+            "reasoning_tokens": 39
+          },
+          "total_tokens": 5903
+        }
+      },
+      "timestamp": "2026-10-29T08:32:20.259536+00:00",
+      "tool": "record_fact",
+      "turn": 10
+    },
+    {
+      "arguments": {
+        "claim": "Quoted fare from intake",
+        "document": "rider_intake.txt",
+        "item": "fare",
+        "quote": "Quoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Quoted fare from intake",
+          "document": "rider_intake.txt",
+          "id": "F5",
+          "item": "fare",
+          "quote": "Quoted Fare: $11.50 ($2.50 base + 6.0 miles * $1.50/mi + $0.00 ADA fee)",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1173,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3049697af57d9913042cf",
+        "status": "completed",
+        "turn": 11,
+        "usage": {
+          "input_tokens": 6030,
+          "input_tokens_details": {
+            "cached_tokens": 5745
+          },
+          "output_tokens": 177,
+          "output_tokens_details": {
+            "reasoning_tokens": 23
+          },
+          "total_tokens": 6207
+        }
+      },
+      "timestamp": "2026-10-29T08:32:21.342951+00:00",
+      "tool": "record_fact",
+      "turn": 11
+    },
+    {
+      "arguments": {
+        "claim": "Fleet fare tariff policy",
+        "document": "HANDBOOK.md",
+        "item": "fare",
+        "quote": "Fare tariff: \"$2.50 base component plus $1.50 per verified mile.\""
+      },
+      "observation": {
+        "fact": {
+          "claim": "Fleet fare tariff policy",
+          "document": "HANDBOOK.md",
+          "id": "F6",
+          "item": "fare",
+          "quote": "Fare tariff: \"$2.50 base component plus $1.50 per verified mile.\"",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 930,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae30497d1f5acc1e1394b94",
+        "status": "completed",
+        "turn": 12,
+        "usage": {
+          "input_tokens": 6355,
+          "input_tokens_details": {
+            "cached_tokens": 6001
+          },
+          "output_tokens": 119,
+          "output_tokens_details": {
+            "reasoning_tokens": 5
+          },
+          "total_tokens": 6474
+        }
+      },
+      "timestamp": "2026-10-29T08:32:22.520765+00:00",
+      "tool": "record_fact",
+      "turn": 12
+    },
+    {
+      "arguments": {
+        "claim": "Accessibility fee policy is zero",
+        "document": "HANDBOOK.md",
+        "item": "fare",
+        "quote": "Accessibility policy: \"Wheelchair boarding and service animals incur a $0.00 additional fee.\""
+      },
+      "observation": {
+        "fact": {
+          "claim": "Accessibility fee policy is zero",
+          "document": "HANDBOOK.md",
+          "id": "F7",
+          "item": "fare",
+          "quote": "Accessibility policy: \"Wheelchair boarding and service animals incur a $0.00 additional fee.\"",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1045,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3049805b9e0f889c74dcf",
+        "status": "completed",
+        "turn": 13,
+        "usage": {
+          "input_tokens": 6606,
+          "input_tokens_details": {
+            "cached_tokens": 4081
+          },
+          "output_tokens": 124,
+          "output_tokens_details": {
+            "reasoning_tokens": 8
+          },
+          "total_tokens": 6730
+        }
+      },
+      "timestamp": "2026-10-29T08:32:23.458647+00:00",
+      "tool": "record_fact",
+      "turn": 13
+    },
+    {
+      "arguments": {
+        "claim": "Curb clearance requirement 8ft",
+        "document": "HANDBOOK.md",
+        "item": "curb",
+        "quote": "Vehicle-specific demo clearance rule: \"The demo side-entry ramp vehicle requires 8.0ft unobstructed lateral clearance.\""
+      },
+      "observation": {
+        "fact": {
+          "claim": "Curb clearance requirement 8ft",
+          "document": "HANDBOOK.md",
+          "id": "F8",
+          "item": "curb",
+          "quote": "Vehicle-specific demo clearance rule: \"The demo side-entry ramp vehicle requires 8.0ft unobstructed lateral clearance.\"",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 939,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae30499313d1b1d374646b1",
+        "status": "completed",
+        "turn": 14,
+        "usage": {
+          "input_tokens": 6864,
+          "input_tokens_details": {
+            "cached_tokens": 6257
+          },
+          "output_tokens": 130,
+          "output_tokens_details": {
+            "reasoning_tokens": 4
+          },
+          "total_tokens": 6994
+        }
+      },
+      "timestamp": "2026-10-29T08:32:24.509410+00:00",
+      "tool": "record_fact",
+      "turn": 14
+    },
+    {
+      "arguments": {
+        "claim": "Selected bay and clearance telemetry",
+        "document": "curb_telemetry.json",
+        "item": "curb",
+        "quote": "South curb bay measures 6.1ft (OBSTRUCTED); North medical bay measures 9.4ft (SAFE >= 8.0ft requirement)."
+      },
+      "observation": {
+        "fact": {
+          "claim": "Selected bay and clearance telemetry",
+          "document": "curb_telemetry.json",
+          "id": "F9",
+          "item": "curb",
+          "quote": "South curb bay measures 6.1ft (OBSTRUCTED); North medical bay measures 9.4ft (SAFE >= 8.0ft requirement).",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 806,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3049a121d14b594ed4ac6",
+        "status": "completed",
+        "turn": 15,
+        "usage": {
+          "input_tokens": 7138,
+          "input_tokens_details": {
+            "cached_tokens": 6769
+          },
+          "output_tokens": 137,
+          "output_tokens_details": {
+            "reasoning_tokens": 5
+          },
+          "total_tokens": 7275
+        }
+      },
+      "timestamp": "2026-10-29T08:32:25.453607+00:00",
+      "tool": "record_fact",
+      "turn": 15
+    },
+    {
+      "arguments": {
+        "claim": "Intake appointment time for contradiction",
+        "document": "rider_intake.txt",
+        "item": "counter",
+        "quote": "Appointment Time: 2026-11-03 10:00 America/Chicago"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Intake appointment time for contradiction",
+          "document": "rider_intake.txt",
+          "id": "F10",
+          "item": "counter",
+          "quote": "Appointment Time: 2026-11-03 10:00 America/Chicago",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1402,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3049b0597e82830ed4346",
+        "status": "completed",
+        "turn": 16,
+        "usage": {
+          "input_tokens": 7425,
+          "input_tokens_details": {
+            "cached_tokens": 7025
+          },
+          "output_tokens": 257,
+          "output_tokens_details": {
+            "reasoning_tokens": 120
+          },
+          "total_tokens": 7682
+        }
+      },
+      "timestamp": "2026-10-29T08:32:26.265501+00:00",
+      "tool": "record_fact",
+      "turn": 16
+    },
+    {
+      "arguments": {
+        "claim": "Human review gate required",
+        "document": "HANDBOOK.md",
+        "item": "review",
+        "quote": "Review gate: \"All bookings must halt at awaiting_signoff until a human reviews the evidence.\""
+      },
+      "observation": {
+        "fact": {
+          "claim": "Human review gate required",
+          "document": "HANDBOOK.md",
+          "id": "F11",
+          "item": "review",
+          "quote": "Review gate: \"All bookings must halt at awaiting_signoff until a human reviews the evidence.\"",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 2377,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae3049dc15218d5221a4e33",
+        "status": "completed",
+        "turn": 17,
+        "usage": {
+          "input_tokens": 7816,
+          "input_tokens_details": {
+            "cached_tokens": 7409
+          },
+          "output_tokens": 414,
+          "output_tokens_details": {
+            "reasoning_tokens": 299
+          },
+          "total_tokens": 8230
+        }
+      },
+      "timestamp": "2026-10-29T08:32:27.673568+00:00",
+      "tool": "record_fact",
+      "turn": 17
+    },
+    {
+      "arguments": {
+        "claim": "Return coordination plan exists pending confirmation",
+        "document": "rider_intake.txt",
+        "item": "counter",
+        "quote": "Return Plan: Coordinator to confirm return pickup after appointment; rider will wait inside with clinic staff"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Return coordination plan exists pending confirmation",
+          "document": "rider_intake.txt",
+          "id": "F12",
+          "item": "counter",
+          "quote": "Return Plan: Coordinator to confirm return pickup after appointment; rider will wait inside with clinic staff",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 3996,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304a1d8e7ea9d78a34ced",
+        "status": "completed",
+        "turn": 18,
+        "usage": {
+          "input_tokens": 8363,
+          "input_tokens_details": {
+            "cached_tokens": 6513
+          },
+          "output_tokens": 745,
+          "output_tokens_details": {
+            "reasoning_tokens": 627
+          },
+          "total_tokens": 9108
+        }
+      },
+      "timestamp": "2026-10-29T08:32:30.056381+00:00",
+      "tool": "record_fact",
+      "turn": 18
+    },
+    {
+      "arguments": {
+        "claim": "Assistance animal in intake",
+        "document": "rider_intake.txt",
+        "item": "intake",
+        "quote": "Assistance Animal: Service dog"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Assistance animal in intake",
+          "document": "rider_intake.txt",
+          "id": "F13",
+          "item": "intake",
+          "quote": "Assistance Animal: Service dog",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1050,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304a386d37abc12ea4d5a",
+        "status": "completed",
+        "turn": 19,
+        "usage": {
+          "input_tokens": 9243,
+          "input_tokens_details": {
+            "cached_tokens": 7793
+          },
+          "output_tokens": 126,
+          "output_tokens_details": {
+            "reasoning_tokens": 20
+          },
+          "total_tokens": 9369
+        }
+      },
+      "timestamp": "2026-10-29T08:32:34.058746+00:00",
+      "tool": "record_fact",
+      "turn": 19
+    },
+    {
+      "arguments": {
+        "claim": "Verified distance for fare calc",
+        "document": "rider_intake.txt",
+        "item": "fare",
+        "quote": "Verified Distance: 6.0 miles"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Verified distance for fare calc",
+          "document": "rider_intake.txt",
+          "id": "F14",
+          "item": "fare",
+          "quote": "Verified Distance: 6.0 miles",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 948,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304a30c9bb825f55e4851",
+        "status": "completed",
+        "turn": 20,
+        "usage": {
+          "input_tokens": 9492,
+          "input_tokens_details": {
+            "cached_tokens": 9201
+          },
+          "output_tokens": 137,
+          "output_tokens_details": {
+            "reasoning_tokens": 30
+          },
+          "total_tokens": 9629
+        }
+      },
+      "timestamp": "2026-10-29T08:32:35.117352+00:00",
+      "tool": "record_fact",
+      "turn": 20
+    },
+    {
+      "arguments": {
+        "claim": "Curb fixture note simulated",
+        "document": "curb_telemetry.json",
+        "item": "curb",
+        "quote": "Simulated curb measurement for the demo; no image or segmentation model was run."
+      },
+      "observation": {
+        "fact": {
+          "claim": "Curb fixture note simulated",
+          "document": "curb_telemetry.json",
+          "id": "F15",
+          "item": "curb",
+          "quote": "Simulated curb measurement for the demo; no image or segmentation model was run.",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1151,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304a5ac8f8fae01524664",
+        "status": "completed",
+        "turn": 21,
+        "usage": {
+          "input_tokens": 9753,
+          "input_tokens_details": {
+            "cached_tokens": 9457
+          },
+          "output_tokens": 141,
+          "output_tokens_details": {
+            "reasoning_tokens": 6
+          },
+          "total_tokens": 9894
+        }
+      },
+      "timestamp": "2026-10-29T08:32:36.072289+00:00",
+      "tool": "record_fact",
+      "turn": 21
+    },
+    {
+      "arguments": {
+        "claim": "Trip purpose transportation only",
+        "document": "rider_intake.txt",
+        "item": "intake",
+        "quote": "Trip Purpose: Scheduled clinic appointment (transportation only)"
+      },
+      "observation": {
+        "fact": {
+          "claim": "Trip purpose transportation only",
+          "document": "rider_intake.txt",
+          "id": "F16",
+          "item": "intake",
+          "quote": "Trip Purpose: Scheduled clinic appointment (transportation only)",
+          "source_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+        },
+        "status": "running"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 1002,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304a6b4a7cff4cc6147dc",
+        "status": "completed",
+        "turn": 22,
+        "usage": {
+          "input_tokens": 10026,
+          "input_tokens_details": {
+            "cached_tokens": 9713
+          },
+          "output_tokens": 129,
+          "output_tokens_details": {
+            "reasoning_tokens": 20
+          },
+          "total_tokens": 10155
+        }
+      },
+      "timestamp": "2026-10-29T08:32:37.229179+00:00",
+      "tool": "record_fact",
+      "turn": 22
+    },
+    {
+      "arguments": {},
+      "observation": {
+        "checks": {
+          "appointment_card_check": {
+            "card_fields": {
+              "appointment_date": "2026-11-02",
+              "appointment_time": "10:00",
+              "arrive_by": "09:45",
+              "destination": "Demo Community Clinic, Suite 200, Nashville, TN"
+            },
+            "contradictions": [
+              "Card date 2026-11-02 differs from request date 2026-11-03",
+              "Pickup date 2026-11-03 differs from card date 2026-11-02"
+            ],
+            "extracted_by": "LIVE_META_API",
+            "passed": false,
+            "reason": "Card date 2026-11-02 differs from request date 2026-11-03; Pickup date 2026-11-03 differs from card date 2026-11-02",
+            "scope": "Fictional demo card; transportation logistics only",
+            "unreadable": []
+          },
+          "counter_evidence_check": {
+            "contradiction": false,
+            "other_bays": [
+              {
+                "bay": "south_bay",
+                "clearance_ft": 6.1,
+                "safe_for_ramp": false,
+                "status": "OBSTRUCTED_CONSTRUCTION_CONES"
+              }
+            ],
+            "passed": true
+          },
+          "curb_check": {
+            "clearance_ft": 9.4,
+            "passed": true,
+            "reason": "Demo fleet clearance met",
+            "required_ft": 8.0
+          },
+          "fare_check": {
+            "claimed_fare": 11.5,
+            "expected_fare": 11.5,
+            "formula": "$2.50 + (6.0 mi * $1.50/mi) + $0.00 ADA = $11.50",
+            "passed": true,
+            "reason": "Fare invariant satisfied"
+          },
+          "healthcare_transport_check": {
+            "missing_fields": [],
+            "passed": true,
+            "reason": "Transport coordination details supplied; no clinical support requested",
+            "scope": "Transportation logistics only; not clinical clearance or emergency response"
+          },
+          "intake_check": {
+            "missing_fields": [],
+            "passed": true
+          },
+          "quote_check": {
+            "claimed_quote": "$2.50 base component plus $1.50 per verified mile.",
+            "passed": true,
+            "reason": "Demo fare policy must contain the exact tariff quotation"
+          }
+        },
+        "evidence_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182",
+        "passed": false,
+        "policy_scope": "Demo fleet policy; not a universal legal clearance standard",
+        "rider": "Jordan Ellis (fictional demo rider)",
+        "selected_bay": "north_bay",
+        "status": "running",
+        "telemetry_source": "simulation_fixture"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 650,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304a61d688fe50233436b",
+        "status": "completed",
+        "turn": 23,
+        "usage": {
+          "input_tokens": 10281,
+          "input_tokens_details": {
+            "cached_tokens": 9969
+          },
+          "output_tokens": 41,
+          "output_tokens_details": {
+            "reasoning_tokens": 5
+          },
+          "total_tokens": 10322
+        }
+      },
+      "timestamp": "2026-10-29T08:32:38.237690+00:00",
+      "tool": "verify_booking",
+      "turn": 23
+    },
+    {
+      "arguments": {
+        "missing": [
+          "Clarification of appointment date contradiction: intake states 2026-11-03 10:00 America/Chicago vs appointment card shows 2026-11-02 10:00 AM - need corrected date or updated card/intake before dispatch"
+        ]
+      },
+      "observation": {
+        "missing": [
+          "Clarification of appointment date contradiction: intake states 2026-11-03 10:00 America/Chicago vs appointment card shows 2026-11-02 10:00 AM - need corrected date or updated card/intake before dispatch"
+        ],
+        "status": "needs_input"
+      },
+      "phase": "ACT",
+      "receipt": {
+        "latency_ms": 13163,
+        "model": "muse-spark-1.3",
+        "response_id": "resp_6ae304b3a02f70027bb74c1d",
+        "status": "completed",
+        "turn": 24,
+        "usage": {
+          "input_tokens": 10916,
+          "input_tokens_details": {
+            "cached_tokens": 10225
+          },
+          "output_tokens": 2613,
+          "output_tokens_details": {
+            "reasoning_tokens": 2510
+          },
+          "total_tokens": 13529
+        }
+      },
+      "timestamp": "2026-10-29T08:32:38.894976+00:00",
+      "tool": "request_evidence",
+      "turn": 24
+    }
+  ],
+  "updated_at": "2026-10-29T08:32:52.066159+00:00",
+  "verification": {
+    "appointment_card_check": {
+      "card_fields": {
+        "appointment_date": "2026-11-02",
+        "appointment_time": "10:00",
+        "arrive_by": "09:45",
+        "destination": "Demo Community Clinic, Suite 200, Nashville, TN"
+      },
+      "contradictions": [
+        "Card date 2026-11-02 differs from request date 2026-11-03",
+        "Pickup date 2026-11-03 differs from card date 2026-11-02"
+      ],
+      "extracted_by": "LIVE_META_API",
+      "passed": false,
+      "reason": "Card date 2026-11-02 differs from request date 2026-11-03; Pickup date 2026-11-03 differs from card date 2026-11-02",
+      "scope": "Fictional demo card; transportation logistics only",
+      "unreadable": []
+    },
+    "counter_evidence_check": {
+      "contradiction": false,
+      "other_bays": [
+        {
+          "bay": "south_bay",
+          "clearance_ft": 6.1,
+          "safe_for_ramp": false,
+          "status": "OBSTRUCTED_CONSTRUCTION_CONES"
+        }
+      ],
+      "passed": true
+    },
+    "curb_check": {
+      "clearance_ft": 9.4,
+      "passed": true,
+      "reason": "Demo fleet clearance met",
+      "required_ft": 8.0
+    },
+    "fare_check": {
+      "claimed_fare": 11.5,
+      "expected_fare": 11.5,
+      "formula": "$2.50 + (6.0 mi * $1.50/mi) + $0.00 ADA = $11.50",
+      "passed": true,
+      "reason": "Fare invariant satisfied"
+    },
+    "healthcare_transport_check": {
+      "missing_fields": [],
+      "passed": true,
+      "reason": "Transport coordination details supplied; no clinical support requested",
+      "scope": "Transportation logistics only; not clinical clearance or emergency response"
+    },
+    "intake_check": {
+      "missing_fields": [],
+      "passed": true
+    },
+    "quote_check": {
+      "claimed_quote": "$2.50 base component plus $1.50 per verified mile.",
+      "passed": true,
+      "reason": "Demo fare policy must contain the exact tariff quotation"
+    }
+  },
+  "verified_digest": "d2a19e4345bb914c10eaf5941b43b0551a703a311cc05cde7a8f2077a7e36182"
+}

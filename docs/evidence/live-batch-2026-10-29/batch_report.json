@@ -1,0 +1,266 @@
+{
+  "batch_version": 1,
+  "timestamp": "2026-10-29T08:33:19.857849+00:00",
+  "cap_usd": 5.0,
+  "max_turns": 30,
+  "paid_calls": 66,
+  "estimated_cost_usd": 0.5881,
+  "pricing_basis": "Standard-mode list prices; cached input charged as full input; reasoning charged as output",
+  "stopped_early": null,
+  "scenarios": [
+    {
+      "scenario": "authentication failure (no key)",
+      "run_id": "run_183e40e119234a9c867e86877b39a493",
+      "case": "healthcare-appointment-card",
+      "status": "paused",
+      "turns": 1,
+      "receipts": 0,
+      "first_response_id": null,
+      "last_response_id": null,
+      "input_tokens": 0,
+      "cached_input_tokens": 0,
+      "output_tokens": 0,
+      "estimated_cost_usd": 0.0,
+      "failed_checks": [],
+      "speech_source": null,
+      "pause_reason": "Meta key missing or placeholder. Set MODEL_API_KEY locally.",
+      "acceptance": [
+        {
+          "check": "run paused on the API error",
+          "passed": true,
+          "detail": "Meta key missing or placeholder. Set MODEL_API_KEY locally."
+        },
+        {
+          "check": "never labeled live",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "no receipts, no memo",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "zero network calls",
+          "passed": true,
+          "detail": "0"
+        }
+      ],
+      "passed": true,
+      "audit_sha256": "315a1c37bcb8515ebd644d1ed1ac48e4d8d7bd94c307324f0b399b68ba098829"
+    },
+    {
+      "scenario": "appointment card",
+      "run_id": "run_12a2f40929a7424aa9a70b9b391f4217",
+      "case": "healthcare-appointment-card",
+      "status": "awaiting_signoff",
+      "turns": 22,
+      "receipts": 22,
+      "first_response_id": "resp_6ae3045bc34fd456c9cb480a",
+      "last_response_id": "resp_6ae30487d0c18a2718b543c5",
+      "input_tokens": 148336,
+      "cached_input_tokens": 125524,
+      "output_tokens": 5971,
+      "estimated_cost_usd": 0.2108,
+      "failed_checks": [],
+      "speech_source": null,
+      "pause_reason": null,
+      "acceptance": [
+        {
+          "check": "labeled live only after Meta answered",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "one receipt per model turn",
+          "passed": true,
+          "detail": "22 receipts, 22 model turns"
+        },
+        {
+          "check": "no API error",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "dispatch disabled, no authorization",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "final status awaiting_signoff",
+          "passed": true,
+          "detail": "awaiting_signoff"
+        },
+        {
+          "check": "card fields recorded by the live model",
+          "passed": true,
+          "detail": "{'appointment_date': '2026-11-02', 'appointment_time': '10:00', 'arrive_by': '09:45', 'destination': 'Demo Community Clinic, Suite 200, Nashville, TN'}"
+        },
+        {
+          "check": "all independent checks pass",
+          "passed": true,
+          "detail": "[]"
+        },
+        {
+          "check": "card check present and passed",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "memo cites the card image",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "audit_sha256": "703b06fe83af4881ae18cfa74276cd9ab983ff196f50ac78f41d536b5abec1bc"
+    },
+    {
+      "scenario": "card contradiction",
+      "run_id": "run_bc6f128432534209b34bd08d0f29a8ac",
+      "case": "healthcare-card-contradiction",
+      "status": "needs_input",
+      "turns": 24,
+      "receipts": 24,
+      "first_response_id": "resp_6ae30488144599e26c164958",
+      "last_response_id": "resp_6ae304b3a02f70027bb74c1d",
+      "input_tokens": 156120,
+      "cached_input_tokens": 137639,
+      "output_tokens": 7053,
+      "estimated_cost_usd": 0.2251,
+      "failed_checks": [
+        "appointment_card_check"
+      ],
+      "speech_source": null,
+      "pause_reason": null,
+      "acceptance": [
+        {
+          "check": "labeled live only after Meta answered",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "one receipt per model turn",
+          "passed": true,
+          "detail": "24 receipts, 24 model turns"
+        },
+        {
+          "check": "no API error",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "dispatch disabled, no authorization",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "final status needs_input",
+          "passed": true,
+          "detail": "needs_input"
+        },
+        {
+          "check": "card fields recorded by the live model",
+          "passed": true,
+          "detail": "{'appointment_date': '2026-11-02', 'appointment_time': '10:00', 'arrive_by': '09:45', 'destination': 'Demo Community Clinic, Suite 200, Nashville, TN'}"
+        },
+        {
+          "check": "only the card check fails",
+          "passed": true,
+          "detail": "['appointment_card_check']"
+        },
+        {
+          "check": "card check cites the date difference",
+          "passed": true,
+          "detail": "Card date 2026-11-02 differs from request date 2026-11-03; Pickup date 2026-11-03 differs from card date 2026-11-02"
+        },
+        {
+          "check": "no memo accepted",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "human approval refused",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "audit_sha256": "9f711014533391ece5c0a0540480b3fc967712c683bac1f2e47f601725d71937"
+    },
+    {
+      "scenario": "spoken request (Meta speech-to-text)",
+      "run_id": "run_1f9f09924a9c46ea9f6e2f3fe1319216",
+      "case": "healthcare-clinic-visit",
+      "status": "awaiting_signoff",
+      "turns": 19,
+      "receipts": 19,
+      "first_response_id": "resp_6ae304b70a32bfd982f44009",
+      "last_response_id": "resp_6ae304cfcbb0721915a44280",
+      "input_tokens": 104419,
+      "cached_input_tokens": 91235,
+      "output_tokens": 4938,
+      "estimated_cost_usd": 0.1522,
+      "failed_checks": [],
+      "speech_source": {
+        "model": "muse-voice-transcribe-1.0",
+        "session_id": "harvey-9872c5b35b85",
+        "audio_duration_ms": 13200,
+        "latency_ms": 2746,
+        "billed_seconds_estimate": 13,
+        "cost_usd_estimate": 0.00065
+      },
+      "pause_reason": null,
+      "acceptance": [
+        {
+          "check": "labeled live only after Meta answered",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "one receipt per model turn",
+          "passed": true,
+          "detail": "19 receipts, 19 model turns"
+        },
+        {
+          "check": "no API error",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "dispatch disabled, no authorization",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "final status awaiting_signoff",
+          "passed": true,
+          "detail": "awaiting_signoff"
+        },
+        {
+          "check": "transcript produced by Meta speech-to-text",
+          "passed": true,
+          "detail": "harvey-9872c5b35b85"
+        },
+        {
+          "check": "spoken request check passed",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "check": "all independent checks pass",
+          "passed": true,
+          "detail": "[]"
+        },
+        {
+          "check": "memo quotes the spoken request",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "passed": true,
+      "audit_sha256": "3f6f0ead040fd8d498b0e40c5d23f49e154b732b9b5e4ab1303d08610887e1c5"
+    }
+  ],
+  "all_passed": true
+}

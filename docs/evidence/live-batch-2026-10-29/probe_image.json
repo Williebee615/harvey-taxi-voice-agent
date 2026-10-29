@@ -1,0 +1,73 @@
+{
+  "probe_version": 1,
+  "timestamp": "2026-10-29T08:16:04.367166+00:00",
+  "endpoint": "https://api.meta.ai/v1",
+  "configured_model": "muse-spark-1.3",
+  "models": {
+    "status": "LISTED",
+    "model_ids": [
+      "muse-image-1.0",
+      "muse-spark-1.1",
+      "muse-spark-1.2",
+      "muse-spark-1.2-contributor",
+      "muse-spark-1.3",
+      "muse-spark-1.3-contributor",
+      "muse-voice-transcribe-1.0",
+      "muse-wonder-1.0",
+      "sam-3.1"
+    ]
+  },
+  "image_input": {
+    "status": "PASSED",
+    "inference_succeeded": true,
+    "response_id": "resp_6ae300cae614f43acf314310",
+    "model": "muse-spark-1.3",
+    "usage": {
+      "input_tokens": 388,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 674,
+      "output_tokens_details": {
+        "reasoning_tokens": 618
+      },
+      "total_tokens": 1062
+    },
+    "extracted": {
+      "appointment_date": "2026-11-02",
+      "appointment_time": "10:00",
+      "arrive_by": "09:45",
+      "destination": "Demo Community Clinic, Suite 200, Nashville, TN"
+    },
+    "expected": {
+      "appointment_date": "2026-11-02",
+      "appointment_time": "10:00",
+      "arrive_by": "09:45",
+      "destination": "Demo Community Clinic"
+    },
+    "field_checks": {
+      "appointment_date": true,
+      "appointment_time": true,
+      "arrive_by": true,
+      "destination": true
+    },
+    "note": "Fictional card. Request shape (input_image data URL) is an assumption until this probe passes."
+  },
+  "sam_segmentation": {
+    "status": "LISTED",
+    "candidates": [
+      "sam-3.1"
+    ],
+    "request_sent": false,
+    "request_format_verified": false
+  },
+  "speech": {
+    "status": "LISTED",
+    "candidates": [
+      "muse-voice-transcribe-1.0"
+    ],
+    "request_sent": false,
+    "request_format_verified": false
+  },
+  "paid_inference_calls": 1
+}
