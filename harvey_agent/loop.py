@@ -5,6 +5,7 @@ import json
 import time
 from pathlib import Path
 from agent_kit import client as model_client, evidence, progress, settings, tools
+from verification import checks
 
 STOP = {'needs_input', 'awaiting_signoff', 'paused', 'completed_after_human_signoff'}
 
@@ -149,6 +150,8 @@ def _advance(root, record, turns, api=None, before_call=None):
     if record['status'] == 'running':
         record['status'] = 'paused'
         record['pause_reason'] = 'Turn batch exhausted; continue explicitly.'
+    # Every final state gets an integrity verdict, including a correct needs_input stop.
+    record['run_integrity'] = checks.audit_integrity(root, record)
     progress.save(root, record)
     print(f"inference_mode={record['inference_mode']} final_status={record['status']}", flush=True)
     return record
@@ -212,4 +215,5 @@ def approve_run(root, run_id, signature):
     record.update(status='completed_after_human_signoff', human_signoff_token=signature.strip(),
                   authorization_mode='SIMULATED_DISPATCHER_SIGNOFF', signed_at=progress.now(), pause_reason='')
     record.setdefault('audit', []).append({'action': 'demo_signoff', 'timestamp': progress.now(), 'reviewer': signature.strip()})
+    record['run_integrity'] = checks.audit_integrity(root, record)
     return progress.save(root, record)

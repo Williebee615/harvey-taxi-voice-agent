@@ -16,13 +16,13 @@ Source of requirements: the Meta Global AI Developer Hackathon participant guide
 
 ## Scope boundaries
 
-No Render purchase, public Python deployment, domain cutover, real patient integration or removal of offline development tools is needed to complete the requirements listed above. Keep the tested local app and make its execution instructions reproducible. A judge-friendly hosted app can be useful but is not presented here as a mandatory entry condition.
+No Render purchase, domain cutover, real patient integration or removal of offline development tools is needed to complete the requirements listed above. A password-protected hosted console now runs on Modal (deployed from `main` at `c7c1f1a`, 2026-10-29). It is useful for judges but not a mandatory entry condition, and it needs a redeploy after each approved merge.
 
 The old GitHub Pages page is not the live agent. Use source plus an accessible demonstration video as submission artifacts; accurately describe the local execution requirement wherever the form asks about a live product.
 
 ## Current acceptance
 
-- Automated regression: 67 offline tests passed at commit `80876be` (historical record in LIVE_ACCEPTANCE.md). On 2026-10-29, after the card, speech, receipts, batch and console-recording work, 129 offline tests pass with the optional Modal dependencies installed (127 pass and 2 skip without them).
+- Automated regression: 67 offline tests passed at commit `80876be` (historical record in LIVE_ACCEPTANCE.md). On 2026-10-29, after the card, speech, receipts, batch, console-recording, integrity and provenance work, 137 offline tests pass with the optional Modal dependencies installed (135 pass and 2 skip without them).
 - Positive live case: cited memo accepted, independent checks passed, separate demo acknowledgment recorded.
 - Negative live case: missing return plan detected; no acknowledgment or dispatch.
 - Full source and hash checks are recorded in LIVE_ACCEPTANCE.md.

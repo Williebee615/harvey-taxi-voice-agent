@@ -50,6 +50,62 @@ def verify_run_record(record):
     return {'passed': not errors, 'errors': errors}
 
 
+FINAL_STATES = ('needs_input', 'awaiting_signoff', 'completed_after_human_signoff')
+INTEGRITY_SCOPE = 'Audit record consistency for this final state; not a booking approval'
+
+
+def audit_integrity(root, record):
+    """Check that a run's audit record is internally consistent for the state it ended in.
+
+    A correct needs_input stop passes; integrity is about the record, not the booking.
+    """
+    status = record.get('status')
+    if status not in FINAL_STATES:
+        return {'passed': False, 'state': status, 'scope': INTEGRITY_SCOPE,
+                'errors': ['Not verified yet: integrity is checked when the run reaches needs_input or awaiting_signoff']}
+    errors = []
+    model_turns = [t for t in record.get('turns', []) if t.get('tool') != 'api_error']
+    receipts = record.get('receipts', [])
+    if record.get('requested_mode') == 'live':
+        if record.get('inference_mode') != 'LIVE_META_API' or not record.get('model_invoked_in_run'):
+            errors.append('Live run reached a final state without a recorded Meta response')
+        if len(receipts) != len(model_turns) or not all(t.get('receipt', {}).get('response_id') for t in model_turns):
+            errors.append('Every model turn needs exactly one Meta receipt with a response ID')
+    elif receipts or record.get('model_invoked_in_run') or record.get('inference_mode') != 'DETERMINISTIC_FALLBACK_SIMULATION':
+        errors.append('Simulation run carries live-inference provenance')
+    if record.get('telemetry_source') != 'simulation_fixture':
+        errors.append('Curb telemetry source is not declared')
+    if record.get('dispatch_enabled') is not False:
+        errors.append('Dispatch must remain disabled')
+    signed = status == 'completed_after_human_signoff'
+    signoff_fields = (record.get('authorization_mode'), bool(record.get('human_signoff_token')), bool(record.get('signed_at')))
+    if signoff_fields != (('SIMULATED_DISPATCHER_SIGNOFF', True, True) if signed else ('NONE', False, False)):
+        errors.append('Sign-off fields do not match the final state')
+    docs = evidence.run_documents(root, record['case'], record.get('run_documents'))
+    current = evidence.current_digest(root, record['case'], record.get('run_documents'))
+    for fact in record.get('facts', []):
+        if fact.get('kind') == 'image_fields':
+            ok = fact.get('fields') == (record.get('card_extraction') or {}).get('fields')
+        else:
+            ok = isinstance(fact.get('quote'), str) and fact['quote'] in docs.get(fact.get('document'), '')
+        if not ok or fact.get('source_digest') != current:
+            errors.append(f"Fact {fact.get('id')} no longer matches current source evidence")
+    checks = record.get('verification') or {}
+    failed = sorted(k for k, v in checks.items() if not v.get('passed'))
+    if checks and record.get('verified_digest') != current:
+        errors.append('Independent checks were run against different evidence')
+    if status == 'needs_input':
+        if record.get('memo') is not None:
+            errors.append('A needs_input run must not hold an accepted memo')
+        if not failed and not record.get('evidence_requests'):
+            errors.append('needs_input without a failed check or an evidence request')
+    else:
+        if not record.get('memo') or not checks or failed:
+            errors.append('Sign-off states need an accepted memo and all independent checks passing')
+    return {'passed': not errors, 'state': status, 'scope': INTEGRITY_SCOPE, 'failed_checks': failed,
+            'evidence_requested': bool(record.get('evidence_requests')), 'errors': errors}
+
+
 def verify_checklist(items):
     return isinstance(items, list) and 4 <= len(items) <= 8
 

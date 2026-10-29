@@ -22,6 +22,7 @@ Run `./helper test`. All automated tests are offline and use temporary case/run 
 - Injected instructions in documents, transcripts or follow-ups cannot unlock tools: there is no approval, dispatch or payment tool.
 - The accessibility surcharge is always $0.00; any positive wheelchair, ADA or service-animal fee fails the fare check.
 - A failed model call pauses the run; a run is labeled live only after a successful Meta response.
+- Every final state (`needs_input`, `awaiting_signoff`, signed off) records an audit-integrity verdict. It covers receipts per model turn, live or simulation provenance, the declared simulated curb source, verbatim facts against unchanged evidence, no memo on a blocked run, dispatch off, and sign-off fields matching the state. It is a record check, not a booking approval. Paused runs stay "Not verified yet".
 
 ## Manual live acceptance (on the configured Mac)
 

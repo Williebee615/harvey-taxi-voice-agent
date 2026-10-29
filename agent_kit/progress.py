@@ -71,7 +71,7 @@ def new_record(case, objective, mode, model):
             'checklist': [], 'plan': [], 'facts': [], 'read_documents': [],
             'verification': {}, 'memo': None, 'human_signoff_token': None,
             'authorization_mode': 'NONE', 'dispatch_enabled': False,
-            'run_integrity': {'passed': False, 'errors': ['Not verified yet']}}
+            'run_integrity': {'passed': False, 'state': 'running', 'errors': ['Not verified yet: integrity is checked when the run reaches needs_input or awaiting_signoff']}}
 
 
 def public_record(record):
