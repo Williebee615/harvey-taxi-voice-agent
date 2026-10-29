@@ -2,6 +2,8 @@
 
 This file records what has actually run against Meta's API. Configuration, a configured key, the console's simulation mode and the offline tests are **not** evidence of inference.
 
+Response IDs below are the ones Meta returned, as saved by the application. The audit-integrity check confirms one is recorded for every model turn; neither it nor this file authenticates them with Meta.
+
 ## Status (2026-10-29 UTC)
 
 | Capability | Status | Evidence |

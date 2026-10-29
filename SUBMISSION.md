@@ -68,6 +68,7 @@ During the event: live Meta orchestration and verification gates, exact citation
 - No clinical advice, medical clearance, emergency service, dispatch, payment, EHR integration or production deployment. No HIPAA compliance is claimed.
 - The Record button has been used live with a real microphone on the hosted console (2026-10-29, one transcription). The scripted demo takes are still to be recorded.
 - Spoken dates and times are not yet cross-checked by code (accessibility needs are).
+- Meta response IDs are recorded by the application from Meta's responses and checked for presence and uniqueness. They have not been independently authenticated with Meta or by a third party.
 
 ## How judges can run it
 
