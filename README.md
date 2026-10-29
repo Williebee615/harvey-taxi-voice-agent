@@ -51,7 +51,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 |---|---|
 | **Impact (30%)** | Missed medical appointments often come down to transport details: the wrong day, no wheelchair-capable vehicle, no way home. A voice-first intake helps riders who find apps hard to use, and the review catches contradictions before a car is sent. Built by an operating Nashville taxi company. Benefits such as fewer missed appointments are pilot hypotheses, not measured results. |
 | **Meta AI tooling (25%)** | Three Meta capabilities working together: Muse Voice Transcribe for the rider's voice, Muse Spark image understanding for the appointment card, and Muse Spark agentic tool-calling for the investigation. Each is verified live with response IDs. |
-| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 137 offline tests including prompt-injection and model-failure cases. |
+| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 143 offline tests including prompt-injection, model-failure and console-label cases. |
 | **Demo (25%)** | One spoken request, one card read by Meta, independent checks shown in the console, a human sign-off, then a deliberately contradictory card that is blocked. See [docs/DEMO.md](docs/DEMO.md). |
 
 ## Run it
@@ -59,7 +59,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 Python 3.10+ is enough; the core has no third-party dependencies.
 
 ```bash
-./helper test     # 137 offline tests; no keys, no paid calls
+./helper test     # 143 offline tests; no keys, no paid calls
 ./helper serve    # console at http://127.0.0.1:8765
 ```
 
@@ -102,6 +102,7 @@ Runs can be paused, resumed (`./helper resume --run-id …`), inspected (`./help
 - **Credentials stay on the server.** The browser receives only `key_configured: true/false`. Transcription goes through the console's server.
 - **Evidence is never instructions.** Documents, transcripts and follow-ups are untrusted. A transcript that tries to bypass review fails the spoken-request check. No tool exists for approval, dispatch or payment.
 - **No silent fallback.** Model or network errors pause the run. A run is labeled live only after a successful Meta response.
+- **Headline labels.** A run shows **LIVE META INFERENCE — N RECORDED RESPONSES** only after Meta has answered (response IDs are recorded, not authenticated with Meta), or **OFFLINE SIMULATION — NO META API CALLS**. Curb data is labeled **SIMULATED CURB MEASUREMENTS**, and a sign-off shows **HUMAN ACKNOWLEDGMENT RECORDED — No vehicle dispatched** (stored as `DEMO_HUMAN_SIGNOFF_NO_DISPATCH`; runs signed earlier keep `SIMULATED_DISPATCHER_SIGNOFF`). The console remembers the chosen mode, labels the Start button with paid API calls in live mode, and never starts a review on its own.
 - **Provenance per result.** The console's *Where each result came from* panel separates live Meta reasoning, the source of the spoken request, who read the appointment card, and the curb measurements. Curb measurements are always a simulated fixture, even in a live Meta run. `LIVE_META_API` describes the reasoning only.
 - **Audit integrity.** When a run reaches `needs_input`, `awaiting_signoff` or sign-off, the app checks that its record is consistent: one receipt per model turn, verbatim quotes against unchanged evidence, no memo on a blocked run, dispatch off, and sign-off fields matching the state. It is a record check, not a booking approval. It confirms that a Meta response ID was recorded for every model turn; it does not query Meta to authenticate those IDs.
 - **Local by default.** The console binds to loopback and checks host, origin, a session token and request sizes. An optional password-protected Modal deployment is described in [docs/MODAL.md](docs/MODAL.md); it is not deployed for this submission.

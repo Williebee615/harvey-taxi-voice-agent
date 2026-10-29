@@ -96,3 +96,37 @@ class ProvenanceLabelTests(AgentFixture):
             with self.subTest(text=text):
                 self.assertIn(text, script)
         self.assertNotIn('curb: simulated fixture`', script)
+
+
+class SignoffLabelTests(AgentFixture):
+    def signed(self):
+        rec = self.simulate(CLINIC)
+        return approve_run(self.root, rec['run_id'], 'Demo Reviewer')
+
+    def test_new_signoff_uses_no_dispatch_label(self):
+        signed = self.signed()
+        self.assertEqual(signed['authorization_mode'], 'DEMO_HUMAN_SIGNOFF_NO_DISPATCH')
+        self.assertFalse(signed['dispatch_enabled']); self.assertTrue(signed['run_integrity']['passed'])
+
+    def test_integrity_accepts_both_labels_only_after_signoff(self):
+        signed = self.signed()
+        for label, ok in (('SIMULATED_DISPATCHER_SIGNOFF', True), ('DEMO_HUMAN_SIGNOFF_NO_DISPATCH', True), ('DISPATCH_AUTHORIZED', False), ('NONE', False)):
+            with self.subTest(label=label):
+                self.assertEqual(checks.audit_integrity(self.root, {**signed, 'authorization_mode': label})['passed'], ok)
+        waiting = self.simulate(CLINIC)
+        self.assertFalse(checks.audit_integrity(self.root, {**waiting, 'authorization_mode': 'DEMO_HUMAN_SIGNOFF_NO_DISPATCH'})['passed'])
+
+    def test_historical_records_are_unchanged_and_still_verify(self):
+        """Published runs keep their original label and audit fingerprints."""
+        import hashlib, json
+        folder = ROOT / 'docs' / 'evidence' / 'hosted-console-2026-10-29'
+        expected = {'run_b2023b2da615466fba74a611b17ec923': '3ef9b71dde864d5ad85997013318e1110b241763d412c2af992866d4a8ff5465',
+                    'run_0e228025cdfe4b6397add01fc117c7eb': 'eac7cd674552a2a42d2413a6520d7ba67829219f896730777328746a65465576'}
+        readme = (folder / 'README.md').read_text()
+        for run_id, digest in expected.items():
+            with self.subTest(run_id=run_id):
+                record = json.loads((folder / f'{run_id}.json').read_text())
+                compact = json.dumps(record, sort_keys=True).encode()  # the documented fingerprint recipe
+                self.assertEqual(hashlib.sha256(compact).hexdigest(), digest); self.assertIn(digest, readme)
+                self.assertEqual(record['authorization_mode'], 'SIMULATED_DISPATCHER_SIGNOFF')
+                self.assertTrue(checks.audit_integrity(ROOT, record)['passed'])

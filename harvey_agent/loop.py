@@ -213,7 +213,7 @@ def approve_run(root, run_id, signature):
     if not current['passed'] or current['evidence_digest'] != record.get('verified_digest') or not record.get('run_integrity', {}).get('passed') or not record.get('memo'):
         raise ValueError('Evidence failed or changed since verification. Start a new review.')
     record.update(status='completed_after_human_signoff', human_signoff_token=signature.strip(),
-                  authorization_mode='SIMULATED_DISPATCHER_SIGNOFF', signed_at=progress.now(), pause_reason='')
+                  authorization_mode=checks.SIGNOFF_MODE, signed_at=progress.now(), pause_reason='')
     record.setdefault('audit', []).append({'action': 'demo_signoff', 'timestamp': progress.now(), 'reviewer': signature.strip()})
     record['run_integrity'] = checks.audit_integrity(root, record)
     return progress.save(root, record)

@@ -42,8 +42,9 @@ Models available but **not** used: `sam-3.1` (curb segmentation is future work),
 - **Contradictions force `needs_input`.** Success stops at `awaiting_signoff`, and only a named human can acknowledge it. Acknowledgment never dispatches.
 - **Honest provenance.** A run is labeled live only after Meta answers. The Meta transcript is held on the server, so the browser cannot relabel edited text as Meta. Every turn keeps its response ID, token usage and latency.
 - **Security.** The API key stays on the server and is sent only to `api.meta.ai`. Remote error bodies are hidden. The console checks host, origin, token, content type and size.
+- **Unmistakable labels.** Each run is headed **LIVE META INFERENCE — N RECORDED RESPONSES** or **OFFLINE SIMULATION — NO META API CALLS**; curb data says **SIMULATED CURB MEASUREMENTS**; a sign-off says **HUMAN ACKNOWLEDGMENT RECORDED — No vehicle dispatched**.
 - **Audit integrity and provenance.** Every final state, including a correct `needs_input` stop, gets an integrity check of the record itself. The console shows separately where the reasoning, spoken request, card reading and curb measurements came from.
-- **Testing.** 137 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; and the spending cap.
+- **Testing.** 143 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; the spending cap; both sign-off labels; and a headless-browser check of the console labels and remembered mode.
 
 ## Verified live results (Demo, 25%)
 
