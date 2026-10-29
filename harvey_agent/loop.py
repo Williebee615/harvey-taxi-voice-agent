@@ -154,7 +154,7 @@ def _advance(root, record, turns, api=None, before_call=None):
     return record
 
 
-BROWSER_SPEECH = 'browser speech recognition or typed text (not Meta)'
+BROWSER_SPEECH = 'typed or supplied text (not Meta speech-to-text)'
 
 
 def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation', api=None, spoken_request=None, speech_source=None, before_call=None):

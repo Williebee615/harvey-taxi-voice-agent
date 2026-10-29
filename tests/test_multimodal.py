@@ -282,7 +282,9 @@ class ConsoleMultimodalTests(AgentFixture):
         from pathlib import Path
         root = Path(__file__).resolve().parent.parent
         page, script = (root / 'index.html').read_text(), (root / 'app.js').read_text()
-        self.assertIn("built-in recognition, not Meta", page)
+        self.assertIn("Nothing is recorded or sent until you click", page)
+        self.assertIn('id="rec-indicator"', page); self.assertIn("muse-voice-transcribe-1.0", page)
+        self.assertNotIn('SpeechRecognition', script); self.assertNotIn('MODEL_API_KEY', script)
         self.assertIn('id="receipts"', page); self.assertIn('Meta inference receipts', page)
         self.assertIn('no Meta API calls', script); self.assertIn('scripted simulation', script)
 

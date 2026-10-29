@@ -1,9 +1,11 @@
 'use strict';
 if (location.hostname.endsWith('.github.io')) location.replace(new URL('docs/', location.href));
 const $ = id => document.getElementById(id);
-let token = '', run = null, busy = false, automatic = false, connected = false, caseImages = {}, listening = null;
-// Browser speech recognition. This is not a Meta model; the page says so wherever speech is offered.
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let token = '', run = null, busy = false, automatic = false, connected = false, caseImages = {}, recorder = null, transcription = null;
+// Meta speech-to-text: the browser records only after a click, encodes 16 kHz mono WAV and posts it to
+// this console's server, which holds the Meta key. The browser never sees the key.
+const canRecord = Boolean(navigator.mediaDevices?.getUserMedia && (window.AudioContext || window.webkitAudioContext));
+const MAX_RECORD_SECONDS = 60, WAV_RATE = 16000;
 const terminal = ['needs_input', 'awaiting_signoff', 'completed_after_human_signoff'];
 function notice(message = '') { $('notice').textContent = message; }
 async function api(path, body) {
@@ -13,7 +15,7 @@ async function api(path, body) {
   return data;
 }
 function syncButtons() {
-  $('start').disabled = !connected || busy;
+  $('start').disabled = !connected || busy || Boolean(recorder) || (transcription && !$('confirm-transcript').checked);
   const canContinue = run && run.status === 'paused' && !busy;
   $('next').disabled = !canContinue;
   $('all').disabled = !canContinue;
@@ -23,7 +25,7 @@ function syncButtons() {
   $('send-followup').disabled = !run || run.requested_mode !== 'live' || !['needs_input','paused'].includes(run.status) || busy;
   $('history').disabled = busy;
   ['btn-safe','btn-unsafe','btn-incomplete','btn-return','btn-card','btn-card-conflict'].forEach(id => $(id).disabled = busy);
-  $('mic').disabled = busy || !Recognition;
+  $('mic').disabled = !connected || (busy && !recorder) || !canRecord;
 }
 function appendText(parent, tag, text, cls) {
   const node = document.createElement(tag); node.textContent = text;
@@ -112,7 +114,7 @@ async function history() {
   for(const r of runs){const o=document.createElement('option');o.value=r.run_id;o.textContent=`${r.case} · ${r.status} · ${r.run_id.slice(-6)}`;$('history').append(o);}
 }
 function guarded(fn) {return async()=>{try{await fn();}catch(error){automatic=false;busy=false;notice(error.message);syncButtons();}};}
-$('start').onclick=guarded(async()=>{automatic=false;await perform('/api/run',{case:$('case').value,mode:document.querySelector('input[name="execution-mode"]:checked').value,objective:$('objective').value||null,spoken_request:$('spoken').value.trim()||null});if(!$('step').checked&&!terminal.includes(run.status))await runToPause();await history();});
+$('start').onclick=guarded(async()=>{automatic=false;const spoken=transcription?{transcription_id:transcription.transcription_id,transcript_confirmed:$('confirm-transcript').checked}:{spoken_request:$('spoken').value.trim()||null};clearTranscription();await perform('/api/run',{case:$('case').value,mode:document.querySelector('input[name="execution-mode"]:checked').value,objective:$('objective').value||null,...spoken});if(!$('step').checked&&!terminal.includes(run.status))await runToPause();await history();});
 $('next').onclick=guarded(()=>continueRun());
 $('all').onclick=guarded(runToPause);
 $('stop').onclick=()=>{automatic=false;syncButtons();notice('Pausing after the current tool completes.');};
@@ -122,14 +124,70 @@ $('history').onchange=guarded(async()=>{if($('history').value){run=await api('/a
 $('export').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(run,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=run.run_id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 for(const [id,name] of [['btn-safe','healthcare-clinic-visit'],['btn-unsafe','harvey-taxi-unsafe-curb-boarding'],['btn-incomplete','harvey-taxi-incomplete-intake'],['btn-return','healthcare-missing-return-plan'],['btn-card','healthcare-appointment-card'],['btn-card-conflict','healthcare-card-contradiction']])$(id).onclick=()=>{$('case').value=name;updatePreview();};
 $('case').onchange=updatePreview;
-if(!Recognition)$('speech-note').textContent='Speech recognition is not available in this browser. Type the request instead; it is handled the same way. (Browser speech recognition is not a Meta model.)';
-$('mic').onclick=()=>{
-  if(listening){listening.stop();return;}
-  const recognizer=new Recognition(),before=$('spoken').value.trim();
-  recognizer.lang='en-US';recognizer.interimResults=true;recognizer.continuous=false;
-  recognizer.onresult=e=>{let text='';for(const result of e.results)text+=result[0].transcript;$('spoken').value=((before?before+' ':'')+text.trim()).slice(0,2000);};
-  recognizer.onerror=e=>notice(`Speech recognition stopped (${e.error}). You can type the request instead.`);
-  recognizer.onend=()=>{listening=null;$('mic').setAttribute('aria-pressed','false');$('mic').textContent='🎤 Speak request';};
-  listening=recognizer;$('mic').setAttribute('aria-pressed','true');$('mic').textContent='■ Stop listening';recognizer.start();
-};
+function clearTranscription(note='') {
+  transcription = null; $('confirm-transcript').checked = false; $('confirm-row').hidden = true;
+  $('speech-meta').hidden = !note; $('speech-meta').textContent = note; syncButtons();
+}
+function showRecording(text, busyState) {
+  $('rec-indicator').hidden = !text; $('rec-text').textContent = text || ''; $('rec-indicator').classList.toggle('busy', Boolean(busyState));
+}
+function encodeWav(chunks, rate) {
+  // Downsample to 16 kHz by averaging, then write 16-bit little-endian mono PCM in a RIFF/WAVE container.
+  const input = new Float32Array(chunks.reduce((n, c) => n + c.length, 0)); let at = 0;
+  for (const c of chunks) { input.set(c, at); at += c.length; }
+  const ratio = rate / WAV_RATE, length = Math.floor(input.length / ratio), view = new DataView(new ArrayBuffer(44 + length * 2));
+  const text = (offset, value) => { for (let i = 0; i < value.length; i++) view.setUint8(offset + i, value.charCodeAt(i)); };
+  text(0, 'RIFF'); view.setUint32(4, 36 + length * 2, true); text(8, 'WAVE'); text(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true); view.setUint32(24, WAV_RATE, true);
+  view.setUint32(28, WAV_RATE * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true); text(36, 'data'); view.setUint32(40, length * 2, true);
+  for (let i = 0; i < length; i++) {
+    let sum = 0, count = 0;
+    for (let j = Math.floor(i * ratio); j < Math.min(input.length, Math.floor((i + 1) * ratio)); j++) { sum += input[j]; count++; }
+    const sample = Math.max(-1, Math.min(1, count ? sum / count : 0));
+    view.setInt16(44 + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+  }
+  return new Blob([view], {type: 'audio/wav'});
+}
+async function startRecording() {
+  clearTranscription();
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({audio: {channelCount: 1, echoCancellation: true, noiseSuppression: true}}); }
+  catch (error) { notice(error.name === 'NotAllowedError' ? 'Microphone permission was denied. Allow it in the browser, or type the request instead.' : 'No microphone is available. Type the request instead.'); return; }
+  const context = new (window.AudioContext || window.webkitAudioContext)(), source = context.createMediaStreamSource(stream);
+  const node = context.createScriptProcessor(4096, 1, 1), chunks = [], started = Date.now();
+  node.onaudioprocess = e => chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  source.connect(node); node.connect(context.destination);
+  const timer = setInterval(() => {
+    const seconds = Math.floor((Date.now() - started) / 1000);
+    $('rec-time').textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+    if (seconds >= MAX_RECORD_SECONDS) stopRecording();
+  }, 250);
+  recorder = {stream, context, node, source, chunks, timer};
+  $('mic').setAttribute('aria-pressed', 'true'); $('mic').textContent = '■ Stop and transcribe with Meta';
+  $('rec-time').textContent = '0:00'; showRecording('Mic on · recording'); notice('Recording. Click Stop when you have finished speaking.'); syncButtons();
+}
+async function stopRecording() {
+  if (!recorder) return;
+  const {stream, context, node, source, chunks, timer} = recorder; recorder = null;
+  clearInterval(timer); node.disconnect(); source.disconnect(); stream.getTracks().forEach(t => t.stop());
+  const rate = context.sampleRate; await context.close();
+  $('mic').setAttribute('aria-pressed', 'false'); $('mic').textContent = '🎤 Record with Meta speech-to-text';
+  const wav = encodeWav(chunks, rate);
+  if (wav.size <= 44 + WAV_RATE * 2 * 0.3) { showRecording(''); notice('The recording was too short. Try again.'); syncButtons(); return; }
+  busy = true; showRecording('Microphone off. Transcribing with Meta…', true); notice('Sending the recording to Meta speech-to-text through this console\'s server…'); syncButtons();
+  try {
+    const response = await fetch('/api/transcribe', {method: 'POST', headers: {'Content-Type': 'audio/wav', 'X-Console-Token': token}, body: wav});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || `Transcription failed (${response.status})`);
+    transcription = data; $('spoken').value = data.transcript;
+    $('speech-meta').textContent = `Transcribed by Meta ${data.model} · session ${data.session_id} · ${((data.audio_duration_ms || 0) / 1000).toFixed(1)} s audio · est. $${(data.cost_usd_estimate || 0).toFixed(4)}. Check it, then confirm below. Editing the text turns it into typed text, not a Meta transcript.`;
+    $('speech-meta').hidden = false; $('confirm-row').hidden = false; $('confirm-transcript').checked = false;
+    notice('Meta transcript ready. Confirm it matches what you said before starting the review.');
+  } catch (error) { notice(error.message + ' You can type the request instead.'); }
+  finally { busy = false; showRecording(''); syncButtons(); }
+}
+if (!canRecord) $('speech-note').textContent = 'This browser cannot record audio here. Type the request instead; it is checked the same way but labeled as typed text, not Meta.';
+$('mic').onclick = guarded(async () => { if (recorder) await stopRecording(); else await startRecording(); });
+$('confirm-transcript').onchange = syncButtons;
+$('spoken').oninput = () => { if (transcription) clearTranscription('Edited: this will be submitted as typed text, not as a Meta transcript.'); };
 (async()=>{if(location.hostname.endsWith('.github.io'))return;try{const config=await api('/api/config');token=config.token;connected=true;$('connection').textContent=config.hosting==='modal'?'Modal console connected':'Local console connected';$('connection-dot').style.background='#218159';$('model-note').textContent=`${config.model} · Meta key ${config.key_configured?'configured (not yet verified)':'missing'}`;for(const name of config.cases){const o=document.createElement('option');o.value=name;o.textContent=name.replace('harvey-taxi-','').replaceAll('-',' ');$('case').append(o);}caseImages=config.case_images||{};$('case').value='healthcare-clinic-visit';updatePreview();await history();}catch(error){$('connection').textContent='Local server required';notice('Start ./helper serve in Terminal, then open http://127.0.0.1:8765. This static page cannot run live inference.');}syncButtons();})();

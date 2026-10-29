@@ -42,10 +42,11 @@ def create_app(root, commit=lambda: None):
         origin = request.headers.get('origin')
         if origin and urlsplit(origin).netloc != request.headers.get('host'):
             return Response('Same-origin requests required', 403)
+        limit = 2_100_000 if request.url.path == '/api/transcribe' else 128000
         body = bytearray()
         async for chunk in request.stream():
             body.extend(chunk)
-            if len(body) > 128000:
+            if len(body) > limit:
                 return Response('Request too large', 413)
         headers = {k: request.headers[k] for k in ('content-type', 'x-console-token') if k in request.headers}
         if origin:

@@ -4,12 +4,18 @@ import json
 import secrets
 import sys
 import threading
+import time
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from agent_kit import evidence, progress, settings
+from agent_kit import client, evidence, progress, settings, speech
+
+MAX_AUDIO_BYTES = 2_100_000   # about 65 s of 16 kHz mono 16-bit WAV
+MAX_AUDIO_SECONDS = 60
+TRANSCRIPT_TTL_SECONDS = 30 * 60
 from harvey_agent.loop import approve_run, resume_run, run_agent
 
 
@@ -20,6 +26,9 @@ class ConsoleServer(ThreadingHTTPServer):
         self.root = Path(root)
         self.token = secrets.token_urlsafe(32)
         self.mutation_lock = threading.Lock()
+        # Meta transcripts held server-side until the reviewer confirms one, so the browser
+        # cannot submit altered text under the Meta label.
+        self.transcripts = {}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -90,6 +99,8 @@ class Handler(BaseHTTPRequestHandler):
         origin = self.headers.get('Origin')
         if not self.allowed_host() or origin not in (None, f'http://127.0.0.1:{port}', f'http://localhost:{port}') or not secrets.compare_digest(self.headers.get('X-Console-Token', ''), self.server.token):
             return self.send(403, {'error': 'Local console token and origin required'})
+        if self.path == '/api/transcribe':
+            return self.transcribe()
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
             return self.send(415, {'error': 'Use application/json'})
         try:
@@ -106,8 +117,14 @@ class Handler(BaseHTTPRequestHandler):
         try:
             root = self.server.root
             if self.path == '/api/run':
+                spoken, source = body.get('spoken_request') or None, None
+                if body.get('transcription_id') is not None:
+                    if spoken is not None or body.get('transcript_confirmed') is not True:
+                        raise ValueError('A Meta transcript must be confirmed and sent without separate text')
+                    held = self.take_transcript(body['transcription_id'])
+                    spoken, source = held['transcript'], {**held['source'], 'confirmed_by_reviewer': True}
                 result = run_agent(root, turns=1, objective=body.get('objective'), case_name=body.get('case'), mode=body.get('mode', 'simulation'),
-                                   spoken_request=body.get('spoken_request') or None)
+                                   spoken_request=spoken, speech_source=source)
             elif self.path == '/api/continue':
                 message = body.get('message', '')
                 if not isinstance(message, str):
@@ -124,6 +141,48 @@ class Handler(BaseHTTPRequestHandler):
             self.send(500, {'error': 'Agent operation failed; inspect the saved run and retry explicitly.'})
         finally:
             self.server.mutation_lock.release()
+
+
+    def take_transcript(self, transcription_id):
+        now = time.monotonic()
+        for key in [k for k, v in self.server.transcripts.items() if now - v['created'] > TRANSCRIPT_TTL_SECONDS]:
+            del self.server.transcripts[key]
+        held = self.server.transcripts.pop(transcription_id, None) if isinstance(transcription_id, str) else None
+        if held is None:
+            raise ValueError('Unknown or expired transcript')
+        return held
+
+    def transcribe(self):
+        """Send one browser recording to Meta Muse Voice Transcribe. The key stays on this server."""
+        if self.headers.get('Content-Type', '').split(';')[0] != 'audio/wav':
+            return self.send(415, {'error': 'Use audio/wav'})
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+        except ValueError:
+            length = 0
+        if not 44 < length <= MAX_AUDIO_BYTES:
+            return self.send(413, {'error': 'Recording must be at most 60 seconds'})
+        audio = self.rfile.read(length)
+        try:
+            seconds = speech.wav_info(audio)['seconds']
+            if not 0.3 <= seconds <= MAX_AUDIO_SECONDS:
+                raise ValueError('Recording must be between 0.3 and 60 seconds')
+        except ValueError as error:
+            return self.send(400, {'error': str(error)})
+        if not self.server.mutation_lock.acquire(blocking=False):
+            return self.send(409, {'error': 'An agent step is already running'})
+        try:
+            heard = speech.transcribe(audio)
+        except client.ModelError as error:
+            return self.send(502, {'error': str(error)})
+        finally:
+            self.server.mutation_lock.release()
+        source = {k: heard[k] for k in ('model', 'session_id', 'audio_duration_ms', 'latency_ms', 'billed_seconds_estimate', 'cost_usd_estimate')}
+        transcription_id = 'tx_' + uuid.uuid4().hex
+        if len(self.server.transcripts) >= 20:
+            self.server.transcripts.pop(next(iter(self.server.transcripts)))
+        self.server.transcripts[transcription_id] = {'transcript': heard['transcript'], 'source': source, 'created': time.monotonic()}
+        return self.send(200, {'transcription_id': transcription_id, 'transcript': heard['transcript'], **source})
 
 
 def main(port=8765):
