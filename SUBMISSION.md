@@ -4,7 +4,8 @@
 
 | Item | Status |
 |---|---|
-| Source | https://github.com/Williebee615/harvey-taxi-voice-agent (pull request from `ccr-8e968c23-dzfwiy` into `main`, awaiting owner review) |
+| Source | https://github.com/Williebee615/harvey-taxi-voice-agent, branch `main`. PRs #4 and #5 merged 2026-10-29; later fixes arrive by pull request with owner approval |
+| Hosted console | https://williebee615--harvey-healthcare-review-console.us-east.modal.run. Password-protected (username `reviewer`; password shared privately). Deployed from `main` at `c7c1f1a` on 2026-10-29, per the owner's deploy output |
 | Live Meta evidence | Complete: [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md), [docs/evidence/live-batch-2026-10-29/](docs/evidence/live-batch-2026-10-29/README.md) |
 | Three-minute video | **Not recorded yet.** Script: [docs/DEMO.md](docs/DEMO.md) |
 | Event form | **Not submitted yet** |
@@ -41,7 +42,8 @@ Models available but **not** used: `sam-3.1` (curb segmentation is future work),
 - **Contradictions force `needs_input`.** Success stops at `awaiting_signoff`, and only a named human can acknowledge it. Acknowledgment never dispatches.
 - **Honest provenance.** A run is labeled live only after Meta answers. The Meta transcript is held on the server, so the browser cannot relabel edited text as Meta. Every turn keeps its response ID, token usage and latency.
 - **Security.** The API key stays on the server and is sent only to `api.meta.ai`. Remote error bodies are hidden. The console checks host, origin, token, content type and size.
-- **Testing.** 129 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; and the spending cap.
+- **Audit integrity and provenance.** Every final state, including a correct `needs_input` stop, gets an integrity check of the record itself. The console shows separately where the reasoning, spoken request, card reading and curb measurements came from.
+- **Testing.** 137 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; and the spending cap.
 
 ## Verified live results (Demo, 25%)
 
@@ -64,8 +66,9 @@ During the event: live Meta orchestration and verification gates, exact citation
 
 - Fictional riders, clinics and appointments; simulated curb measurements; a demo fleet clearance rule that is not a legal standard.
 - No clinical advice, medical clearance, emergency service, dispatch, payment, EHR integration or production deployment. No HIPAA compliance is claimed.
-- The browser Record button is tested end to end with a simulated microphone; live use with a real microphone is pending the demo recording.
+- The Record button has been used live with a real microphone on the hosted console (2026-10-29, one transcription). The scripted demo takes are still to be recorded.
 - Spoken dates and times are not yet cross-checked by code (accessibility needs are).
+- Meta response IDs are recorded by the application from Meta's responses and checked for presence and uniqueness. They have not been independently authenticated with Meta or by a third party.
 
 ## How judges can run it
 

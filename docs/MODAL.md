@@ -14,6 +14,8 @@ python3 -m modal setup
 python3 -m modal deploy modal_console.py
 ```
 
+To change the key or password later, replace the whole secret from a Terminal where the values are loaded privately (for example with `read -s`): `python3 -m modal secret create harvey-healthcare-demo MODEL_API_KEY="$NEWKEY" MODEL_API_MODEL=muse-spark-1.3 HARVEY_DEMO_PASSWORD="$CONSOLEPW" --force`, then redeploy. Current deployment: https://williebee615--harvey-healthcare-review-console.us-east.modal.run, from `main` at `c7c1f1a` (2026-10-29).
+
 Open the URL printed by deploy. Browser sign-in username: `reviewer`; password: the value you stored in Modal Secrets. Share reviewer access privately with authorized testers. Never put a Meta key into a browser field, public repository, video or submission description.
 
 Run the clinic and missing-return-plan cases from this hosted URL and download their audit JSON. A successful deployment alone does not verify model invocation. Check `LIVE_META_API`, response receipts and both outcomes before describing the hosted demo as tested.

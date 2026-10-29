@@ -37,9 +37,12 @@ Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your
 | Card contradiction blocked | Ended `needs_input`; only the card check failed ("Card date 2026-11-02 differs from request date 2026-11-03"); approval refused | `run_bc6f1284…` |
 | Meta speech-to-text (`muse-voice-transcribe-1.0`) | All 5 key facts survived; word error rate 2.9% with numbers spelled out (14.7% raw), 2.7–3.2 s per 13 s clip | [Speech probe](docs/LIVE_EVIDENCE.md#probe-result-speech-to-text-2026-10-29) |
 | Spoken request through the full review | Ended `awaiting_signoff`; the memo quotes Meta's transcript | `run_1f9f0992…` |
+| Console **Record** button with a real microphone | Meta transcribed the owner's voice on the hosted console (session `harvey-28562413d62d`, 17.0 s, about $0.0008) | [Hosted console](docs/LIVE_EVIDENCE.md#hosted-console-2026-10-29) |
 | Spending | 66 paid batch calls; about $0.20 at cached-input prices ($0.59 on a deliberately high basis), against a $5 cap enforced before every call | [Batch report](docs/evidence/live-batch-2026-10-29/batch_report.json) |
 
-The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/evidence/live-batch-2026-10-29/README.md). They contain every receipt, tool call, observation, fact, check and memo, along with audit fingerprints that can be recomputed. The browser **Record** button has been tested end to end with a simulated microphone and a stubbed Meta call; it has not yet been used live with a real microphone.
+The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/evidence/live-batch-2026-10-29/README.md). They contain every receipt, tool call, observation, fact, check and memo, along with audit fingerprints that can be recomputed.
+
+**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `c7c1f1a` on 2026-10-29, according to the owner's deploy output. Changes merged after that need a redeploy before they appear there.
 
 ## How it meets the judging criteria
 
@@ -47,7 +50,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 |---|---|
 | **Impact (30%)** | Missed medical appointments often come down to transport details: the wrong day, no wheelchair-capable vehicle, no way home. A voice-first intake helps riders who find apps hard to use, and the review catches contradictions before a car is sent. Built by an operating Nashville taxi company. Benefits such as fewer missed appointments are pilot hypotheses, not measured results. |
 | **Meta AI tooling (25%)** | Three Meta capabilities working together: Muse Voice Transcribe for the rider's voice, Muse Spark image understanding for the appointment card, and Muse Spark agentic tool-calling for the investigation. Each is verified live with response IDs. |
-| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, a server-held Meta transcript, a spending cap, and 129 offline tests including prompt-injection and model-failure cases. |
+| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 137 offline tests including prompt-injection and model-failure cases. |
 | **Demo (25%)** | One spoken request, one card read by Meta, independent checks shown in the console, a human sign-off, then a deliberately contradictory card that is blocked. See [docs/DEMO.md](docs/DEMO.md). |
 
 ## Run it
@@ -55,7 +58,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 Python 3.10+ is enough; the core has no third-party dependencies.
 
 ```bash
-./helper test     # 129 offline tests; no keys, no paid calls
+./helper test     # 137 offline tests; no keys, no paid calls
 ./helper serve    # console at http://127.0.0.1:8765
 ```
 
@@ -98,6 +101,8 @@ Runs can be paused, resumed (`./helper resume --run-id …`), inspected (`./help
 - **Credentials stay on the server.** The browser receives only `key_configured: true/false`. Transcription goes through the console's server.
 - **Evidence is never instructions.** Documents, transcripts and follow-ups are untrusted. A transcript that tries to bypass review fails the spoken-request check. No tool exists for approval, dispatch or payment.
 - **No silent fallback.** Model or network errors pause the run. A run is labeled live only after a successful Meta response.
+- **Provenance per result.** The console's *Where each result came from* panel separates live Meta reasoning, the source of the spoken request, who read the appointment card, and the curb measurements. Curb measurements are always a simulated fixture, even in a live Meta run. `LIVE_META_API` describes the reasoning only.
+- **Audit integrity.** When a run reaches `needs_input`, `awaiting_signoff` or sign-off, the app checks that its record is consistent: one receipt per model turn, verbatim quotes against unchanged evidence, no memo on a blocked run, dispatch off, and sign-off fields matching the state. It is a record check, not a booking approval. It confirms that a Meta response ID was recorded for every model turn; it does not query Meta to authenticate those IDs.
 - **Local by default.** The console binds to loopback and checks host, origin, a session token and request sizes. An optional password-protected Modal deployment is described in [docs/MODAL.md](docs/MODAL.md); it is not deployed for this submission.
 - **Fictional data only.** While free credits are in use, Meta's dashboard notes that content may be used for product improvement. No real patient or rider data belongs in this prototype. No HIPAA compliance is claimed.
 

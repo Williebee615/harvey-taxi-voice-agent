@@ -2,6 +2,8 @@
 
 This file records what has actually run against Meta's API. Configuration, a configured key, the console's simulation mode and the offline tests are **not** evidence of inference.
 
+Response IDs below are the ones Meta returned, as saved by the application. The audit-integrity check confirms one is recorded for every model turn; neither it nor this file authenticates them with Meta.
+
 ## Status (2026-10-29 UTC)
 
 | Capability | Status | Evidence |
@@ -9,7 +11,7 @@ This file records what has actually run against Meta's API. Configuration, a con
 | Muse Spark tool calling (Responses API) | **Verified by entrant exports, 2026-10-28**, on earlier code | Two runs in [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) |
 | Muse Spark image input (appointment card) | **Verified live, 2026-10-29**: probe, plus full card and contradiction runs | Probe result and live batch below |
 | Card cross-check, receipts panel, spoken request | **Built and tested offline** (fake Meta transport) | `./helper test` |
-| Console **Record** button (Meta speech-to-text through the console's server) | **Built 2026-10-29; tested end to end with a simulated microphone and a stubbed Meta call.** Not yet used live with a real microphone. Browser speech recognition was removed | `tests/test_console_speech.py`; Chromium fake-microphone test |
+| Console **Record** button (Meta speech-to-text through the console's server) | **Verified live with a real microphone, 2026-10-29**, on the hosted console. Also covered offline (fake microphone, stubbed Meta). Browser speech recognition was removed | [Hosted console](#hosted-console-2026-10-29) |
 | SAM 3.1 segmentation | **Not integrated.** `sam-3.1` is listed for this account; no request sent | Model list, 2026-10-29 |
 | Meta speech-to-text (file transcription) | **Verified live, 2026-10-29**: probe, plus one full spoken-request run (fictional synthetic clip) | Speech probe result and live batch below |
 
@@ -149,6 +151,20 @@ The card-contradiction scenario's "human approval refused" check calls the appro
 | spoken request check passed | Pass |
 | all independent checks pass | Pass |
 | memo quotes the spoken request | Pass |
+
+## Hosted console (2026-10-29)
+
+The owner ran these on the password-protected Modal console, deployed from `main` at `c7c1f1a`, within the approved demo budget.
+
+| Item | Result | How it was checked |
+|---|---|---|
+| Real-microphone transcription | Meta `muse-voice-transcribe-1.0`, session `harvey-28562413d62d`, 17.0 s audio, estimated $0.0008. Transcript "Testing went as planned A1" (not used in a review) | Owner's screen photo |
+| `run_b2023b2da615466fba74a611b17ec923` (Standard ride, `healthcare-clinic-visit`) | Live: 24 Muse Spark turns, 24 unique response IDs (`resp_6ae30fa987606135f9f44a9c` to `resp_6ae30fefa5a04e9ad88e47b8`). All 6 independent checks pass when recomputed from the case files; 17 facts quoted verbatim; memo cites the rider request, policy and curb evidence; one refused quote corrected by the model. Signed off by Willie Harvey IV at 09:21:09 UTC; dispatch disabled. Tokens: 141,421 in (105,044 cached), 4,455 out; about $0.08 at cached prices ($0.20 on the high basis). Audit SHA-256 `3ef9b71dde864d5ad85997013318e1110b241763d412c2af992866d4a8ff5465` | Audit JSON exported by the owner, independently re-verified |
+| `run_8406197deff449489b2a55b85d4f8de6` (missing return plan) | Reported by the owner: correctly ended `needs_input` on the missing return plan | Audit JSON not yet received for independent checking |
+
+### Note on `run_integrity` in records saved before this fix
+
+Up to `c7c1f1a`, `run_integrity` was only written when a memo was accepted. A run that correctly stopped at `needs_input` therefore kept the initial value `{"passed": false, "errors": ["Not verified yet"]}`. That covers the batch run `run_bc6f128432534209b34bd08d0f29a8ac` and the owner's `run_8406…`. It was an unfinished integrity step, not an audit failure. The new final-state integrity check passes `run_bc6f1284…` when applied to its preserved record. Saved records are left unchanged so their audit fingerprints still match.
 
 ## Live test plan (owner approval needed for each paid step)
 

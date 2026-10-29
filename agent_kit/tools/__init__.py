@@ -162,7 +162,6 @@ def run(client, root, run_id, call, record=None):
                 raise ValueError('Omit inference-mode claims from memo prose. The application records live versus simulation provenance separately; simulated curb data does not imply simulated reasoning.')
             record['memo_provenance'] = {'inference_mode': record['inference_mode'], 'model_invoked_in_run': record.get('model_invoked_in_run', False), 'model': record['configured_model'], 'telemetry_source': record.get('telemetry_source'), 'receipt_count': len(record.get('receipts', []))}
             record['memo'] = {**args, 'pending_actions': args.get('pending_actions', []), 'limitations': args.get('limitations', []), 'notice': 'Model interpretation; cited quotations and independent checks are authoritative.'}
-            record['run_integrity'] = {'passed': True, 'errors': []}
             return {'status': 'awaiting_signoff', 'memo': record['memo'], 'dispatch_enabled': False}
     except ValueError as error:
         return {'status': 'running', 'error': str(error)}

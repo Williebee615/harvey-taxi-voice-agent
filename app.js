@@ -38,7 +38,8 @@ function render() {
   $('turn-count').textContent = run.turn;
   $('fact-count').textContent = run.facts.length;
   $('tokens').textContent = run.receipts.reduce((sum,r) => sum + (r.usage.total_tokens || 0),0).toLocaleString();
-  $('run-meta').textContent = `${run.run_id} · ${run.inference_mode} · curb: simulated fixture`;
+  $('run-meta').textContent = `Run ${run.run_id}`;
+  renderProvenance();
   $('events').replaceChildren();
   for (const event of run.turns) {
     const box = document.createElement('article'); box.className = 'event';
@@ -52,7 +53,7 @@ function render() {
   if (!Object.keys(run.verification).length) appendText($('checks'),'p','Checks have not run yet.','muted');
   for (const [name,check] of Object.entries(run.verification)) {
     const box = document.createElement('div'); if(!check.passed) box.className='failed';
-    appendText(box,'b',`${check.passed?'✓':'!'} ${name.replaceAll('_',' ')}`);
+    appendText(box,'b',`${check.passed?'✓':'!'} ${name.replaceAll('_',' ')}${name==='curb_check'?' (simulated measurements)':''}`);
     appendText(box,'small',check.reason || (check.missing_fields?.length ? check.missing_fields.join(', ') : check.contradiction ? 'Contradictory evidence detected' : 'Supplied evidence checked'));
     $('checks').append(box);
   }
@@ -63,8 +64,36 @@ function render() {
   if (run.memo?.limitations?.length) $('memo').textContent += '\n\nPrototype limitations:\n' + run.memo.limitations.join('\n');
   if (run.human_signoff_token) $('memo').textContent += `\n\nCurrent status: demo acknowledgment recorded by ${run.human_signoff_token} at ${run.signed_at}. Original memo retained as submitted. This is not authenticated dispatcher authorization; dispatch remains disabled.`;
   renderReceipts();
-  if (run.memo) $('memo').textContent += `\n\nRuntime provenance: ${run.inference_mode}; model invoked: ${Boolean(run.model_invoked_in_run)}; curb source: ${run.telemetry_source}.`;
+  if (run.memo) $('memo').textContent += `\n\nProvenance: reasoning ${run.model_invoked_in_run ? 'by live Meta model' : 'scripted (offline simulation)'}; curb measurements from a simulated fixture, not measured by any model.`;
   syncButtons();
+}
+// Each kind of evidence has its own source; a live Meta review can still use simulated curb measurements.
+function provenanceRows() {
+  const live = run.requested_mode === 'live', count = run.receipts.length, speech = run.speech_source, card = run.card_extraction;
+  const final = ['needs_input', 'awaiting_signoff', 'completed_after_human_signoff'].includes(run.status), integrity = run.run_integrity || {};
+  const reasoning = !live ? ['Offline simulation: scripted tool choices, no model', 'sim']
+    : run.model_invoked_in_run ? [`Live Meta inference: ${count} response${count === 1 ? '' : 's'} from ${[...new Set(run.receipts.map(r => r.model))].join(', ')}`, 'live']
+    : ['Live mode: no successful Meta response yet', 'sim'];
+  const spoken = !run.run_documents?.['spoken_request.txt'] ? ['No spoken request in this run', 'none']
+    : speech && typeof speech === 'object' ? [`Meta ${speech.model} transcript, session ${speech.session_id}${speech.confirmed_by_reviewer ? ', confirmed by the reviewer' : ''}`, 'live']
+    : ['Typed text (not Meta speech-to-text)', 'sim'];
+  const cardRow = !card ? [(caseImages[run.case] || []).length ? 'Card not read yet' : 'No appointment card in this case', 'none']
+    : card.extracted_by === 'LIVE_META_API' ? ['Read from the image by the live Meta model; fields cross-checked by code', 'live']
+    : ['Scripted fixture values (offline simulation); no model read the image', 'sim'];
+  const integrityRow = !final ? ['Checked when the run reaches needs input or awaiting sign-off', 'none']
+    : integrity.state === run.status && integrity.passed ? [`Consistent for ${run.status.replaceAll('_', ' ')} (record check, not a booking approval)`, 'live']
+    : integrity.state ? [`Problem: ${(integrity.errors || []).join('; ')}`, 'warn']
+    : integrity.passed ? ['Passed the earlier memo-acceptance check (saved by an earlier version of the console)', 'live']
+    : ['Not recorded: this run was saved by an earlier version, which only checked runs that reached sign-off', 'none'];
+  return [['Reasoning', ...reasoning], ['Spoken request', ...spoken], ['Appointment card', ...cardRow],
+          ['Curb measurements', 'Simulated fixture: not measured by a camera, SAM or any model', 'sim'], ['Audit integrity', ...integrityRow]];
+}
+function renderProvenance() {
+  $('provenance').replaceChildren();
+  for (const [label, text, kind] of provenanceRows()) {
+    const row = document.createElement('div'); row.className = `prov-${kind}`;
+    appendText(row, 'dt', label); appendText(row, 'dd', text); $('provenance').append(row);
+  }
 }
 function renderReceipts() {
   const body = $('receipts'), status = $('exec-status'); body.replaceChildren();
