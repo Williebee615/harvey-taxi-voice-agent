@@ -66,7 +66,7 @@ def _simulation_calls(root, record):
     return calls + [('submit_memo', {'answer': 'Demo evidence passed independent checks; dispatcher review is required.', 'findings': findings, 'gaps': []})]
 
 
-def _advance(root, record, turns, api=None):
+def _advance(root, record, turns, api=None, before_call=None):
     if isinstance(turns, bool) or not isinstance(turns, int) or not 1 <= turns <= 40:
         raise ValueError('Turn limit must be 1-40')
     if record['turn'] + turns > 200:
@@ -87,6 +87,12 @@ def _advance(root, record, turns, api=None):
                 call = {'type': 'function_call', 'name': name, 'call_id': f'simulation_{turn}', 'arguments': json.dumps(args)}
                 output = [call]
             else:
+                # Optional spending guard: checked before every paid call, never after.
+                stop = before_call(record) if before_call else None
+                if stop:
+                    record['status'] = 'paused'
+                    record['pause_reason'] = stop
+                    break
                 started = time.monotonic()
                 response = api.responses.create(model=record['configured_model'], instructions=_instructions() + '\nRuntime context: ' + json.dumps({'requested_mode': record['requested_mode'], 'inference_mode': 'LIVE_META_API', 'telemetry_source': record.get('telemetry_source')}) + '\nDo not write inference-mode claims in memo prose: the application records provenance separately. Simulated curb data does not mean reasoning is simulated.',
                     input=record['messages'], tools=tools.definitions(root, record['run_id']))
@@ -151,7 +157,7 @@ def _advance(root, record, turns, api=None):
 BROWSER_SPEECH = 'browser speech recognition or typed text (not Meta)'
 
 
-def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation', api=None, spoken_request=None, speech_source=None):
+def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation', api=None, spoken_request=None, speech_source=None, before_call=None):
     if mode not in ('simulation', 'live'):
         raise ValueError('Choose simulation or live')
     case = case_name or 'harvey-taxi-ada-doctor-visit'
@@ -167,10 +173,10 @@ def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation',
         record['run_documents'] = {evidence.SPOKEN_REQUEST: spoken_request.strip()}
         # Provenance is recorded by the caller that produced the transcript, never inferred from its text.
         record['speech_source'] = speech_source or BROWSER_SPEECH
-    return _advance(root, record, turns, api)
+    return _advance(root, record, turns, api, before_call)
 
 
-def resume_run(root, run_id='run_latest', dispatcher_signature='', *, message='', turns=20, api=None):
+def resume_run(root, run_id='run_latest', dispatcher_signature='', *, message='', turns=20, api=None, before_call=None):
     record = progress.load_progress(root, run_id)
     if dispatcher_signature:
         return approve_run(root, record['run_id'], dispatcher_signature)
@@ -191,7 +197,7 @@ def resume_run(root, run_id='run_latest', dispatcher_signature='', *, message=''
             record['memo'] = None
         if record['requested_mode'] == 'simulation':
             raise ValueError('For changed simulation evidence, start a new run. Live runs support follow-up.')
-    return _advance(root, record, turns, api)
+    return _advance(root, record, turns, api, before_call)
 
 
 def approve_run(root, run_id, signature):
