@@ -9,7 +9,7 @@ This file records what has actually run against Meta's API. Configuration, a con
 | Muse Spark tool calling (Responses API) | **Verified by entrant exports, 2026-10-28**, on earlier code | Two runs in [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) |
 | Muse Spark image input (appointment card) | **Verified live, 2026-10-29**: probe, plus full card and contradiction runs | Probe result and live batch below |
 | Card cross-check, receipts panel, spoken request | **Built and tested offline** (fake Meta transport) | `./helper test` |
-| Browser speech recognition | **Not Meta.** Runs in the reviewer's browser | Labeled in the console and docs |
+| Console **Record** button (Meta speech-to-text through the console's server) | **Built 2026-10-29; tested end to end with a simulated microphone and a stubbed Meta call.** Not yet used live with a real microphone. Browser speech recognition was removed | `tests/test_console_speech.py`; Chromium fake-microphone test |
 | SAM 3.1 segmentation | **Not integrated.** `sam-3.1` is listed for this account; no request sent | Model list, 2026-10-29 |
 | Meta speech-to-text (file transcription) | **Verified live, 2026-10-29**: probe, plus one full spoken-request run (fictional synthetic clip) | Speech probe result and live batch below |
 

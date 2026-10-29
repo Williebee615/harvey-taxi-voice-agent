@@ -1,44 +1,47 @@
-# Three-minute contest video
+# Three-minute demonstration
 
 ## Before recording
 
-1. Complete [the live test plan](LIVE_EVIDENCE.md). The card segment may be shown as live Meta reading **only if** the image probe passed and the live card runs behaved as expected. If not, see "If image input is not verified" below.
-2. Start the console: `./helper serve`, then open http://127.0.0.1:8765 in Chrome (the browser speech recognition used here works there).
-3. Close unrelated tabs. Never show `.env`, keys, billing pages or personal files.
+1. Start the console in a terminal where your Meta key is set: `./helper serve`, then open http://127.0.0.1:8765 in Chrome. Allow the microphone when asked.
+2. Close unrelated tabs. Never show `.env`, keys, billing pages, saved passwords or personal files.
+3. Choose **Live Meta** in the console. A full live review costs about $0.10–$0.30; the transcription costs less than a cent.
+4. Do one quiet rehearsal of the spoken request so the microphone level is right.
+5. Uncheck **Step through one tool at a time** so each review runs straight through (about 20–45 seconds).
+
+**Budget:** recording this demo needs new paid calls (two live reviews and one transcription, about $0.30–$0.60). Get the owner's approval for that spend first. If live recording isn't possible, use the saved live runs from 2026-10-29 and label them (see "Labeling rules").
 
 ## Labeling rules
 
-- A newly recorded live run may be shown as live. If you cut waiting time, label the cut **Waiting shortened**.
-- A reopened saved run must be labeled **Saved live Meta run**.
-- Never show an offline simulation and call it Meta inference. The receipts panel says "Offline simulation" for those runs; keep it visible.
-- Say that speech recognition is the browser's, not Meta's.
+- A new live run can be shown as live. If you cut waiting time, add the caption **Waiting shortened**.
+- A reopened saved run must carry the caption **Saved live Meta run (2026-10-29)**.
+- Never show offline simulation as Meta inference. The receipts panel says "Offline simulation" for those runs; keep it visible.
+- Keep under three minutes. Aim for 2:50.
 
-Aim for 2:50–2:58 so the exported file stays under three minutes.
+## Script
 
-## Timed script
-
-| Time | Screen | Narration |
+| Time | On screen | Say |
 |---|---|---|
-| 0:00–0:20 | Console home, Appointment card case selected, card visible. | "I'm Willie Harvey, founder of Harvey Taxi. For a wheelchair user, a ride to the doctor depends on details that are easy to get wrong: the date, the arrival time, the right vehicle, a fair price. Harvey Taxi checks those details before anyone is booked." |
-| 0:20–0:40 | Click **Speak request** and say: "I need a wheelchair-accessible ride with my service dog to my clinic appointment on Monday." Choose **Live Meta**, start the review. | "The rider can simply say what they need. Speech-to-text here is the browser's own recognition, not Meta. The transcript becomes evidence, not an instruction." |
-| 0:40–1:15 | Expand the **analyze documents** step, then **record document fields**. Point at the receipts panel. | "Meta's Muse Spark runs the review. It chooses each step itself: it reads the policy and the request, then looks at the appointment card image and records the date, the appointment time, the arrive-by time and the clinic. Every step here has a real Meta response ID and token count." |
-| 1:15–1:45 | Verification panel: card check, spoken request check, fare check. Fare rule box. | "Then code, not the model, checks the work. The card must agree with the booking. The service dog and wheelchair the rider mentioned must be on the intake. The fare is computed: two fifty plus a dollar fifty a mile, and zero dollars for accessibility, always." |
-| 1:45–2:05 | Memo with citations; enter reviewer name; record demo sign-off. | "The memo cites its sources, exact quotes and the card fields, and stops for a human. Sign-off is a demo acknowledgment; nothing is dispatched or charged." |
-| 2:05–2:40 | Select **Card contradiction**, run live (or open the saved run, labeled). Show the failed card check and `needs input`. | "Now the written booking says Tuesday, but the card says Monday. A plausible booking for the wrong day is exactly how someone misses an appointment. The card check fails, the review stops at needs input, and sign-off is blocked until a person resolves it." |
-| 2:40–2:58 | Return to the receipts panel, then the repository. | "Meta reads the evidence; deterministic checks decide what is safe to book; a human stays in control. This is transportation coordination, not medical advice, and every case here is fictional." |
+| 0:00–0:15 | Console home. | "I'm Willie Harvey, founder of Harvey Taxi in Nashville. For a wheelchair user, getting to the doctor depends on details that are easy to get wrong: the day, the arrival time, a ramp, a fair price. Here's how we check them before anyone is booked." |
+| 0:15–0:40 | Click **Appointment card**; the card appears. Click **Record with Meta speech-to-text**; the red recording indicator shows. Say: *"I need a wheelchair-accessible ride with my service dog to Demo Community Clinic on Monday, November second. I need to arrive by nine forty-five."* Click **Stop and transcribe**. | "The rider just says what they need. Nothing is recorded until they press the button. The audio goes through our server to Meta's speech-to-text model, so the key never touches the browser." |
+| 0:40–0:55 | The transcript appears with "Transcribed by Meta muse-voice-transcribe-1.0". Tick **This Meta transcript matches what I said**. | "Meta transcribed it in about three seconds. The rider confirms it, and if they edit it, it's labeled as typed text, not Meta." |
+| 0:55–1:30 | Click **Start review**. Point at the activity list, then expand **analyze documents** and **record document fields**. Point at the receipts panel. | "Now Meta's Muse Spark runs the review and chooses every step itself. Here it looks at the appointment card and records the date, the times and the clinic. Every step has a real Meta response ID and token count." |
+| 1:30–2:00 | Independent verification panel: card check, spoken request check, fare check. Point at the fare policy box. | "Then code, not the model, decides. The card has to agree with the booking. The wheelchair and service dog the rider mentioned have to be on the intake. The fare is computed: two fifty plus a dollar fifty a mile, and zero dollars for accessibility. Always." |
+| 2:00–2:15 | Memo with citations; type a reviewer name; click **Record demo sign-off**. | "The memo cites its sources and stops for a person. Sign-off is a human decision; nothing is dispatched or charged." |
+| 2:15–2:45 | Click **Card contradiction**, start a live review (or open the saved run, captioned). Show the failed card check and **needs input**. | "Now the booking says Tuesday, but the card says Monday. That's exactly how someone misses an appointment. The card check fails, the review stops at needs input, and sign-off is blocked until a person fixes it." |
+| 2:45–2:58 | Receipts panel, then the repository's evidence folder. | "Meta listens and reads. Our code verifies. A person decides. Every case here is fictional, and every live result is published with its Meta receipts." |
 
-## If image input is not verified
+## If something fails during recording
 
-Do not narrate 0:40–1:15 as Meta reading the card. Either:
-- leave the card out and run the spoken-request clinic case live, showing the contradiction with the **Missing return plan** case instead; or
-- show the card cases in **offline simulation**, with the receipts panel visible, and say: "In this offline simulation the card values are scripted; live image reading is still being verified."
+- **Microphone or transcription error:** type the request instead and say "typed request" on camera. Don't present typed text as Meta speech.
+- **A live review pauses on an API error:** stop. Use the saved live runs, captioned. Don't retry repeatedly without budget approval.
+- **The live card run doesn't reach `awaiting_signoff`:** keep it on camera if it is still honest and clear, or use the saved run, captioned.
 
 ## Final checks
 
-- Duration at most three minutes; narration audible.
-- Live, saved and simulated segments correctly labeled; browser speech identified as not Meta.
+- Under three minutes; narration clear.
+- Live, saved and typed segments captioned correctly.
 - Both the successful review and the blocked contradiction are shown.
-- The video link opens in a signed-out browser.
-- Paste the final link into `SUBMISSION.md` and the official submission form.
+- No keys, billing pages, saved passwords or personal data on screen.
+- The video link opens in a signed-out browser. Paste it into `SUBMISSION.md` and the event form.
 
-No patient-outcome, live-dispatch, clinical-clearance, HIPAA or production-readiness claim is made by this video.
+No clinical, dispatch, HIPAA or production-readiness claim is made in this video.
