@@ -51,6 +51,10 @@ def verify_run_record(record):
 
 
 FINAL_STATES = ('needs_input', 'awaiting_signoff', 'completed_after_human_signoff')
+# Human sign-off label for new runs; acknowledgment never dispatches a vehicle or authorizes payment.
+SIGNOFF_MODE = 'DEMO_HUMAN_SIGNOFF_NO_DISPATCH'
+# Runs signed by earlier versions keep their original label; their audit records are never rewritten.
+SIGNOFF_MODES = (SIGNOFF_MODE, 'SIMULATED_DISPATCHER_SIGNOFF')
 INTEGRITY_SCOPE = 'Audit record consistency for this final state; not a booking approval'
 
 
@@ -79,7 +83,7 @@ def audit_integrity(root, record):
         errors.append('Dispatch must remain disabled')
     signed = status == 'completed_after_human_signoff'
     signoff_fields = (record.get('authorization_mode'), bool(record.get('human_signoff_token')), bool(record.get('signed_at')))
-    if signoff_fields != (('SIMULATED_DISPATCHER_SIGNOFF', True, True) if signed else ('NONE', False, False)):
+    if not ((signoff_fields[0] in SIGNOFF_MODES and signoff_fields[1:] == (True, True)) if signed else signoff_fields == ('NONE', False, False)):
         errors.append('Sign-off fields do not match the final state')
     docs = evidence.run_documents(root, record['case'], record.get('run_documents'))
     current = evidence.current_digest(root, record['case'], record.get('run_documents'))

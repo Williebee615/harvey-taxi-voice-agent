@@ -235,7 +235,7 @@ class InvariantTests(AgentFixture):
     def test_dispatch_stays_disabled_through_signoff(self):
         for case in (CLINIC, CARD):
             rec = approve_run(self.root, self.simulate(case)['run_id'], 'Demo Reviewer')
-            self.assertFalse(rec['dispatch_enabled']); self.assertEqual(rec['authorization_mode'], 'SIMULATED_DISPATCHER_SIGNOFF')
+            self.assertFalse(rec['dispatch_enabled']); self.assertEqual(rec['authorization_mode'], 'DEMO_HUMAN_SIGNOFF_NO_DISPATCH')
 
     def test_accessibility_surcharge_is_always_zero(self):
         fare = settings.calculate_verified_fare(6.0, wheelchair=True, service_animal=True)

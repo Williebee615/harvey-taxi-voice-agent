@@ -7,6 +7,24 @@ let token = '', run = null, busy = false, automatic = false, connected = false, 
 const canRecord = Boolean(navigator.mediaDevices?.getUserMedia && (window.AudioContext || window.webkitAudioContext));
 const MAX_RECORD_SECONDS = 60, WAV_RATE = 16000;
 const terminal = ['needs_input', 'awaiting_signoff', 'completed_after_human_signoff'];
+// The chosen mode is remembered across refreshes; a live review still starts only when the user clicks Start.
+const MODE_KEY = 'harvey.executionMode';
+function selectedMode() { return document.querySelector('input[name="execution-mode"]:checked').value; }
+function restoreMode() {
+  let saved = null;
+  try { saved = localStorage.getItem(MODE_KEY); } catch (error) {}
+  if (saved === 'live' || saved === 'simulation') $(`mode-${saved}`).checked = true;
+  showMode();
+}
+function rememberMode() {
+  try { localStorage.setItem(MODE_KEY, selectedMode()); } catch (error) {}
+  showMode();
+}
+function showMode() {
+  const live = selectedMode() === 'live', arrow = document.createElement('span'); arrow.textContent = '↗';
+  $('start').replaceChildren(live ? 'Start live Meta review (paid API calls) ' : 'Start offline simulation (no API calls) ', arrow);
+  $('paid-note').hidden = !live;
+}
 function notice(message = '') { $('notice').textContent = message; }
 async function api(path, body) {
   const response = await fetch(path, body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json','X-Console-Token':token},body:JSON.stringify(body)});
@@ -40,6 +58,7 @@ function render() {
   $('tokens').textContent = run.receipts.reduce((sum,r) => sum + (r.usage.total_tokens || 0),0).toLocaleString();
   $('run-meta').textContent = `Run ${run.run_id}`;
   renderProvenance();
+  renderBadges();
   $('events').replaceChildren();
   for (const event of run.turns) {
     const box = document.createElement('article'); box.className = 'event';
@@ -53,6 +72,7 @@ function render() {
   if (!Object.keys(run.verification).length) appendText($('checks'),'p','Checks have not run yet.','muted');
   for (const [name,check] of Object.entries(run.verification)) {
     const box = document.createElement('div'); if(!check.passed) box.className='failed';
+    if (name === 'curb_check') appendText($('checks'),'p','🟠 SIMULATED CURB MEASUREMENTS — Demonstration data, not camera measurements','badge sim');
     appendText(box,'b',`${check.passed?'✓':'!'} ${name.replaceAll('_',' ')}${name==='curb_check'?' (simulated measurements)':''}`);
     appendText(box,'small',check.reason || (check.missing_fields?.length ? check.missing_fields.join(', ') : check.contradiction ? 'Contradictory evidence detected' : 'Supplied evidence checked'));
     $('checks').append(box);
@@ -62,10 +82,23 @@ function render() {
   $('memo').textContent = run.memo ? `Memo prepared before demo acknowledgment. Pending actions below describe that review stage.\n\n${run.memo.answer}\n\n` + run.memo.findings.map(f=>`${f.item}: ${f.finding} [${f.fact_ids.join(', ')}]`).join('\n\n') : 'A cited memo is required before sign-off.';
   if (run.memo?.pending_actions?.length) $('memo').textContent += '\n\nPending actions (not completed):\n' + run.memo.pending_actions.join('\n');
   if (run.memo?.limitations?.length) $('memo').textContent += '\n\nPrototype limitations:\n' + run.memo.limitations.join('\n');
-  if (run.human_signoff_token) $('memo').textContent += `\n\nCurrent status: demo acknowledgment recorded by ${run.human_signoff_token} at ${run.signed_at}. Original memo retained as submitted. This is not authenticated dispatcher authorization; dispatch remains disabled.`;
+  if (run.human_signoff_token) $('memo').textContent += `\n\nCurrent status: human acknowledgment recorded by ${run.human_signoff_token} at ${run.signed_at}. Original memo retained as submitted. No vehicle was dispatched and no payment was authorized; this is not authenticated dispatcher authorization.`;
   renderReceipts();
   if (run.memo) $('memo').textContent += `\n\nProvenance: reasoning ${run.model_invoked_in_run ? 'by live Meta model' : 'scripted (offline simulation)'}; curb measurements from a simulated fixture, not measured by any model.`;
   syncButtons();
+}
+// Headline labels. Response IDs are recorded from Meta's replies; this console does not authenticate them with Meta.
+function inferenceBadge() {
+  const recorded = run.receipts.filter(r => r.response_id), models = [...new Set(recorded.map(r => r.model))].join(', ');
+  if (run.requested_mode === 'simulation') return ['OFFLINE SIMULATION — NO META API CALLS', 'Scripted tool choices; nothing in this run is model output.', 'sim'];
+  if (run.model_invoked_in_run && recorded.length) return [`🟢 LIVE META INFERENCE — ${recorded.length} RECORDED RESPONSE${recorded.length === 1 ? '' : 'S'}`, `${models} · response IDs recorded by this console, not independently authenticated with Meta`, 'live'];
+  return ['LIVE MODE — NO META RESPONSE RECORDED YET', 'No successful Meta response yet; nothing in this run is model output so far.', 'none'];
+}
+function renderBadges() {
+  const [title, detail, kind] = inferenceBadge(), badge = $('inference-badge');
+  badge.replaceChildren(title); appendText(badge, 'small', detail); badge.className = `badge ${kind}`; badge.hidden = false;
+  const signoff = $('signoff-badge'); signoff.hidden = !run.human_signoff_token;
+  if (run.human_signoff_token) { signoff.replaceChildren('🔵 HUMAN ACKNOWLEDGMENT RECORDED — No vehicle dispatched'); appendText(signoff, 'small', `By ${run.human_signoff_token} at ${run.signed_at}. No payment authorized.`); }
 }
 // Each kind of evidence has its own source; a live Meta review can still use simulated curb measurements.
 function provenanceRows() {
@@ -143,7 +176,7 @@ async function history() {
   for(const r of runs){const o=document.createElement('option');o.value=r.run_id;o.textContent=`${r.case} · ${r.status} · ${r.run_id.slice(-6)}`;$('history').append(o);}
 }
 function guarded(fn) {return async()=>{try{await fn();}catch(error){automatic=false;busy=false;notice(error.message);syncButtons();}};}
-$('start').onclick=guarded(async()=>{automatic=false;const spoken=transcription?{transcription_id:transcription.transcription_id,transcript_confirmed:$('confirm-transcript').checked}:{spoken_request:$('spoken').value.trim()||null};clearTranscription();await perform('/api/run',{case:$('case').value,mode:document.querySelector('input[name="execution-mode"]:checked').value,objective:$('objective').value||null,...spoken});if(!$('step').checked&&!terminal.includes(run.status))await runToPause();await history();});
+$('start').onclick=guarded(async()=>{automatic=false;const spoken=transcription?{transcription_id:transcription.transcription_id,transcript_confirmed:$('confirm-transcript').checked}:{spoken_request:$('spoken').value.trim()||null};clearTranscription();await perform('/api/run',{case:$('case').value,mode:selectedMode(),objective:$('objective').value||null,...spoken});if(!$('step').checked&&!terminal.includes(run.status))await runToPause();await history();});
 $('next').onclick=guarded(()=>continueRun());
 $('all').onclick=guarded(runToPause);
 $('stop').onclick=()=>{automatic=false;syncButtons();notice('Pausing after the current tool completes.');};
@@ -153,6 +186,8 @@ $('history').onchange=guarded(async()=>{if($('history').value){run=await api('/a
 $('export').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(run,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=run.run_id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 for(const [id,name] of [['btn-safe','healthcare-clinic-visit'],['btn-unsafe','harvey-taxi-unsafe-curb-boarding'],['btn-incomplete','harvey-taxi-incomplete-intake'],['btn-return','healthcare-missing-return-plan'],['btn-card','healthcare-appointment-card'],['btn-card-conflict','healthcare-card-contradiction']])$(id).onclick=()=>{$('case').value=name;updatePreview();};
 $('case').onchange=updatePreview;
+document.querySelectorAll('input[name="execution-mode"]').forEach(input => input.onchange = rememberMode);
+restoreMode();
 function clearTranscription(note='') {
   transcription = null; $('confirm-transcript').checked = false; $('confirm-row').hidden = true;
   $('speech-meta').hidden = !note; $('speech-meta').textContent = note; syncButtons();
