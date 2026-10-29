@@ -148,7 +148,10 @@ def _advance(root, record, turns, api=None):
     return record
 
 
-def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation', api=None, spoken_request=None):
+BROWSER_SPEECH = 'browser speech recognition or typed text (not Meta)'
+
+
+def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation', api=None, spoken_request=None, speech_source=None):
     if mode not in ('simulation', 'live'):
         raise ValueError('Choose simulation or live')
     case = case_name or 'harvey-taxi-ada-doctor-visit'
@@ -162,7 +165,8 @@ def run_agent(root, turns=20, objective=None, case_name=None, mode='simulation',
             raise ValueError(f'Spoken request must be text of 1-{evidence.MAX_SPOKEN_CHARS} characters')
         # Run-scoped, untrusted evidence: the model reads and cites it; it never becomes an instruction.
         record['run_documents'] = {evidence.SPOKEN_REQUEST: spoken_request.strip()}
-        record['speech_source'] = 'browser speech recognition (not Meta)'
+        # Provenance is recorded by the caller that produced the transcript, never inferred from its text.
+        record['speech_source'] = speech_source or BROWSER_SPEECH
     return _advance(root, record, turns, api)
 
 

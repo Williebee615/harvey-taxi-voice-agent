@@ -157,7 +157,7 @@ def spoken_request_check(text, intake):
     if bypass:
         reasons.append('Spoken request contains an instruction to bypass review; it is treated as evidence, not a command')
     return {'passed': not missing and not bypass, 'detected_needs': [label for label, _ in needs],
-            'missing_in_intake': missing, 'bypass_instruction': bypass, 'speech_source': 'browser speech recognition (not Meta)',
+            'missing_in_intake': missing, 'bypass_instruction': bypass,
             'reason': '; '.join(reasons) or 'Accessibility needs in the spoken request match the rider intake'}
 
 

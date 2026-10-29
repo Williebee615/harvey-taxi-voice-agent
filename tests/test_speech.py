@@ -91,5 +91,25 @@ class SpeechTests(unittest.TestCase):
         self.assertEqual(opened.call_count, 1); self.assertEqual(failed['status'], 'REQUEST_REJECTED_OR_FAILED')
 
 
+class SpokenAudioRunTests(unittest.TestCase):
+    def test_meta_transcript_feeds_review_as_evidence_with_provenance(self):
+        import contextlib
+        from harvey_agent.loop import run_agent
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup); root = Path(tmp.name)
+        shutil.copytree(ROOT / 'cases', root / 'cases')
+        source = {'model': speech.MODEL, 'session_id': 's3', 'audio_duration_ms': 13134}
+        with contextlib.redirect_stdout(io.StringIO()):
+            rec = run_agent(root, case_name='healthcare-clinic-visit', spoken_request=SCRIPT, speech_source=source)
+            typed = run_agent(root, case_name='healthcare-clinic-visit', spoken_request=SCRIPT)
+        self.assertEqual(rec['status'], 'awaiting_signoff'); self.assertEqual(rec['speech_source'], source)
+        self.assertTrue(rec['verification']['spoken_request_check']['passed'])
+        self.assertIn('not Meta', typed['speech_source'])
+
+    def test_cli_rejects_both_spoken_inputs(self):
+        import subprocess
+        out = subprocess.run([str(ROOT / 'helper'), 'run', '--spoken-request', 'x', '--spoken-audio', 'y.wav'], capture_output=True, text=True)
+        self.assertNotEqual(out.returncode, 0); self.assertIn('not allowed with', out.stderr)
+
+
 if __name__ == '__main__':
     unittest.main()
