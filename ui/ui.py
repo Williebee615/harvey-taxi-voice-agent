@@ -15,6 +15,7 @@ from agent_kit import client, evidence, progress, settings, speech
 
 MAX_AUDIO_BYTES = 2_100_000   # about 65 s of 16 kHz mono 16-bit WAV
 MAX_AUDIO_SECONDS = 60
+DRAIN_LIMIT_BYTES = 8_000_000  # read and discard oversized uploads up to this size so the client gets a clean 413
 TRANSCRIPT_TTL_SECONDS = 30 * 60
 from harvey_agent.loop import approve_run, resume_run, run_agent
 
@@ -161,6 +162,17 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:
             length = 0
         if not 44 < length <= MAX_AUDIO_BYTES:
+            # Replying before the body is read can reset the connection mid-upload (seen on macOS),
+            # turning a clear 413 into a network error. Drain moderately sized bodies first.
+            if 0 < length <= DRAIN_LIMIT_BYTES:
+                remaining = length
+                while remaining > 0:
+                    chunk = self.rfile.read(min(65536, remaining))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+            else:
+                self.close_connection = True
             return self.send(413, {'error': 'Recording must be at most 60 seconds'})
         audio = self.rfile.read(length)
         try:
