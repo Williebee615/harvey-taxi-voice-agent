@@ -11,7 +11,7 @@ This file records what has actually run against Meta's API. Configuration, a con
 | Card cross-check, receipts panel, spoken request | **Built and tested offline** (fake Meta transport) | `./helper test` |
 | Browser speech recognition | **Not Meta.** Runs in the reviewer's browser | Labeled in the console and docs |
 | SAM 3.1 segmentation | **Not integrated.** `sam-3.1` is listed for this account; no request sent | Model list, 2026-10-29 |
-| Meta speech-to-text | **Not integrated.** `muse-voice-transcribe-1.0` is listed for this account; no request sent | Model list, 2026-10-29 |
+| Meta speech-to-text (file transcription) | **Verified live, 2026-10-29** (one probe call, fictional synthetic clip). Not yet wired into a full agent run | Speech probe result below |
 
 ## Probe result: image input (2026-10-29)
 
@@ -38,6 +38,37 @@ Run with owner approval in a cloud session where the key is injected by the netw
 Models listed for this account on 2026-10-29: `muse-image-1.0`, `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-voice-transcribe-1.0`, `muse-wonder-1.0`, `sam-3.1`.
 
 An earlier cloud session the same day was blocked: first by network policy, then by an invalid key (401). The owner replaced the key before this run.
+
+## Probe result: speech-to-text (2026-10-29)
+
+Run with owner approval in the same cloud session (key injected by the network proxy). Exactly one paid call, no retry.
+
+| Item | Value |
+|---|---|
+| Time (UTC) | 2026-10-29T08:25:09Z |
+| Command | `./helper probe-speech` |
+| Endpoint and model | `POST /v1/asr/transcribe`, `muse-voice-transcribe-1.0` |
+| Session ID | `harvey-d1ca30a59fce` |
+| Audio | `cases/demo-spoken-request/spoken_request.wav`: synthetic voice (espeak-ng) reading a fictional script; 13.1 s locally, 13.2 s reported by Meta |
+| Latency | 3,221 ms |
+| Result | `PASSED`: all five key facts survived |
+| Billed audio (estimate) | 13 s |
+| Estimated cost | about $0.00065 at the published $0.18 per audio hour ([pricing page](https://dev.meta.ai/docs/pricing-rate-limits), read 2026-10-29). Not checked against the account's billing page. |
+| Word error rate | 0.147 (14.7%) against the script |
+
+Script: "Hi, this is Jordan Ellis. I need a wheelchair accessible ride with my service dog to Demo Community Clinic on Monday, November second. I need to arrive by nine forty-five in the morning."
+
+Transcript: "Hi, this is is Jordan Ellis. I need a wheelchair accessible ride with my service dog to Demo Community Clinic on Monday, November 2nd. I need to arrive by 9:45 in the morning."
+
+Most of the word error rate comes from number formatting ("2nd" for "second", "9:45" for "nine forty-five"), which counts as an error but keeps the meaning. The one real error is a repeated "is".
+
+| Key fact | Survived |
+|---|---|
+| wheelchair | Yes |
+| service dog | Yes |
+| destination (Demo Community Clinic) | Yes |
+| date (Monday, November 2) | Yes |
+| arrive by (9:45 a.m.) | Yes |
 
 ## Live test plan (owner approval needed for each paid step)
 
