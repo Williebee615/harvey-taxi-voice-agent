@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from agent_kit import progress, settings
-from legal_agent.loop import approve_run, resume_run, run_agent
+from harvey_agent.loop import approve_run, resume_run, run_agent
 
 
 def main():
@@ -29,6 +29,8 @@ def main():
     show = subs.add_parser('show', help='Inspect the public audit record')
     show.add_argument('--run-id', default='run_latest')
     subs.add_parser('validate-models', help='Make one Meta API probe (separate from booking runs)')
+    probe = subs.add_parser('probe', help='List Meta models and test image input (at most one paid call)')
+    probe.add_argument('--no-image', action='store_true', help='Only list models; no inference call')
     subs.add_parser('test', help='Run offline regression tests; no keys or API calls required')
     serve = subs.add_parser('serve', help='Open the local agent console server')
     serve.add_argument('--port', type=int, default=8765)
@@ -47,6 +49,10 @@ def main():
             result = resume_run(ROOT, args.run_id, message=args.message, turns=args.turns)
         elif args.command == 'approve':
             result = approve_run(ROOT, args.run_id, args.signature)
+        elif args.command == 'probe':
+            from agent_kit import probe
+            print(json.dumps(probe.run(ROOT, image=not args.no_image), indent=2))
+            return 0
         elif args.command == 'show':
             result = progress.load_progress(ROOT, args.run_id)
         else:

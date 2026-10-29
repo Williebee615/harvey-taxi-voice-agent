@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from agent_kit import evidence, progress, settings
-from legal_agent.loop import approve_run, resume_run, run_agent
+from harvey_agent.loop import approve_run, resume_run, run_agent
 
 
 class ConsoleServer(ThreadingHTTPServer):

@@ -125,7 +125,7 @@ def run(client, root, run_id, call, record=None):
                     if not fact or fact['item'] != finding['item'] or fact['source_digest'] != result['evidence_digest'] or fact['quote'] not in docs.get(fact['document'], ''):
                         raise ValueError('Citation is invalid, stale, or belongs to another checklist item')
                     used.append(fact['document'])
-            if not {'HANDBOOK.md', 'rider_intake.txt', 'sam3_curb_telemetry.json'}.issubset(used):
+            if not {'HANDBOOK.md', 'rider_intake.txt', 'curb_telemetry.json'}.issubset(used):
                 raise ValueError('Cite tariff, rider intake and curb evidence')
             # Runtime provenance belongs to the application, never model interpretation.
             prose = [args['answer']] + [x['finding'] for x in findings] + args.get('limitations', []) + args.get('pending_actions', [])

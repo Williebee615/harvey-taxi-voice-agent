@@ -1,7 +1,7 @@
 name: Verifiable agent regression
 on:
   push:
-    branches: [main, codex/live-verifiable-agent]
+    branches: [main]
   pull_request:
     branches: [main]
 jobs:
@@ -15,12 +15,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Offline behavior and HTTP security tests
+      - name: Install optional hosted-console dependencies so no test is skipped
+        run: python -m pip install modal fastapi httpx
+      - name: Offline behavior and HTTP security tests (no keys, no API calls)
         run: ./helper test
       - name: JavaScript syntax
         run: node --check app.js
-      - name: Optional Modal adapter checks
-        run: |
-          python -m pip install modal fastapi httpx
-          python -m unittest discover -s tests -p test_modal_console.py -v
-          python -c "import modal_console"
+      - name: Modal console module imports
+        run: python -c "import modal_console"

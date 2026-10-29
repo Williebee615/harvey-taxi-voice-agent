@@ -1,0 +1,12 @@
+{
+  "fixture_note": "Simulated curb measurement for the demo; no image or segmentation model was run.",
+  "south_bay": {
+    "clearance_ft": 6.1,
+    "status": "OBSTRUCTED_CONSTRUCTION_CONES",
+    "safe_for_ramp": false
+  },
+  "selected_bay": "south_bay",
+  "verbatim_telemetry": "CONTRADICTION: Override note requests 6.1ft South Bay without sign-off.",
+  "source": "simulation_fixture",
+  "model_executed": false
+}

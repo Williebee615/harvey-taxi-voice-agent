@@ -1,6 +1,6 @@
 Rider: Evelyn Carter
-Pickup: 1402 Jefferson St, Nashville, TN
-Dropoff: Vanderbilt Medical Center Clinic, 1211 Medical Center Dr
+Pickup: Demo Residence, Nashville, TN
+Dropoff: Demo Medical Center Clinic (fictional), Nashville, TN
 Pickup Time: 2026-10-28 09:30 CDT
 Verified Distance: 6.0 miles
 Mobility Device: Motorized ADA Wheelchair (Side-Entry Ramp Required)

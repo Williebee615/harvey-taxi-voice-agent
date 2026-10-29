@@ -64,7 +64,7 @@ def inspect(root, case):
     quote = '$2.50 base component plus $1.50 per verified mile.'
     quote_check = {'passed': quote in docs.get('HANDBOOK.md', ''), 'reason': 'Demo fare policy must contain the exact tariff quotation', 'claimed_quote': quote}
     try:
-        telemetry = json.loads(docs.get('sam3_curb_telemetry.json', '{}'), parse_constant=_reject_constant)
+        telemetry = json.loads(docs.get('curb_telemetry.json', '{}'), parse_constant=_reject_constant)
         if not isinstance(telemetry, dict):
             telemetry = {}
     except ValueError:

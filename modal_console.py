@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parent
 app = modal.App('harvey-healthcare-review')
 image = modal.Image.debian_slim(python_version='3.11').pip_install('fastapi', 'httpx')
 # Explicit source allowlist: never upload .env, local runs, or personal files.
-for folder in ('agent_kit', 'legal_agent', 'verification', 'ui', 'cases'):
+for folder in ('agent_kit', 'harvey_agent', 'verification', 'ui', 'cases'):
     image = image.add_local_dir(str(ROOT / folder), remote_path='/app/' + folder,
         ignore=['__pycache__', '*.pyc', '.env', '.env.*'])
 for asset in ('index.html', 'app.js', 'console.css'):

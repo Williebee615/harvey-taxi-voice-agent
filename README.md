@@ -31,8 +31,11 @@ Existing `META_MODEL` and `META_BASE_URL` aliases are supported. Explicit `MODEL
 
 ```bash
 ./helper validate-models
+./helper probe            # lists models, tests image input: at most one paid call
 ./helper run --case healthcare-clinic-visit --mode live --turns 20
 ```
+
+`./helper probe` answers three questions and saves only metadata (response ID, model, token usage, extracted fields) to `workspace/probes/`. It lists the model IDs the account can use, sends the fictional [appointment card](cases/demo-appointment-card/appointment_card.png) to Muse Spark once to test image input, and reports whether SAM or speech models appear in the list. It sends nothing to SAM or speech models, because their request formats are not yet verified. `--no-image` skips the paid call. See [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md).
 
 A probe is separate from a booking. `LIVE_META_API` is recorded only after a successful model response within that booking run. Live mode sends case evidence to Meta and incurs API usage; use fictional demo data. API errors pause the run; there is no silent simulation or provider fallback. The live tool-calling workflow must be tested on the user's configured machine before recording a live demo.
 
@@ -102,7 +105,7 @@ CLI / local console → resumable model loop → schema-validated tools
 
 `./helper test` runs offline numerical, evidence, tool-contract, fake-provider multi-turn, resume, approval and HTTP security tests. The existing Node entry point forwards to the same tests. CI runs tests and JavaScript syntax checks without API keys. See [VERIFICATION.md](VERIFICATION.md) and [docs/DEMO.md](docs/DEMO.md).
 
-Historical Fireworks receipts remain archived as provenance only. They are not evidence of current inference, training quality or a live deployed model in this version. Optional `modal_app.py` exposes a CPU fixture verifier; it does not claim GPU or model execution.
+A historical Fireworks receipt from before this version is kept in [`archive/`](archive/README.md) as provenance only. It is not evidence of current inference, training quality or a live deployed model.
 
 ## Hackathon contribution record
 

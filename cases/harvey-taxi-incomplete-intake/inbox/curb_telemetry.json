@@ -1,0 +1,11 @@
+{
+  "fixture_note": "Simulated curb measurement for the demo; no image or segmentation model was run.",
+  "north_bay": {
+    "clearance_ft": 9.0,
+    "status": "UNOBSTRUCTED_LEVEL_CURB",
+    "safe_for_ramp": true
+  },
+  "selected_bay": "north_bay",
+  "source": "simulation_fixture",
+  "model_executed": false
+}

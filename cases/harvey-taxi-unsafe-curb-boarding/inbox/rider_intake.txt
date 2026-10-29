@@ -1,6 +1,7 @@
-Rider: Clara Jenkins
-Pickup: 500 Broadway, South Curb Bay Only
-Dropoff: Centennial Medical Center
-Pickup Time: 2026-10-28 11:00 CDT
+Rider: Clara Jenkins (fictional demo rider)
+Pickup: Demo Apartments, South Curb Bay Only, Nashville, TN
+Dropoff: Demo Medical Center (fictional), Nashville, TN
+Pickup Time: 2026-11-03 11:00 America/Chicago
 Verified Distance: 5.0 miles
-Mobility Device: Wide Power Wheelchair (Requires 8.0ft Ramp Clearance)
+Mobility Device: Wide power wheelchair requiring side-entry ramp
+Quoted Fare: $10.00 ($2.50 base + 5.0 miles * $1.50/mi + $0.00 ADA fee)

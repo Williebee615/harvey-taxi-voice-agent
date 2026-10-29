@@ -1,6 +1,7 @@
-Rider: Marcus Vance
+Rider: Marcus Vance (fictional demo rider)
 Pickup: MISSING_PICKUP_ADDRESS
-Dropoff: St. Thomas Midtown Hospital
+Dropoff: Demo Midtown Hospital (fictional), Nashville, TN
 Pickup Time: MISSING_PICKUP_TIME
 Verified Distance: 4.0 miles
-Mobility Device: Folding Wheelchair
+Mobility Device: Folding wheelchair
+Quoted Fare: $8.50 ($2.50 base + 4.0 miles * $1.50/mi + $0.00 ADA fee)

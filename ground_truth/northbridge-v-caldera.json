@@ -1,7 +1,0 @@
-{
-  "case": "northbridge-v-caldera",
-  "answer": "yes",
-  "liability_cap_usd": 4180000,
-  "sev1_defects_open": 14,
-  "requires_signature": true
-}

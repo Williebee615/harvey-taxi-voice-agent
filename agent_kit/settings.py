@@ -6,15 +6,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MODEL_ROLES = {
-    'reasoning': 'muse-spark-1.3',
-    'fine_tuned_verifier': 'accounts/williebee615/models/ft-f7pywv9kusek5#accounts/williebee615/deployments/myxfl5zq',
-    'base_open_weight': 'accounts/fireworks/models/muse-glimmer-30b',
-    'speech_intake': 'not_integrated',
-    'visual_curb_verifier': 'fixture_only_not_live_sam',
-}
-FIREWORKS_BASE_MODEL = MODEL_ROLES['base_open_weight']
-FIREWORKS_DEPLOYED_MODEL = MODEL_ROLES['fine_tuned_verifier']
+# Only Meta Muse Spark is integrated. Speech and image models are not integrated
+# until a live probe confirms they are available (see docs/LIVE_EVIDENCE.md).
+DEFAULT_MODEL = 'muse-spark-1.3'
 BASE_FARE_USD = 2.50
 PER_MILE_USD = 1.50
 ADA_SURCHARGE_USD = 0.00
@@ -33,7 +27,7 @@ def load_env(root=ROOT):
 
 
 def model():
-    return os.environ.get('MODEL_API_MODEL') or os.environ.get('META_MODEL') or MODEL_ROLES['reasoning']
+    return os.environ.get('MODEL_API_MODEL') or os.environ.get('META_MODEL') or DEFAULT_MODEL
 
 
 def base_url():
@@ -44,17 +38,7 @@ def api_key():
     return os.environ.get('MODEL_API_KEY') or os.environ.get('META_API_KEY') or ''
 
 
-def inference_mode():
-    # A configured key or a separate probe is never evidence a booking invoked a model.
-    return 'DETERMINISTIC_FALLBACK_SIMULATION'
 
-
-def verification_enabled():
-    return True
-
-
-def case_dir(root_path=None):
-    return Path(root_path or ROOT) / os.environ.get('CASE_DIR', 'cases/harvey-taxi-ada-doctor-visit')
 
 
 def calculate_verified_fare(miles, wheelchair=True, service_animal=True):
