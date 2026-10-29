@@ -172,6 +172,7 @@ def run(root, cap_usd=5.0, max_turns=30, api=None, transcribe=None):
     transcribe = transcribe or speech.transcribe
     settings.load_env(root)
     root = Path(root)
+    started_at = progress.now()
     ledger = Ledger(cap_usd)
     results, stop_reason = [], None
 
@@ -222,7 +223,7 @@ def run(root, cap_usd=5.0, max_turns=30, api=None, transcribe=None):
             stop_reason = f'API error in {name}: {record.get("pause_reason")}'
             break
 
-    report = {'batch_version': 1, 'timestamp': progress.now(), 'cap_usd': ledger.cap, 'max_turns': max_turns,
+    report = {'batch_version': 1, 'started_at': started_at, 'timestamp': progress.now(), 'cap_usd': ledger.cap, 'max_turns': max_turns,
               'paid_calls': ledger.calls, 'estimated_cost_usd': round(ledger.spent(), 4),
               'pricing_basis': 'Standard-mode list prices; cached input charged as full input; reasoning charged as output',
               'stopped_early': stop_reason, 'scenarios': results,

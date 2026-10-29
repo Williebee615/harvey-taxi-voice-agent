@@ -76,7 +76,7 @@ Owner-approved batch (spending cap $5, at most 30 model turns per scenario), run
 
 | Batch total | Value |
 |---|---|
-| Started (UTC) | 2026-10-29T08:33:19Z |
+| Ran (UTC) | 2026-10-29T08:31:17Z to 08:33:19Z (about 2 minutes). Corrected 2026-10-29: this row first gave the report's completion time as the start time. |
 | Result | All 4 scenarios passed acceptance; stopped early: no |
 | Paid calls | 66 (65 Muse Spark turns + 1 Meta transcription) |
 | Tokens | 408,875 input (354,398 cached), 17,962 output |
