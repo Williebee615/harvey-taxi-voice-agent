@@ -2,7 +2,7 @@
 
 A rider says what they need. Meta's models listen, read the appointment card and investigate the booking. Deterministic code then checks every fact, and a person signs off before anything happens.
 
-Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your World*) by Harvey Taxi Service LLC, a Nashville transportation company. **This is a hackathon prototype.** All riders, clinics and appointments in it are fictional, curb measurements are simulated, and it never dispatches a vehicle or takes a payment.
+Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your World*) by Willie Harvey IV, founder of Harvey Taxi Service LLC in Nashville. **This is a contest prototype.** It has not been used with real riders, and no operating scale or production readiness is claimed. All riders, clinics and appointments in it are fictional, curb measurements are simulated, and it never dispatches a vehicle or takes a payment.
 
 ## What it does
 
@@ -44,15 +44,15 @@ Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your
 
 The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/evidence/live-batch-2026-10-29/README.md). They contain every receipt, tool call, observation, fact, check and memo, along with audit fingerprints that can be recomputed.
 
-**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `fc49119` (PR #8, the live/simulation, curb and sign-off labels) on 2026-10-29, according to the owner's deploy output; 143 tests passed on the deploying machine at that commit. Changes merged after that need a redeploy before they appear there.
+**Hosted console:** a password-protected copy runs on Modal at `https://williebee615--harvey-healthcare-review-console.us-east.modal.run` (sign-in shared privately with reviewers). It was last deployed from `main` at `fc49119` (PR #8, the live/simulation, curb and sign-off labels) on 2026-10-29, according to the owner's deploy output; 143 tests passed on the deploying machine at that commit. Changes merged after that, including session reliability and the spoken date/time check, need a redeploy (pending owner approval) before they appear there.
 
 ## How it meets the judging criteria
 
 | Criterion | What this project shows |
 |---|---|
-| **Impact (30%)** | Missed medical appointments often come down to transport details: the wrong day, no wheelchair-capable vehicle, no way home. A voice-first intake helps riders who find apps hard to use, and the review catches contradictions before a car is sent. Built by an operating Nashville taxi company. Benefits such as fewer missed appointments are pilot hypotheses, not measured results. |
+| **Impact (30%)** | Missed medical appointments often come down to transport details: the wrong day, no wheelchair-capable vehicle, no way home. A voice-first intake helps riders who find apps hard to use, and the review catches contradictions before a car is sent. Built by the founder of a Nashville taxi company as a contest prototype. Benefits such as fewer missed appointments are pilot hypotheses, not measured results. |
 | **Meta AI tooling (25%)** | Three Meta capabilities working together: Muse Voice Transcribe for the rider's voice, Muse Spark image understanding for the appointment card, and Muse Spark agentic tool-calling for the investigation. Each is verified live with response IDs. |
-| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 158 offline tests including prompt-injection, model-failure, console-label and spoken date/time cases. |
+| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 163 offline tests including prompt-injection, model-failure, console-label and spoken date/time cases. |
 | **Demo (25%)** | One spoken request, one card read by Meta, independent checks shown in the console, a human sign-off, then a deliberately contradictory card that is blocked. See [docs/DEMO.md](docs/DEMO.md). |
 
 ## Run it
@@ -60,7 +60,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 Python 3.10+ is enough; the core has no third-party dependencies.
 
 ```bash
-./helper test     # 158 offline tests; no keys, no paid calls
+./helper test     # 163 offline tests; no keys, no paid calls
 ./helper serve    # console at http://127.0.0.1:8765
 ```
 
