@@ -1,89 +1,112 @@
-# Hosted console redeploy plan (for owner review)
+# Hosted console redeploy plan
 
-Prepared 2026-10-30 UTC. **Not executed. Deployment and paid calls are on hold until the owner approves.** This changes only the contest app `harvey-healthcare-review` on Modal. The production Harvey Taxi apps are untouched.
+Prepared 2026-10-30 UTC. Owner approval to redeploy from exactly `53d77779dbf478ac125b3970de3ad8cb3f1d16d1` was given on 2026-10-30. **The deployment isn't complete until the owner's command output shows it and the hosted checks pass.** This changes only the contest app `harvey-healthcare-review` on Modal. The production Harvey Taxi apps are untouched.
 
-## What would be deployed
+Paid Meta calls stay on hold until the hosted checks pass. After that, at most **$0.90 in total** may be spent on the recording, with no automatic retries.
+
+## What is deployed
 
 | Item | Value |
 |---|---|
-| Commit | `main` at `53d77779dbf478ac125b3970de3ad8cb3f1d16d1` (merge of PRs #11–#14; CI `verify-agent` green on this commit's push run; 163 tests passed, none skipped, on a clean checkout) |
+| Commit | `53d77779dbf478ac125b3970de3ad8cb3f1d16d1` (merge of PRs #11–#14). CI `verify-agent` green on its push run; 163 tests passed with none skipped on a clean checkout |
 | Currently hosted | `fc49119` (PR #8), deployed 2026-10-29 per the owner's deploy output |
 | New on the hosted console | 15-minute idle window and a restart-stable session token (PR #11); spoken date/time check (PR #12). PRs #13–#14 change docs only |
-| Unchanged | App name, URL, Modal secret `harvey-healthcare-demo` (same three names; no new secret), Volume `harvey-healthcare-runs` and its saved runs, Basic-auth sign-in, origin checks, one container, one request at a time |
+| Unchanged | App name and URL; Modal secret `harvey-healthcare-demo` (the same three names, values not touched); Volume `harvey-healthcare-runs` and its saved runs; Basic-auth sign-in; origin checks; one container and one request at a time |
 
-## Before deploying (free)
+`modal_console.py` uploads only `agent_kit`, `harvey_agent`, `verification`, `ui`, `cases`, `index.html`, `app.js` and `console.css`. Deploying from a pinned commit uploads exactly that commit's files.
 
-Run on the Mac, in the `harvey-healthcare-review` folder. Run the commands one per line; don't paste comments into zsh.
+## Commands for the Mac, in order
+
+Run them in the `harvey-healthcare-review` folder, one line at a time. Don't paste comments into zsh. Send the output of each phase before starting the next.
+
+### Phase 1: pin the commit, test it, record the rollback version (free)
 
 ```bash
+git status --short
 git fetch origin
-git checkout main
-git pull --ff-only origin main
+git checkout --detach 53d77779dbf478ac125b3970de3ad8cb3f1d16d1
 git log --oneline -1
-./helper test 2>&1 | tail -3
+./helper test
+echo "test exit status: $?"
 python3 -m modal app history harvey-healthcare-review
 ```
 
 Expected results:
-- `git log` prints `53d7777`. If `main` has moved on since then (for example, this plan merged as a docs-only commit), deploy the reviewed commit exactly: run `git checkout 53d7777` before deploying and `git checkout main` afterwards.
-- The tests end with `OK`. The skip count can differ on the Mac.
-- The history's last line is the 2026-10-29 deployment. **Write down its version** (for example `v7`). That is the rollback target.
+- `git status --short` prints nothing. If it lists changes, stop and send the list.
+- `git log` prints `53d7777 Merge pull request #14: Demo script and recording checklist`.
+- The tests end with `OK`, and `test exit status: 0`. The skip count can differ on the Mac.
+- The history's newest line is the 2026-10-29 deployment. **Its version (for example `v7`) is the rollback target.**
 
-## Deploy (needs approval)
+### Phase 2: deploy (approved)
 
 ```bash
 python3 -m modal deploy modal_console.py
+python3 -m modal app history harvey-healthcare-review
 ```
 
-Expected output: `✓ App deployed` and the same URL, `https://williebee615--harvey-healthcare-review-console.us-east.modal.run`.
+Expected results:
+- `✓ App deployed`, with `https://williebee615--harvey-healthcare-review-console.us-east.modal.run`.
+- The history shows one new version on top. Record that version and the commit `53d7777`.
 
-## Verify after deploying (free; no Meta calls)
+### Phase 3: hosted checks (no Meta API charges; Modal hosting time is used)
 
-1. Open the URL in Chrome. The browser asks for the `reviewer` sign-in.
-2. Select **Offline simulation** and click **Appointment card**. Type the demo sentence and click **Start offline simulation (no API calls)**. Expected: **awaiting signoff**, nine checks passing, including **spoken schedule check**: "Spoken dates and times agree with the booking and the appointment card". The receipts panel says no API calls were made.
-3. Leave the page idle for 2 minutes, then click **Card contradiction** and start an offline review. It should run, because the console stays up for 15 minutes. If the container did restart, the page says "The review was not started; no Meta call was made" and the next click works.
-4. `python3 -m modal app history harvey-healthcare-review` shows the new version on top.
+The check script is standalone and reads the password from `CONSOLEPW` without printing it. It runs only Offline simulation and fails if any record shows live inference.
 
-## Rollback
+```bash
+git show origin/main:audit/hosted_check.py > /tmp/hosted_check.py
+read -s CONSOLEPW
+export CONSOLEPW
+python3 /tmp/hosted_check.py https://williebee615--harvey-healthcare-review-console.us-east.modal.run
+echo "hosted check exit status: $?"
+```
 
-Option A, Modal's rollback (checked against `modal app rollback --help`, client 1.6.3):
+After `read -s`, type the reviewer password and press Return; nothing is shown. The script checks:
+- Authentication: no password returns 401, a wrong password returns 401, the right password returns 200, and a stale token returns 403.
+- Saved runs: the two earlier hosted runs (`run_b2023b2d…`, `run_0e228025…`) still read back as `completed_after_human_signoff`.
+- Take 1, Appointment card with the demo sentence, offline: `awaiting_signoff`, 9 checks, none failed, 0 Meta calls.
+- Take 2, Card contradiction, offline: `needs_input`, only `appointment_card_check` failed, 0 Meta calls.
+- It ends with `"all_checks_passed": true` and exit status 0.
+
+Both offline reviews are saved to the shared Volume as new offline runs, labeled as simulation.
+
+Optional visual check in Chrome: the sign-in prompt appears; **Saved reviews** lists the earlier runs; an offline Appointment card run shows the **spoken schedule check**.
+
+### If any Phase 3 check fails: roll back
 
 ```bash
 python3 -m modal app rollback harvey-healthcare-review vN
+python3 -m modal app history harvey-healthcare-review
 ```
 
-`vN` is the version noted before deploying. Without a version, the command returns to the previous one. Modal records a rollback as a new deployment in the history, and the URL is unchanged.
+`vN` is the version recorded in Phase 1. The rollback appears as a new history entry, and the URL is unchanged. The rollback command was checked against `modal app rollback --help` (client 1.6.3). Alternatively, `git checkout fc49119` and `python3 -m modal deploy modal_console.py`.
 
-Option B, redeploy the previous code:
+Rollback restores the code. It doesn't touch the secret or the saved runs. Runs saved by the new version carry an extra `spoken_schedule_check`, and the older code reads them without error.
+
+### Finally
 
 ```bash
-git checkout fc49119
-python3 -m modal deploy modal_console.py
 git checkout main
+git pull --ff-only origin main
 ```
 
-Notes:
-- Rollback restores the code. It doesn't touch the secret or the Volume.
-- Runs saved by the new version carry an extra `spoken_schedule_check` entry. The older code reads them without error, because it treats checks as a list.
-- Each command uses the Modal login on the Mac; this cloud session has no Modal credentials.
+## Expected hosting cost (provisional)
 
-## Expected hosting cost (estimate)
+**Provisional until the app's actual resource settings and the account's credits are confirmed on the Modal dashboard.**
+- `modal_console.py` sets no CPU or memory request, so Modal's defaults apply. Those defaults weren't verified from this session.
+- modal.com can't be reached from this session. The rates below are Modal's published rates as quoted by third-party pricing pages:
+  - CPU: $0.0000131 per physical core per second;
+  - memory: $0.00000222 per GiB per second;
+  - Starter plan: $30 a month in compute credits.
 
-modal.com isn't reachable from this session. The rates below are Modal's published rates as quoted by third-party pricing pages, so **confirm them on the Modal dashboard**:
-- CPU: $0.0000131 per physical core per second.
-- Memory: $0.00000222 per GiB per second.
-- Starter plan: $30 a month in free compute credits.
-
-The app sets no CPU or memory request, so Modal's defaults apply (not verified here). Billing is assumed to follow the larger of the reservation and actual use.
-
-| Basis | Per hour the container is up | Per review session (a 15-minute idle tail plus about 15 minutes of use) |
+| Assumed basis | Per hour the container is up | Per review session (15-minute idle tail plus about 15 minutes of use) |
 |---|---|---|
-| Low: 0.125 core, 0.5 GiB | about $0.01 | about $0.005 |
-| High: 1 core, 1 GiB | about $0.06 | about $0.03 |
+| 0.125 core, 0.5 GiB | about $0.01 | about $0.005 |
+| 1 core, 1 GiB | about $0.06 | about $0.03 |
 
-A recording day with about 2 hours of container time would cost roughly **$0.02–$0.11 of Modal compute**, within the Starter credits if the account is on that plan. The 15-minute window costs at most about $0.014 more per session than the old 60-second one. Meta API costs are separate, and paid calls remain on hold.
+On these assumptions, a recording day with about 2 hours of container time costs roughly $0.02–$0.11 of Modal compute. The 15-minute window adds at most about $0.014 per session compared with the old 60-second window. The hosted checks above make no Meta API charges, but they do use Modal hosting time. Meta API costs are separate.
 
-## Records to update after an approved deploy
+## Records after a verified deploy
 
-- README, SUBMISSION and MODAL: record the deployed commit and the date (UTC), per the owner's deploy output.
-- Keep "deployed" separate from "tested live". A deploy alone doesn't verify Meta inference.
+- README, SUBMISSION and MODAL: the deployed commit `53d7777`, the Modal version, and the date (UTC), all taken from the owner's output.
+- "Deployed" isn't "tested live". Only the offline hosted checks are verified by this plan.
+- Submission status and edit permissions stay unresolved until the owner confirms them in the portal. No commit is tagged as submitted.
