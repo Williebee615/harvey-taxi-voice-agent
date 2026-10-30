@@ -13,9 +13,10 @@ for asset in ('index.html', 'app.js', 'console.css'):
     image = image.add_local_file(str(ROOT / asset), remote_path='/app/' + asset)
 volume = modal.Volume.from_name('harvey-healthcare-runs', create_if_missing=True)
 
+# Stay up for 15 idle minutes so a reviewer's open page and held Meta transcript survive normal pauses.
 @app.function(image=image, secrets=[modal.Secret.from_name('harvey-healthcare-demo')],
               volumes={'/app/workspace': volume}, max_containers=1, timeout=240,
-              scaledown_window=60)
+              scaledown_window=900)
 @modal.concurrent(max_inputs=1)
 @modal.asgi_app()
 def console():

@@ -35,6 +35,15 @@ class ConsoleTests(unittest.TestCase):
         self.assertEqual(self.req('POST','/api/run',{}, {'Origin':'https://evil.example'})[0],403)
     def test_bad_host_blocked(self):self.assertEqual(self.req('GET','/api/config',headers={'Host':'evil.example'})[0],403)
     def test_missing_token_blocked(self):self.assertEqual(self.req('POST','/api/run',{}, {'X-Console-Token':''})[0],403)
+    def test_stale_token_is_reported_as_expired_session(self):
+        code,data=self.req('POST','/api/run',{'case':'healthcare-clinic-visit'},{'X-Console-Token':'token-from-an-earlier-process'})
+        self.assertEqual((code,json.loads(data)['code']),(403,'session_expired'))
+        self.assertEqual(list((self.root/'workspace').glob('runs/run_*.json')) if (self.root/'workspace').exists() else [],[])
+        code,data=self.req('POST','/api/run',{}, {'Origin':'https://evil.example','X-Console-Token':'stale'})
+        self.assertEqual(code,403);self.assertNotIn('code',json.loads(data))
+    def test_fixed_token_is_used_when_supplied(self):
+        server=ConsoleServer(('127.0.0.1',0),self.root,token='fixed-token-value');self.addCleanup(server.server_close)
+        self.assertEqual(server.token,'fixed-token-value');self.assertNotEqual(self.server.token,'fixed-token-value')
     def test_invalid_type(self):self.assertEqual(self.req('POST','/api/run',{}, {'Content-Type':'text/plain'})[0],415)
     def test_invalid_body(self):self.assertEqual(self.req('POST','/api/run',[])[0],400)
     def test_run_step_and_approve(self):
