@@ -176,7 +176,7 @@ Use only the fictional cases in this repository. Each live turn is one Meta call
 | 1. Probe | `./helper probe` | 1 | `image_input.status` is `PASSED`. Save the JSON. |
 | 2. Card case | `./helper run --case healthcare-appointment-card --mode live --turns 30` | about 10–30 | `awaiting_signoff`; `card_extraction.extracted_by` is `LIVE_META_API`; card check passed; one receipt per turn |
 | 3. Card contradiction | `./helper run --case healthcare-card-contradiction --mode live --turns 30` | about 6–30 | `needs_input`; only `appointment_card_check` failed; no memo |
-| 4. Spoken request | `./helper run --case healthcare-clinic-visit --mode live --turns 30 --spoken-request "I need a wheelchair accessible ride with my service dog to my clinic appointment on Monday."` | about 10–30 | `awaiting_signoff`; memo cites `spoken_request.txt`; spoken request check passed |
+| 4. Spoken request | `./helper run --case healthcare-clinic-visit --mode live --turns 30 --spoken-request "I need a wheelchair accessible ride with my service dog to my clinic appointment on Monday, November second."` | about 10–30 | `awaiting_signoff`; memo cites `spoken_request.txt`; spoken request check passed |
 | 5. Failure path | Repeat step 2 with an invalid key in a separate shell | 0–1 | Run pauses with `api_error`; no memo; not labeled live |
 
 If a run pauses at the turn limit, continue it with `./helper resume --run-id <id> --turns 20`. Do not start a new run to hide a pause.
@@ -210,3 +210,7 @@ Do not publish full transcripts, keys or account pages.
 The result is saved to `workspace/probes/probe_<timestamp>.json`. It contains the endpoint, the listed model IDs, and the image call's response ID, model, token usage, extracted fields and per-field pass/fail. It contains no key and no remote error bodies.
 
 For SAM and speech, `LISTED` only means a model ID appeared. Each still needs its documented request format and a successful call before the project can say it is integrated.
+
+## Records made before the spoken date/time check
+
+Runs recorded on 2026-10-29 predate `spoken_schedule_check`, so their saved `verification` lists the checks that existed then. Their files and fingerprints are unchanged. Recomputing their checks today with `agent_kit.evidence.inspect` adds the new check, and it passes for both spoken-request runs: `run_1f9f0992…` (Meta transcript "…on Monday, November 2nd. 2nd. I need to arrive by 9 45 in the morning.") reads as `matches`; `run_0e228025…` (no date or time spoken) reads as `no_schedule_spoken`. **[Verified offline, 2026-10-30]**
