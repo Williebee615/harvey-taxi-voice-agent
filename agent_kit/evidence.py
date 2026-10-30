@@ -5,7 +5,7 @@ import json
 import math
 import re
 from pathlib import Path
-from agent_kit import settings
+from agent_kit import schedule, settings
 
 
 def case_path(root, case):
@@ -224,6 +224,9 @@ def inspect(root, case, extra=None, card_extraction=None):
         checks_out['appointment_card_check'] = card_check(fields, card_extraction, evidence_digest)
     if SPOKEN_REQUEST in docs:
         checks_out['spoken_request_check'] = spoken_request_check(docs[SPOKEN_REQUEST], fields)
+        # Spoken dates and times are compared with the intake and with card fields read in this run from the current evidence.
+        card = _valid_fields(card_extraction.get('fields')) if card_extraction and card_extraction.get('source_digest') == evidence_digest else None
+        checks_out['spoken_schedule_check'] = schedule.check(docs[SPOKEN_REQUEST], fields, card)
     return {'checks': checks_out, 'passed': all(x['passed'] for x in checks_out.values()),
             'rider': fields.get('Rider'), 'selected_bay': selected,
             'evidence_digest': evidence_digest, 'telemetry_source': 'simulation_fixture',

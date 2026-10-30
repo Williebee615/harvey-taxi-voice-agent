@@ -19,6 +19,7 @@ Run `./helper test`. All automated tests are offline and use temporary case/run 
 - Appointment-card fields come only from a card image viewed in the run. Code cross-checks them against the rider request; a contradiction, missing or unreadable field, or a changed image blocks the memo and approval.
 - Images are never quoted as text, never exceed 2 MB, and are never stored in public observations.
 - A spoken request is run-scoped, untrusted evidence. Its accessibility needs must appear in the intake, bypass instructions fail the check, and the memo must quote it.
+- Spoken dates and times are parsed by code (`agent_kit/schedule.py`), never by the model. Each must match the intake and any appointment card read in the run: a stated date, the weekday said with it, the appointment and pickup times, and an arrive-by time (equal to the card's, or else between pickup and appointment). Conflicts and ambiguous statements (weekday or relative day without a date, slash dates that read two ways, several dates, unlabeled times, invalid dates) fail `spoken_schedule_check` and ask the rider to clarify. A clock time without am/pm matches if either reading does. A request with no date or time passes this check.
 - Injected instructions in documents, transcripts or follow-ups cannot unlock tools: there is no approval, dispatch or payment tool.
 - The accessibility surcharge is always $0.00; any positive wheelchair, ADA or service-animal fee fails the fare check.
 - A failed model call pauses the run; a run is labeled live only after a successful Meta response.

@@ -17,7 +17,8 @@ Built for the Meta Global AI Developer Hackathon (Startup track, *Build for Your
       Independent code checks, which the model cannot override:
       intake · tariff quote · fare arithmetic · $0 accessibility fee ·
       curb bay · counter-evidence · healthcare transport fields ·
-      card fields vs request · spoken needs vs intake · exact citations
+      card fields vs request · spoken needs vs intake ·
+      spoken dates and times vs booking and card · exact citations
                                                               ▼
             awaiting_signoff (human reviewer)  or  needs_input (blocked)
 ```
@@ -51,7 +52,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 |---|---|
 | **Impact (30%)** | Missed medical appointments often come down to transport details: the wrong day, no wheelchair-capable vehicle, no way home. A voice-first intake helps riders who find apps hard to use, and the review catches contradictions before a car is sent. Built by an operating Nashville taxi company. Benefits such as fewer missed appointments are pilot hypotheses, not measured results. |
 | **Meta AI tooling (25%)** | Three Meta capabilities working together: Muse Voice Transcribe for the rider's voice, Muse Spark image understanding for the appointment card, and Muse Spark agentic tool-calling for the investigation. Each is verified live with response IDs. |
-| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 143 offline tests including prompt-injection, model-failure and console-label cases. |
+| **Technical execution (20%)** | The model interprets; code decides. Exact-quote citations, independent checks it cannot override, contradictions that force `needs_input`, a human gate, an audit-integrity check on every final state, a server-held Meta transcript, a spending cap, and 153 offline tests including prompt-injection, model-failure, console-label and spoken date/time cases. |
 | **Demo (25%)** | One spoken request, one card read by Meta, independent checks shown in the console, a human sign-off, then a deliberately contradictory card that is blocked. See [docs/DEMO.md](docs/DEMO.md). |
 
 ## Run it
@@ -59,7 +60,7 @@ The complete run records are in [`docs/evidence/live-batch-2026-10-29/`](docs/ev
 Python 3.10+ is enough; the core has no third-party dependencies.
 
 ```bash
-./helper test     # 143 offline tests; no keys, no paid calls
+./helper test     # 153 offline tests; no keys, no paid calls
 ./helper serve    # console at http://127.0.0.1:8765
 ```
 
@@ -100,7 +101,7 @@ Runs can be paused, resumed (`./helper resume --run-id …`), inspected (`./help
 ## Safety and privacy boundaries
 
 - **Credentials stay on the server.** The browser receives only `key_configured: true/false`. Transcription goes through the console's server.
-- **Evidence is never instructions.** Documents, transcripts and follow-ups are untrusted. A transcript that tries to bypass review fails the spoken-request check. No tool exists for approval, dispatch or payment.
+- **Evidence is never instructions.** Documents, transcripts and follow-ups are untrusted. A transcript that tries to bypass review fails the spoken-request check. Spoken dates and times are read by code, not the model: a date or time that disagrees with the booking or card, or one that can't be pinned down ("Monday", "tomorrow", "11/2", an unlabeled time), stops the review at `needs_input` and asks the rider to clarify. No tool exists for approval, dispatch or payment.
 - **No silent fallback.** Model or network errors pause the run. A run is labeled live only after a successful Meta response.
 - **Headline labels.** A run shows **LIVE META INFERENCE — N RECORDED RESPONSES** only after Meta has answered (response IDs are recorded, not authenticated with Meta), or **OFFLINE SIMULATION — NO META API CALLS**. Curb data is labeled **SIMULATED CURB MEASUREMENTS**, and a sign-off shows **HUMAN ACKNOWLEDGMENT RECORDED — No vehicle dispatched** (stored as `DEMO_HUMAN_SIGNOFF_NO_DISPATCH`; runs signed earlier keep `SIMULATED_DISPATCHER_SIGNOFF`). The console remembers the chosen mode, labels the Start button with paid API calls in live mode, and never starts a review on its own.
 - **Provenance per result.** The console's *Where each result came from* panel separates live Meta reasoning, the source of the spoken request, who read the appointment card, and the curb measurements. Curb measurements are always a simulated fixture, even in a live Meta run. `LIVE_META_API` describes the reasoning only.
@@ -114,7 +115,8 @@ Runs can be paused, resumed (`./helper resume --run-id …`), inspected (`./help
 |---|---|
 | Meta speech-to-text intake with rider confirmation | Phone-call (IVR) intake; Meta realtime streaming |
 | Card image reading with code cross-checks | Other documents (discharge papers, insurance cards) |
-| Muse Spark investigation with exact citations | Code cross-check of spoken **dates and times** against the booking (today only accessibility needs are checked) |
+| Muse Spark investigation with exact citations | Spoken requests in other languages |
+| Code cross-check of spoken dates and times against the booking and card | Resolving relative dates ("tomorrow", "next Friday") automatically; today they ask the rider to confirm |
 | Deterministic fare, $0 accessibility fee, curb rule | SAM 3.1 curb analysis (model available, not integrated); calibrated measurements |
 | Human sign-off gate; contradiction blocking | Real dispatch, payments, staff identity, EHR or clinic integrations |
 | Live verification batch with spending cap | Clinic pilot with consent, privacy agreements and outcome measurement |
