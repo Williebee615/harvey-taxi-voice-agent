@@ -1,12 +1,14 @@
 # Three-minute demonstration
 
-Updated 2026-10-30 UTC. The script below shows the console as it will be **after PRs #11 (session reliability) and #12 (spoken date/time checks) are merged and the hosted console is redeployed**. Each of those steps needs the owner's approval. Until then, see "If #11 and #12 aren't deployed yet".
+Updated 2026-10-30 UTC. This is a contest prototype built by Harvey Taxi's founder; the video shows fictional cases and makes no claim of operating scale or production use.
+
+The script matches `main` after PRs #11 (session reliability) and #12 (spoken date/time checks), which were merged on 2026-10-30. **The hosted console only shows them after a redeploy, which is pending owner approval.** Until then, see "If the hosted console hasn't been redeployed".
 
 ## What the video must show (judging criteria)
 
 | Criterion | Shown by |
 |---|---|
-| Impact (30%) | A wheelchair user's clinic trip: wrong day, arrival time, ramp, fair fare, way home. Built by an operating Nashville taxi company |
+| Impact (30%) | A wheelchair user's clinic trip: wrong day, arrival time, ramp, fair fare, way home. Built as a contest prototype by the founder of Harvey Taxi Service LLC |
 | Meta AI tooling (25%) | Meta speech-to-text on a real voice, Muse Spark reading the card image, and Muse Spark choosing every investigation step, with response IDs on screen |
 | Technical depth (20%) | Code, not the model, checks the card, the spoken needs, the spoken date and time, and the fare. A contradiction is blocked |
 | Demo (25%) | One live successful review with sign-off, then one live blocked contradiction, under three minutes |
@@ -14,11 +16,14 @@ Updated 2026-10-30 UTC. The script below shows the console as it will be **after
 ## Recording checklist
 
 ### Owner approvals, before the recording day
-- [ ] PR #11 and PR #12 merged, and the hosted console redeployed from that `main`. Record the deployed commit.
+- [ ] Hosted console redeployed from the approved `main` commit using the owner-reviewed deployment plan. Record the deployed commit.
 - [ ] Paid calls released for the recording. Budget approved on 2026-10-29: about $0.90 in total for demo takes. **Paid calls are on hold as of 2026-10-30**, so confirm before recording.
 - [ ] Submission status confirmed in the portal (see SUBMISSION.md), so you know whether the video link can still be added or changed.
 
 ### Free rehearsal (no paid calls)
+
+Done offline on 2026-10-30 against `main` with the #11 and #12 changes, on a local console with no Meta key configured. The browser made no requests outside the local console. Repeat it on the hosted console after the redeploy.
+
 - [ ] Open the console in **Chrome** and sign in as `reviewer`.
 - [ ] Select **Offline simulation** and run **Appointment card**, typing the spoken sentence below into the text box. The console should end at awaiting sign-off with the **OFFLINE SIMULATION — NO META API CALLS** label. Never show this as Meta in the video.
 - [ ] Run **Card contradiction** in Offline simulation. It should stop at **needs input** with the card check failing.
@@ -68,18 +73,18 @@ It matches the fictional booking and card: Monday 2026-11-02, arrive by 09:45, w
 | 0:50–1:25 | Click **Start live Meta review (paid API calls)**. Point at the green **LIVE META INFERENCE — N RECORDED RESPONSES** label and the activity list. Expand **analyze documents**, then **record document fields**. Point at the receipts panel. | "Now Meta's Muse Spark runs the review and chooses every step. It reads the appointment card photo and records the date, the times and the clinic. Every step has a recorded Meta response ID and token count." |
 | 1:25–2:00 | Independent verification panel: point at the **appointment card check**, the **spoken request check**, the **spoken schedule check** ("Spoken dates and times agree with the booking and the appointment card"), the **fare check**, and the orange **SIMULATED CURB MEASUREMENTS** label. | "Then code, not the model, decides. The card must agree with the booking. The wheelchair and service dog the rider mentioned must be on the intake. Monday, November second and nine forty-five must match the booking and the card. The fare is computed: two fifty plus a dollar fifty a mile, and zero dollars for accessibility. The curb data here is simulated, and it's labeled that way." |
 | 2:00–2:15 | Memo with citations. Type your name and click **Record demo sign-off**. The blue **HUMAN ACKNOWLEDGMENT RECORDED — No vehicle dispatched** label appears. | "The memo cites its sources and stops for a person. Sign-off is a human decision; nothing is dispatched or charged." |
-| 2:15–2:45 | Click **Card contradiction** and start a live review (no recording needed). Show the failed **appointment card check** ("Card date 2026-11-02 differs from request date 2026-11-03") and **needs input**. | "Now the booking says Tuesday, November third, but the card says Monday, November second. That's exactly how someone misses an appointment. The card check fails, the review stops at needs input, and sign-off is blocked until a person fixes it." |
+| 2:15–2:45 | Click **Card contradiction** and start a live review (no recording needed). Show the failed **appointment card check** ("Card date 2026-11-02 differs from request date 2026-11-03; Pickup date 2026-11-03 differs from card date 2026-11-02") and **needs input**. | "Now the booking says Tuesday, November third, but the card says Monday, November second. That's exactly how someone misses an appointment. The card check fails, the review stops at needs input, and sign-off is blocked until a person fixes it." |
 | 2:45–2:58 | Receipts panel, then the repository's evidence folder. | "Meta listens and reads. Our code verifies. A person decides. Every case here is fictional, and every live result is published with its Meta receipts." |
 
 ## If something fails during recording
 
-- **"The console restarted… Nothing was sent":** click the button again; no charge was made. (This needs #11 deployed.)
+- **"The console restarted since this page loaded. The review was not started; no Meta call was made.":** click the button again; no charge was made. (This message needs the redeploy.)
 - **The page shows plain text without styling (Safari):** you are in Reader. Press Esc.
 - **Microphone or transcription error:** type the sentence instead and say "typed request" on camera. Don't present typed text as Meta speech.
 - **The spoken schedule check fails:** the transcript differs from the sentence (a wrong day or time). Show it honestly as the safeguard working, or start the take again. A retake costs another review (about $0.10–$0.30).
 - **A live review pauses on an API error:** stop. Use the saved live runs, captioned. Don't retry repeatedly without budget approval.
 
-## If #11 and #12 aren't deployed yet
+## If the hosted console hasn't been redeployed
 
 - The **spoken schedule check** row won't appear. Drop "Monday, November second and nine forty-five must match…" from the 1:25–2:00 narration.
 - The console stops after 60 idle seconds. Reload with Command-R just before each take, and move from transcription to Start without pausing.
