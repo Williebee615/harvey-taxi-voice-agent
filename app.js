@@ -30,10 +30,10 @@ async function api(path, body) {
   const response = await fetch(path, body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json','X-Console-Token':token},body:JSON.stringify(body)});
   const data = await response.json();
   if (!response.ok) {
-    // The server restarted since this page loaded. Nothing was sent; fetch a fresh token and let the user click again.
+    // The server restarted since this page loaded. The request was refused before any work; fetch a fresh token and let the user click again.
     if (data.code === 'session_expired') {
       try { token = (await (await fetch('/api/config')).json()).token; } catch (error) {}
-      throw new Error('The console restarted since this page loaded. Nothing was sent and no Meta call was made. Click the button again.');
+      throw new Error('The console restarted since this page loaded. The review was not started; no Meta call was made. Click the button again.');
     }
     if (data.code === 'transcript_expired') clearTranscription('This Meta transcript can no longer be used (already used, expired, or the console restarted). Record the request again.');
     throw new Error(data.error || `Request failed (${response.status})`);

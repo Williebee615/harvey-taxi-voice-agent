@@ -18,7 +18,7 @@ const files = {'/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/jav
     if (files[url.pathname]) return route.fulfill({contentType: files[url.pathname][1], body: fs.readFileSync(path.join(root, files[url.pathname][0]))});
     const json = body => route.fulfill({contentType: 'application/json', body: JSON.stringify(body)});
     if (url.pathname === '/api/run' && route.request().method() === 'POST')
-      return route.fulfill({status: 403, contentType: 'application/json', body: JSON.stringify({error: 'Console session expired. Nothing was sent.', code: 'session_expired'})});
+      return route.fulfill({status: 403, contentType: 'application/json', body: JSON.stringify({error: 'Console session expired. The review was not started; no Meta call was made.', code: 'session_expired'})});
     if (url.pathname === '/api/config') { configCalls++; return json({token: `t${tokenGeneration}`, hosting: 'local', model: 'muse-spark-1.3', key_configured: true, cases: ['healthcare-clinic-visit'], case_images: {}}); }
     if (url.pathname === '/api/runs') return json(Object.values(runs).map(r => ({run_id: r.run_id, case: r.case, status: r.status})));
     if (url.pathname === '/api/run') return json(runs[url.searchParams.get('id')]);

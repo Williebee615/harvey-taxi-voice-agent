@@ -103,7 +103,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(403, {'error': 'Local console token and origin required'})
         if not secrets.compare_digest(self.headers.get('X-Console-Token', ''), self.server.token):
             # Host and origin are fine, so the page holds a token from an earlier server process.
-            return self.send(403, {'error': 'Console session expired. Nothing was sent.', 'code': 'session_expired'})
+            return self.send(403, {'error': 'Console session expired. The review was not started; no Meta call was made.', 'code': 'session_expired'})
         if self.path == '/api/transcribe':
             return self.transcribe()
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
