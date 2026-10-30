@@ -76,6 +76,66 @@ class ScheduleParsingTests(unittest.TestCase):
         self.assertEqual(schedule.check('Ride on November second.', {})['status'], 'ambiguous')
 
 
+def booking(day, pickup='09:00', appointment='10:00', zone='America/Chicago'):
+    return {'Pickup Time': f'{day} {pickup} {zone}', 'Appointment Time': f'{day} {appointment} {zone}'}
+
+
+class ScheduleEdgeTests(unittest.TestCase):
+    def test_year_is_the_booking_year_unless_spoken(self):
+        eve, new_year = booking('2026-12-31'), booking('2027-01-01')
+        self.assertEqual(schedule.check('Ride on January first.', new_year)['status'], 'matches')
+        self.assertEqual(schedule.check('Ride on Friday, January first.', new_year)['status'], 'matches')  # 2027-01-01 is a Friday
+        self.assertEqual(schedule.check('Ride on January 1st 2027.', new_year)['status'], 'matches')
+        crossing = schedule.check('Ride on January first.', eve)
+        self.assertEqual(crossing['status'], 'conflict')
+        self.assertIn('January 1 (no year spoken; the booking year 2026 is used) differs from the booking date 2026-12-31', crossing['reason'])
+        self.assertIn('differs from the booking date 2027-01-01', schedule.check('Ride on December thirty first.', new_year)['reason'])
+        self.assertIn('2026-01-01 differs from the booking date 2027-01-01', schedule.check('Ride on January 1 2026.', new_year)['reason'])
+        self.assertIn('booking year', schedule.check('Ride on January first.', new_year)['spoken']['year_rule'])
+
+    def test_time_zones_are_never_converted(self):
+        for text in ('Arrive by 9:45 central time.', 'Arrive by 9:45 CST.', 'Arrive by 9:45 CDT.'):
+            with self.subTest(text=text):
+                self.assertEqual(schedule.check(text, INTAKE)['status'], 'matches')
+        for text, zone in (('Arrive by 9:45 Eastern.', 'Eastern'), ('Arrive by 8:45 pacific time.', 'Pacific'), ('Arrive by 15:45 UTC.', 'UTC')):
+            with self.subTest(text=text):
+                result = schedule.check(text, INTAKE)
+                self.assertEqual(result['status'], 'ambiguous')
+                self.assertIn(f"mentioned {zone} time; booking times are in America/Chicago", result['reason'])
+        self.assertIn('an unstated time zone', schedule.check('Arrive by 9:45 central.', booking('2026-11-02', zone=''))['reason'])
+
+    def test_noon_and_midnight(self):
+        night = booking('2026-11-02', pickup='00:00', appointment='12:00')
+        for text in ('My appointment is at noon.', 'My appointment is at twelve noon.', 'My appointment is at 12 pm.',
+                     'Pick me up at midnight.', 'Pick me up at 12 am.', 'My appointment is at midday.'):
+            with self.subTest(text=text):
+                self.assertEqual(schedule.check(text, night)['status'], 'matches', schedule.check(text, night)['reason'])
+        self.assertIn("pickup time 'noon' differs from the booked pickup time 09:00", schedule.check('Pick me up at noon.', INTAKE)['reason'])
+        self.assertIn("pickup time 'midnight' differs", schedule.check('Pick me up at midnight.', INTAKE)['reason'])
+        self.assertEqual(schedule.check('Pick me up at 12 am.', INTAKE)['status'], 'conflict')
+
+    def test_arrival_and_pickup_must_agree(self):
+        self.assertEqual(schedule.check('Pick me up at nine and arrive by 9:45.', INTAKE)['status'], 'matches')
+        inverted = schedule.check('Pick me up at 9:30 and I need to arrive by 9:15.', INTAKE)
+        self.assertEqual(inverted['status'], 'conflict')
+        self.assertIn("pickup time '9:30' conflicts with their arrive-by time '9:15'", inverted['reason'])
+        late = schedule.check('Arrive by 10:15 for my appointment at 10.', INTAKE)
+        self.assertIn('not between the booked pickup 09:00 and appointment 10:00', late['reason'])
+        self.assertIn("arrive-by time '10:15' conflicts with their appointment time '10'", late['reason'])
+        no_booking = schedule.check('Pick me up at 9 am and arrive by 8:45 am.', {})
+        self.assertIn("pickup time '9 am' conflicts with their arrive-by time '8:45 am'", no_booking['reason'])
+
+    def test_unsupported_or_vague_phrasing_asks_for_clarification(self):
+        for text in ('Arrive around 9:45.', 'Pick me up after nine.', 'Arrive by nineish.', 'Ride Monday morning.',
+                     'Sometime in the afternoon.', 'The day after tomorrow.', 'In two days.', 'ASAP please.',
+                     'Next weekend works.', 'Late morning is fine.', 'Around lunchtime.', 'Ride on the fifth.'):
+            with self.subTest(text=text):
+                result = schedule.check(text, INTAKE)
+                self.assertEqual(result['status'], 'ambiguous', result['reason'])
+                self.assertIn('Request clarification from the rider before booking', result['reason'])
+        self.assertEqual(schedule.check('Good morning, I need a wheelchair ride.', INTAKE)['status'], 'no_schedule_spoken')
+
+
 class ScheduleReviewTests(AgentFixture):
     def test_review_stops_for_conflicting_or_ambiguous_speech(self):
         for text, expected in [('I need a wheelchair ride with my service dog on Tuesday, November third.', 'conflict'),

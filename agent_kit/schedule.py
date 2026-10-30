@@ -1,9 +1,15 @@
 """Deterministic cross-check of dates and times a rider speaks against the booking and appointment card.
 
 The transcript is untrusted evidence. Code, not the model, reads the dates and times in it. Anything it
-cannot pin down exactly (a weekday without a date, "tomorrow", an unlabeled time, a slash date that could
-be read two ways, two different dates) is ambiguous and asks the rider to clarify; anything that
-disagrees with the booking or card is a conflict. Either stops the review at needs_input.
+cannot pin down exactly (a weekday without a date, "tomorrow", an unlabeled or approximate time, a slash
+date that could be read two ways, two different dates, another time zone, vague phrases such as "in the
+afternoon") is ambiguous and asks the rider to clarify; anything that disagrees with the booking, the card
+or itself is a conflict. Either stops the review at needs_input.
+
+Year rule: a date spoken without a year takes the booking's year (the intake appointment date, else the
+pickup date). A spoken year is used as said. No other inference is made, so across a year boundary a
+date that differs from the booking is reported as a conflict, never moved to a neighbouring year.
+Times are compared as wall-clock times in the booking's own time zone; times are never converted.
 """
 from __future__ import annotations
 import re
@@ -20,7 +26,15 @@ TENS = {'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50}
 ORDINALS = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9,
             'tenth': 10, 'eleventh': 11, 'twelfth': 12, 'thirteenth': 13, 'fourteenth': 14, 'fifteenth': 15, 'sixteenth': 16,
             'seventeenth': 17, 'eighteenth': 18, 'nineteenth': 19, 'twentieth': 20, 'thirtieth': 30}
-RELATIVE = re.compile(r'\b(today|tonight|tomorrow|yesterday|next week|this week|next (?:%s)|this (?:%s))\b' % ('|'.join(WEEKDAYS), '|'.join(WEEKDAYS)))
+RELATIVE = re.compile(r'\b(day after tomorrow|today|tonight|tomorrow|yesterday|next week|this week|next (?:%s)|this (?:%s))\b' % ('|'.join(WEEKDAYS), '|'.join(WEEKDAYS)))
+ZONES = re.compile(r'\b(eastern|pacific|mountain|central|alaska|hawaii)(?: standard| daylight)?(?: time)?\b|\b(est|edt|pst|pdt|mst|mdt|cst|cdt|utc|gmt)\b')
+CENTRAL = {'central', 'cst', 'cdt'}
+ZONE_OF = {'America/Chicago': CENTRAL}
+APPROX = ('around', 'about', 'approximately', 'roughly', 'after', 'ish')
+VAGUE = re.compile(r'\b(day after tomorrow|in (?:a|one|two|three|four|five|\d+) (?:days?|weeks?)|(?:next|this|last) (?:weekend|month)|end of (?:the )?(?:week|month)|weekend'
+                   r'|(?:early|late|mid) (?:morning|afternoon|evening|day)|morning|afternoon|evening|midday ish|lunch ?time|lunch|as soon as possible|asap|soon|sometime|whenever|am or pm'
+                   r'|(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,2})ish)\b')
+GREETING = re.compile(r'\bgood (morning|afternoon|evening)\b')
 ROLES = (('arrive_by', re.compile(r'\b(arrive|arrival|be there|get there|get me there|there by|in by)\b')),
          ('pickup', re.compile(r'\b(pick (?:me )?up|pickup|picked up|leave|leaving|depart)\b')),
          ('appointment', re.compile(r'\b(appointment|appt|scheduled|visit is|see the doctor)\b')))
@@ -50,7 +64,7 @@ def _number(words):
 
 def _dates(words, year):
     """Explicit calendar dates. Returns (dates, day_only_mentions, ambiguous_notes, consumed word indexes)."""
-    found, day_only, notes, used = [], [], [], set()
+    found, day_only, notes, used, assumed = [], [], [], set(), set()
     for i, word in enumerate(words):
         if word in MONTHS:
             day, n = _number(words[i + 1:i + 3])
@@ -67,6 +81,8 @@ def _dates(words, year):
             explicit = words[i + 1 + n] if i + 1 + n < len(words) and re.fullmatch(r'20\d\d', words[i + 1 + n]) else None
             try:
                 found.append(date(int(explicit) if explicit else year, MONTHS[word], day))
+                if not explicit:
+                    assumed.add(found[-1])
             except (TypeError, ValueError):
                 notes.append(f"'{word} {day}' is not a valid date")
             used.update(span)
@@ -90,24 +106,36 @@ def _dates(words, year):
             else:
                 try:
                     found.append(date(year if not slash[3] else int(slash[3]) % 100 + 2000, a, b) if a <= 12 else date(year, b, a))
+                    if not slash[3]:
+                        assumed.add(found[-1])
                 except (TypeError, ValueError):
                     notes.append(f"'{word}' is not a valid date")
             used.add(i)
         elif re.fullmatch(r'\d{1,2}(st|nd|rd|th)', word) or (word in ORDINALS and (i == 0 or words[i - 1] in ('the', 'on'))):
             day_only.append(_number([word])[0])
             used.add(i)
-    return found, day_only, notes, used
+    return found, day_only, notes, used, assumed
 
 
 def _times(words, skip):
     """Spoken clock times with the role the rider gave them. Each candidate list holds every 24-hour reading."""
-    out, i = [], 0
+    out, consumed, i = [], set(), 0
     while i < len(words):
         if i in skip:
             i += 1
             continue
         word, start, hour, minute, n = words[i], i, None, 0, 0
         clock = re.fullmatch(r'(\d{1,2}):(\d{2})', word)
+        if word in ('noon', 'midday', 'midnight'):
+            start = i - 1 if i > 0 and words[i - 1] == 'twelve' else i
+            fixed = '12:00' if word != 'midnight' else '00:00'
+            context = ' '.join(words[max(0, start - 6):start])
+            role = next((name for name, pattern in ROLES if pattern.search(context)), 'unlabeled')
+            out.append({'role': role, 'spoken': ' '.join(words[start:i + 1]), 'candidates': [fixed],
+                        'approximate': start > 0 and words[start - 1] in APPROX})
+            consumed.update(range(start, i + 1))
+            i += 1
+            continue
         if clock:
             hour, minute, n = int(clock[1]), int(clock[2]), 1
         elif word in ('half', 'quarter') and i + 2 < len(words) and words[i + 1] in ('past', 'to'):
@@ -128,7 +156,7 @@ def _times(words, skip):
                     mins, m = _number(rest) if rest and (rest[0] in TENS or rest[0] in TEENS or re.fullmatch(r'\d{2}', rest[0])) else (None, 0)
                     if mins is not None and 0 <= mins <= 59:
                         hour, minute, n = value, mins, 1 + m
-                    elif i > 0 and words[i - 1] in ('at', 'by', 'around', 'before'):
+                    elif i > 0 and words[i - 1] in ('at', 'by', 'around', 'before', 'after', 'about'):
                         hour, n = value, 1
         if hour is None or n == 0:
             i += 1
@@ -136,7 +164,7 @@ def _times(words, skip):
         after = ' '.join(words[i + n:i + n + 4])
         am, pm = re.match(r'(am|in the morning|this morning)\b', after), re.match(r'(pm|in the (?:afternoon|evening)|tonight)\b', after)
         meridiem, suffix = ('am', am[1]) if am else ('pm', pm[1]) if pm else (None, '')
-        if not meridiem and not clock and n == 1 and words[i - 1:i] not in (['at'], ['by'], ['around'], ['before']):
+        if not meridiem and not clock and n == 1 and words[i - 1:i] not in (['at'], ['by'], ['around'], ['before'], ['after'], ['about']):
             i += 1
             continue  # a bare number such as "two" in "two bags" is not a time
         if meridiem == 'am':
@@ -149,14 +177,22 @@ def _times(words, skip):
             candidates = sorted({hour % 12, hour % 12 + 12})
         context = ' '.join(words[max(0, start - 6):start])
         role = next((name for name, pattern in ROLES if pattern.search(context)), 'unlabeled')
-        out.append({'role': role, 'spoken': ' '.join(words[start:i + n] + suffix.split()), 'candidates': [f'{h:02d}:{minute:02d}' for h in candidates]})
+        approximate = (start > 0 and words[start - 1] in APPROX) or words[i + n:i + n + 1] == ['ish']
+        out.append({'role': role, 'spoken': ' '.join(words[start:i + n] + suffix.split()), 'candidates': [f'{h:02d}:{minute:02d}' for h in candidates],
+                    'approximate': approximate})
+        consumed.update(range(start, i + n + len(suffix.split())))
         i += n
-    return out
+    return out, consumed
 
 
 def _clock(value):
     match = re.search(r'(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})', value or '')
     return (date.fromisoformat(match[1]), match[2]) if match else (None, None)
+
+
+def _zone(value):
+    match = re.search(r'\d{2}:\d{2}\s+([A-Za-z]+/[A-Za-z_]+)', value or '')
+    return match[1] if match else None
 
 
 def check(text, intake, card_fields=None):
@@ -167,16 +203,25 @@ def check(text, intake, card_fields=None):
     booking_date = appt_date or pickup_date
     words = _normalize(text).split()
     conflicts, clarify = [], []
-    dates, day_only, notes, used = _dates(words, booking_date.year if booking_date else None)
-    times = _times(words, used)
+    dates, day_only, notes, used, assumed = _dates(words, booking_date.year if booking_date else None)
+    times, timed = _times(words, used)
     weekdays = [w for w in words if w in WEEKDAYS]
     relative = sorted(set(RELATIVE.findall(_normalize(text))))
-    spoken = {'dates': [d.isoformat() for d in dates], 'weekdays': weekdays, 'times': times, 'relative': relative}
-    if not (dates or day_only or notes or times or weekdays or relative):
+    leftover = GREETING.sub(' ', ' '.join(w for k, w in enumerate(words) if k not in used and k not in timed))
+    vague = sorted({m.group(0) for m in VAGUE.finditer(RELATIVE.sub(' ', leftover))})
+    zones = sorted({(m[1] or m[2]) for m in ZONES.finditer(' '.join(words))})
+    booking_zone = _zone(intake.get('Appointment Time', '')) or _zone(intake.get('Pickup Time', ''))
+    spoken = {'dates': [d.isoformat() for d in dates], 'weekdays': weekdays, 'times': times, 'relative': relative,
+              'vague': vague, 'time_zones': zones, 'year_rule': 'A date spoken without a year takes the booking year; a spoken year is used as said'}
+    if not (dates or day_only or notes or times or weekdays or relative or vague or zones):
         return {'passed': True, 'status': 'no_schedule_spoken', 'spoken': spoken, 'conflicts': [], 'clarify': [],
                 'reason': 'No date or time was spoken; the booking times come from the written intake'}
     clarify += [f'Confirm the date: {note}' for note in notes]
     clarify += [f"Confirm the calendar date meant by '{r}'" for r in relative]
+    clarify += [f"Confirm the exact date and time meant by '{v}'" for v in vague]
+    foreign = [zone for zone in zones if zone not in ZONE_OF.get(booking_zone, set())]
+    for zone in foreign:
+        clarify.append(f"The rider mentioned {zone.upper() if len(zone) <= 3 else zone.title()} time; booking times are in {booking_zone or 'an unstated time zone'}. Confirm the time in the booking's time zone")
     if len({d for d in dates}) > 1:
         clarify.append('More than one date was spoken: ' + ', '.join(sorted({d.isoformat() for d in dates})))
     if dates and booking_date is None:
@@ -185,7 +230,9 @@ def check(text, intake, card_fields=None):
     for spoken_date in sorted(set(dates)):
         for label, ref in references:
             if ref and spoken_date != ref:
-                conflicts.append(f'Spoken date {spoken_date.isoformat()} differs from the {label} date {ref.isoformat()}')
+                said = (f"{spoken_date:%B} {spoken_date.day} (no year spoken; the booking year {spoken_date.year} is used)"
+                        if spoken_date in assumed else spoken_date.isoformat())
+                conflicts.append(f'Spoken date {said} differs from the {label} date {ref.isoformat()}')
         for day in weekdays:
             if WEEKDAYS[spoken_date.weekday()] != day:
                 conflicts.append(f'Rider said {day.title()}, but {spoken_date.isoformat()} is a {WEEKDAYS[spoken_date.weekday()].title()}')
@@ -198,6 +245,11 @@ def check(text, intake, card_fields=None):
     appt_refs = {t for t in (appt_time, card_fields.get('appointment_time')) if t}
     for spoken_time in times:
         options, role, said = spoken_time['candidates'], spoken_time['role'], spoken_time['spoken']
+        if foreign:
+            continue  # a time in another zone is not compared; the rider is asked to restate it
+        if spoken_time['approximate']:
+            clarify.append(f"Confirm an exact time instead of the approximate '{said}'")
+            continue
         if role == 'appointment':
             if appt_refs and not any(all(o == r for r in appt_refs) for o in options):
                 conflicts.append(f"Spoken appointment time '{said}' differs from the booked appointment time {', '.join(sorted(appt_refs))}")
@@ -221,6 +273,17 @@ def check(text, intake, card_fields=None):
             known = {t for t in (pickup_time, appt_time, arrive_ref, card_fields.get('appointment_time')) if t}
             if not known.intersection(options):
                 clarify.append(f"Confirm whether '{said}' is the pickup, arrival or appointment time")
+    # The rider's own times must also agree with each other: pickup before arrival, arrival no later than the appointment.
+    exact = [t for t in times if not t['approximate'] and not foreign]
+    by_role = {role: [t for t in exact if t['role'] == role] for role in ('pickup', 'arrive_by', 'appointment')}
+    for earlier, later, rule in (('pickup', 'arrive_by', lambda a, b: a < b), ('arrive_by', 'appointment', lambda a, b: a <= b),
+                                 ('pickup', 'appointment', lambda a, b: a < b)):
+        for first in by_role[earlier]:
+            for second in by_role[later]:
+                pairs = (zip(first['candidates'], second['candidates']) if len(first['candidates']) == len(second['candidates']) == 2
+                         else [(a, b) for a in first['candidates'] for b in second['candidates']])
+                if not any(rule(a, b) for a, b in pairs):
+                    conflicts.append(f"The rider's {earlier.replace('_', '-')} time '{first['spoken']}' conflicts with their {later.replace('_', '-')} time '{second['spoken']}'")
     status = 'conflict' if conflicts else 'ambiguous' if clarify else 'matches'
     reason = ('Spoken dates and times agree with the booking' + (' and the appointment card' if card_fields else '') if status == 'matches'
               else '; '.join(conflicts + [f'Ask the rider: {c}' for c in clarify]) + '. Request clarification from the rider before booking.')
