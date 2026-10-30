@@ -1,14 +1,15 @@
 # Harvey Taxi — Accessible Voice-Booking & Verification Agent
 
-## Submission status (2026-10-29)
+## Submission status (updated 2026-10-30 UTC)
 
 | Item | Status |
 |---|---|
-| Source | https://github.com/Williebee615/harvey-taxi-voice-agent, branch `main`. PRs #4–#8 merged 2026-10-29; later fixes arrive by pull request with owner approval |
+| Source | https://github.com/Williebee615/harvey-taxi-voice-agent, branch `main`. PRs #4–#10 merged 2026-10-29/30. In review, not yet on `main`: #11 (console session reliability), #12 (spoken date/time checks). Every merge needs owner approval |
 | Hosted console | https://williebee615--harvey-healthcare-review-console.us-east.modal.run. Password-protected (username `reviewer`; password shared privately). Deployed from `main` at `fc49119` (PR #8) on 2026-10-29, per the owner's deploy output |
 | Live Meta evidence | Complete: [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md), [docs/evidence/live-batch-2026-10-29/](docs/evidence/live-batch-2026-10-29/README.md) |
 | Three-minute video | **Not recorded yet.** Script: [docs/DEMO.md](docs/DEMO.md) |
-| Event form | **Not submitted yet** |
+| Event form | **Unresolved: records conflict.** On 2026-10-29 the owner referred to "the submitted Modal console"; this file previously said "not submitted yet". The portal ([submit page](https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit)) can't be reached from the development environment. The owner should confirm the submission date, the links entered, and whether edits are allowed |
+| Submitted version | Every commit on `main` is kept and none has been rewritten. Once the owner confirms when the form was submitted, the `main` commit current at that time will be tagged (candidates: `c7c1f1a`, which was `main` at 10:11 UTC on 2026-10-29 when the owner first called the console submitted; the later deployments `778b740` and `fc49119`) |
 | Track and theme | Startup track · Build for Your World. Confirm in the event platform |
 | Representative | Willie Harvey IV, Harvey Taxi Service LLC. Confirm team members against the registration |
 | Deadline | November 4, 2026, 9 PM Eastern, per the participant guide supplied. Check organizer announcements |
@@ -27,13 +28,27 @@ Demonstrated: fictional cases where the system books a consistent trip and block
 
 ## How Meta's models are used (Meta AI tooling, 25%)
 
-| Meta model | Role | Verified live |
-|---|---|---|
-| `muse-voice-transcribe-1.0` | Transcribes the rider's spoken request (file endpoint) | Yes: probe and one full spoken-request run; all key facts preserved |
-| `muse-spark-1.3`, image understanding | Reads the appointment card image: date, appointment time, arrive-by time, clinic | Yes: probe and two full card runs, all fields correct |
-| `muse-spark-1.3`, agentic tool calling | Chooses each investigation step, records exact quotations, requests evidence and writes the cited memo | Yes: 65 live turns, a response ID for each |
+Three Meta capabilities work in sequence on one booking. Each has its own job, and code checks each one's output.
 
-Models available but **not** used: `sam-3.1` (curb segmentation is future work), `muse-wonder-1.0`, and the contributor-mode variants.
+| Meta capability | What it does here | How it is wired | Verified live |
+|---|---|---|---|
+| **Muse Voice Transcribe** (`muse-voice-transcribe-1.0`) | Turns the rider's spoken request into text | The browser records only after the rider clicks Record and sends 16 kHz WAV to the console's own server. That server calls Meta's file transcription endpoint with the key it holds, keeps the transcript server-side, and uses it only after the rider confirms it. Edited text is relabeled as typed, not Meta | Yes: probe (word error rate 2.9% with numbers spelled out), one batch run, and one real-microphone run on the hosted console |
+| **Muse Spark image understanding** (`muse-spark-1.3`) | Reads the appointment card photo: date, appointment time, arrive-by time, clinic | When the model asks to analyze the card, the image goes back to it as `input_image`. The model records the fields with a dedicated tool, and code compares them with the booking | Yes: probe plus two full card runs, all fields correct |
+| **Muse Spark agentic tool calling** (`muse-spark-1.3`, Responses API) | Runs the investigation | Nine custom function tools that our code executes: list and analyze documents, set a checklist, update the plan, record exact quotes, record card fields, verify the booking, request evidence, submit the memo. Exactly one tool per turn. Each result, including refusals such as "Quote must occur exactly in a source document", returns to the model as `function_call_output`. Meta's encrypted reasoning is carried between turns (`include: reasoning.encrypted_content`, `store: false`) | Yes: 65 batch turns plus 51 hosted-console turns, each with a recorded Meta response ID |
+
+**What the model decides and what code decides.** In a live run Muse Spark chooses every tool and its arguments: which documents to read, what to check, what to quote, and when to verify, ask for evidence or submit. Code decides the outcome: fare arithmetic and the $0 accessibility fee, the curb rule, intake completeness, card and spoken-request cross-checks, exact-quote citations, `needs_input` versus `awaiting_signoff`, and the human sign-off. The model can't override a failed check. When it tries, the refusal goes back to it, and the run stops for a person.
+
+**Not used:** `sam-3.1` (curb segmentation is future work), Meta's built-in `web_search`, Muse Image, `muse-wonder-1.0` and the contributor-mode variants. The dashboard counters for images, segmentation and web searches are therefore expected to read zero for this application. We did not add those tools just to raise usage.
+
+### Live evidence, offline demonstrations and simulated data
+
+| Kind | What it covers | Where |
+|---|---|---|
+| **Live Meta evidence** (paid calls with recorded response IDs) | Image and speech probes; the capped batch (card success, card contradiction, spoken request, authentication failure); two hosted-console runs, one with the owner's real microphone | [docs/LIVE_EVIDENCE.md](docs/LIVE_EVIDENCE.md), [docs/evidence/](docs/evidence/live-batch-2026-10-29/README.md) |
+| **Offline demonstrations** (no network; Meta replaced by a scripted stand-in or a fixed script; the real tools and checks run) | Wrong fare, unmatched accessibility need and invented quotes blocked (`audit/safeguards_demo.py`); all regression tests; the console's **OFFLINE SIMULATION — NO META API CALLS** mode | [docs/AUDIT_2026-10-30.md](docs/AUDIT_2026-10-30.md), `./helper test` |
+| **Simulated data** (fixtures, never measured) | Curb clearance and bay status, in every run, including live ones. Labeled **SIMULATED CURB MEASUREMENTS — Demonstration data, not camera measurements**. No camera, SAM or other model measured them. All riders, clinics, cards and appointments are fictional | `cases/*/inbox/curb_telemetry.json` |
+
+A run labeled `LIVE_META_API` means the reasoning was live; the curb data in that same run is still simulated.
 
 ## Engineering (Technical execution, 20%)
 
@@ -44,7 +59,7 @@ Models available but **not** used: `sam-3.1` (curb segmentation is future work),
 - **Security.** The API key stays on the server and is sent only to `api.meta.ai`. Remote error bodies are hidden. The console checks host, origin, token, content type and size.
 - **Unmistakable labels.** Each run is headed **LIVE META INFERENCE — N RECORDED RESPONSES** or **OFFLINE SIMULATION — NO META API CALLS**; curb data says **SIMULATED CURB MEASUREMENTS**; a sign-off says **HUMAN ACKNOWLEDGMENT RECORDED — No vehicle dispatched**.
 - **Audit integrity and provenance.** Every final state, including a correct `needs_input` stop, gets an integrity check of the record itself. The console shows separately where the reasoning, spoken request, card reading and curb measurements came from.
-- **Testing.** 143 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; the spending cap; both sign-off labels; and a headless-browser check of the console labels and remembered mode.
+- **Testing.** 144 offline tests, including prompt injection in documents, transcripts and follow-ups; model failure and resume; unsupported audio; the spending cap; both sign-off labels; and a headless-browser check of the console labels and remembered mode.
 
 ## Verified live results (Demo, 25%)
 
@@ -68,7 +83,7 @@ During the event: live Meta orchestration and verification gates, exact citation
 - Fictional riders, clinics and appointments; simulated curb measurements; a demo fleet clearance rule that is not a legal standard.
 - No clinical advice, medical clearance, emergency service, dispatch, payment, EHR integration or production deployment. No HIPAA compliance is claimed.
 - The Record button has been used live with a real microphone on the hosted console (2026-10-29, one transcription). The scripted demo takes are still to be recorded.
-- Spoken dates and times are not yet cross-checked by code (accessibility needs are).
+- On `main`, spoken dates and times are not yet cross-checked by code (accessibility needs are). The check is in review in PR #12.
 - Meta response IDs are recorded by the application from Meta's responses and checked for presence and uniqueness. They have not been independently authenticated with Meta or by a third party.
 
 ## How judges can run it
