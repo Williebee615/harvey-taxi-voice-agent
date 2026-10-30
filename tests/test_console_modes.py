@@ -50,3 +50,8 @@ class ConsoleBrowserTests(unittest.TestCase):
         self.assertIn('OFFLINE SIMULATION — NO META API CALLS', out['simRun']['badge'])
         self.assertIsNone(out['simRun']['signoff'])
         self.assertFalse(out['backToSimulation']['live'])
+        expired = out['expired']
+        self.assertIn('Nothing was sent and no Meta call was made', expired['notice'])
+        self.assertEqual(expired['configRefetched'], 1, 'The page should fetch a fresh token once')
+        self.assertEqual(expired['runPosts'], 1, 'The page must not retry a review on its own')
+        self.assertTrue(expired['startEnabled'])

@@ -22,10 +22,11 @@ from harvey_agent.loop import approve_run, resume_run, run_agent
 
 class ConsoleServer(ThreadingHTTPServer):
     daemon_threads = True
-    def __init__(self, address, root=ROOT):
+    def __init__(self, address, root=ROOT, token=None):
         super().__init__(address, Handler)
         self.root = Path(root)
-        self.token = secrets.token_urlsafe(32)
+        # A hosted deployment passes a token that survives container restarts; locally it is random per process.
+        self.token = token or secrets.token_urlsafe(32)
         self.mutation_lock = threading.Lock()
         # Meta transcripts held server-side until the reviewer confirms one, so the browser
         # cannot submit altered text under the Meta label.
@@ -98,8 +99,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         port = self.server.server_port
         origin = self.headers.get('Origin')
-        if not self.allowed_host() or origin not in (None, f'http://127.0.0.1:{port}', f'http://localhost:{port}') or not secrets.compare_digest(self.headers.get('X-Console-Token', ''), self.server.token):
+        if not self.allowed_host() or origin not in (None, f'http://127.0.0.1:{port}', f'http://localhost:{port}'):
             return self.send(403, {'error': 'Local console token and origin required'})
+        if not secrets.compare_digest(self.headers.get('X-Console-Token', ''), self.server.token):
+            # Host and origin are fine, so the page holds a token from an earlier server process.
+            return self.send(403, {'error': 'Console session expired. Nothing was sent.', 'code': 'session_expired'})
         if self.path == '/api/transcribe':
             return self.transcribe()
         if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
@@ -122,7 +126,10 @@ class Handler(BaseHTTPRequestHandler):
                 if body.get('transcription_id') is not None:
                     if spoken is not None or body.get('transcript_confirmed') is not True:
                         raise ValueError('A Meta transcript must be confirmed and sent without separate text')
-                    held = self.take_transcript(body['transcription_id'])
+                    try:
+                        held = self.take_transcript(body['transcription_id'])
+                    except ValueError:
+                        return self.send(410, {'error': 'This Meta transcript was already used, has expired, or the console restarted. Record again; nothing was sent for review.', 'code': 'transcript_expired'})
                     spoken, source = held['transcript'], {**held['source'], 'confirmed_by_reviewer': True}
                 result = run_agent(root, turns=1, objective=body.get('objective'), case_name=body.get('case'), mode=body.get('mode', 'simulation'),
                                    spoken_request=spoken, speech_source=source)

@@ -31,6 +31,21 @@ class HostedConsoleTests(unittest.TestCase):
                 self.assertFalse(response.json()['model_invoked_in_run'])
                 self.assertEqual(response.json()['turn'],1)
                 self.assertEqual(len(commits),2)
+    def test_token_survives_restart_and_reveals_nothing(self):
+        from fastapi.testclient import TestClient
+        from ui.modal_console import create_app
+        def token(password):
+            with tempfile.TemporaryDirectory() as root, patch.dict(os.environ, {'HARVEY_DEMO_PASSWORD': password}):
+                shutil.copytree(Path(__file__).resolve().parent.parent/'cases',Path(root)/'cases')
+                with TestClient(create_app(root)) as client:
+                    self.assertEqual(client.get('/api/config').status_code,401)
+                    return client.get('/api/config',auth=('reviewer',password)).json()['token']
+        first,restarted,other=token('long-test-password-123'),token('long-test-password-123'),token('another-password-4567')
+        self.assertEqual(first,restarted); self.assertNotEqual(first,other)
+        self.assertNotIn('long-test-password-123',first); self.assertGreaterEqual(len(first),40)
+    def test_idle_window_keeps_sessions_alive(self):
+        source=(Path(__file__).resolve().parent.parent/'modal_console.py').read_text()
+        self.assertIn('scaledown_window=900',source); self.assertIn('max_containers=1',source)
     def test_password_required(self):
         from ui.modal_console import create_app
         with patch.dict(os.environ,{'HARVEY_DEMO_PASSWORD':''}):
