@@ -6,7 +6,7 @@ Prepared 2026-10-30 UTC. **Not executed. Deployment and paid calls are on hold u
 
 | Item | Value |
 |---|---|
-| Commit | `main` at `53d77779dbf478ac125b3970de3ad8cb3f1d16d1` (merge of PRs #11–#14; CI `verify-agent` green; 163 tests) |
+| Commit | `main` at `53d77779dbf478ac125b3970de3ad8cb3f1d16d1` (merge of PRs #11–#14; CI `verify-agent` green on this commit's push run; 163 tests passed, none skipped, on a clean checkout) |
 | Currently hosted | `fc49119` (PR #8), deployed 2026-10-29 per the owner's deploy output |
 | New on the hosted console | 15-minute idle window and a restart-stable session token (PR #11); spoken date/time check (PR #12). PRs #13–#14 change docs only |
 | Unchanged | App name, URL, Modal secret `harvey-healthcare-demo` (same three names; no new secret), Volume `harvey-healthcare-runs` and its saved runs, Basic-auth sign-in, origin checks, one container, one request at a time |
@@ -25,7 +25,7 @@ python3 -m modal app history harvey-healthcare-review
 ```
 
 Expected results:
-- `git log` prints `53d7777`.
+- `git log` prints `53d7777`. If `main` has moved on since then (for example, this plan merged as a docs-only commit), deploy the reviewed commit exactly: run `git checkout 53d7777` before deploying and `git checkout main` afterwards.
 - The tests end with `OK`. The skip count can differ on the Mac.
 - The history's last line is the 2026-10-29 deployment. **Write down its version** (for example `v7`). That is the rollback target.
 
