@@ -134,7 +134,7 @@ class CardTests(AgentFixture):
 
 
 class SpokenRequestTests(AgentFixture):
-    REQUEST = 'I need a wheelchair accessible ride with my service dog to my clinic appointment on Monday.'
+    REQUEST = 'I need a wheelchair accessible ride with my service dog to my clinic appointment on Monday, November second.'
 
     def test_consistent_request_is_cited_and_passes(self):
         rec = self.simulate(CLINIC, spoken_request=self.REQUEST)

@@ -88,10 +88,11 @@ class ConsoleSpeechTests(unittest.TestCase):
         _, tx, _ = self.transcribe()
         self.assertEqual(self.run_with({'transcription_id': tx['transcription_id']})[0], 400)
         self.assertEqual(self.run_with({'transcription_id': tx['transcription_id'], 'transcript_confirmed': True, 'spoken_request': 'altered text'})[0], 400)
-        self.assertEqual(self.run_with({'transcription_id': 'tx_unknown', 'transcript_confirmed': True})[0], 400)
+        code, body = self.run_with({'transcription_id': 'tx_unknown', 'transcript_confirmed': True})
+        self.assertEqual((code, body['code']), (410, 'transcript_expired'))
         _, tx2, _ = self.transcribe()
         self.assertEqual(self.run_with({'transcription_id': tx2['transcription_id'], 'transcript_confirmed': True})[0], 200)
-        self.assertEqual(self.run_with({'transcription_id': tx2['transcription_id'], 'transcript_confirmed': True})[0], 400)
+        self.assertEqual(self.run_with({'transcription_id': tx2['transcription_id'], 'transcript_confirmed': True})[0], 410)
 
     def test_typed_text_is_labeled_not_meta(self):
         code, rec = self.run_with({'spoken_request': 'I need a wheelchair accessible ride.'})

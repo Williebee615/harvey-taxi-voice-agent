@@ -1,4 +1,6 @@
 """Password-gated bridge to the unchanged loopback console, for Modal only."""
+import hashlib
+import hmac
 import os
 import secrets
 import threading
@@ -17,7 +19,10 @@ def create_app(root, commit=lambda: None):
     password = os.environ.get('HARVEY_DEMO_PASSWORD', '')
     if len(password) < 16:
         raise ValueError('Set HARVEY_DEMO_PASSWORD to at least 16 characters in Modal Secrets')
-    server = ConsoleServer(('127.0.0.1', 0), root=root)
+    # Derive the console token from the password so a restarted container accepts pages loaded earlier.
+    # One-way (HMAC), so neither the token nor the browser can reveal the password; only signed-in reviewers receive it.
+    token = base64.urlsafe_b64encode(hmac.new(password.encode(), b'harvey-console-token-v1', hashlib.sha256).digest()).decode().rstrip('=')
+    server = ConsoleServer(('127.0.0.1', 0), root=root, token=token)
     base = f'http://127.0.0.1:{server.server_port}'
     @asynccontextmanager
     async def lifespan(app):
